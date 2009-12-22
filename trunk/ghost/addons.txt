@@ -1,0 +1,28 @@
+
+
+Thursday 24 September
+
+Gamename with random mode
+Random mode generated from map_gamenamewithmode and map_validhcl
+replace $mode$ in map_gamenamewithmode with random mode from map_validhcl and encode hcl command accordingly
+map_gamenamewithmode = DotA $mode$ GHost++
+
+Get HCL Command from gamename (overrides map_defaulthcl)
+parses gamename for a valid mode defined by map_validhcl if none is found it falls back on map_defaulthcl
+map_validhcl = -apso -arso -sdso -rdso
+map_hclfromgamename = 1
+
+Send downloadlink if map downloads is disabled
+map_senddownloadlink = 1
+map_downloadlink = "http://www.getdota.com"
+
+Wednesday 23 September
+
+Admin in game announcement
+bot_displayadminingame = 1
+bot_adminingamefile = "adminingame.txt"
+
+Thuesday 22 September
+
+Autohost remembering last game # and starts accordingly to
+autohost_start.cfg
