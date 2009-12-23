@@ -1,0 +1,6 @@
+Nordic Only Public League!
+Allowed countries: NORDIC - SE NO DK FI IS FO
+Notice: Switch is turned off cause it ruins too many games!
+Please use the !report command, if an admin is not present, to report leavers/abusers.
+Example: !report SomePlayer left after beeing killed in firstblood.
+Christmas Special: Gamenames will be changed to "NordicLeague Safe -MODE #" and 1 more bot will be introduced, merry christmas! :)
