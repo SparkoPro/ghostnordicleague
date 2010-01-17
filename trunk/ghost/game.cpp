@@ -1709,7 +1709,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
                                         Count = 0;
                                         Line = "";
 
-                                        in.open( "/home/ghost/ghost/league/top10.txt" );
+                                        in.open( "league/top10.txt" );
 
                                         if( !in.fail( ) )
                                         {

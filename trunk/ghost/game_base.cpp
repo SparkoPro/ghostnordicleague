@@ -1574,17 +1574,6 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		}
 	}
 
-	if( m_MatchMaking && m_AutoStartPlayers != 0 && !m_Map->GetMapMatchMakingCategory( ).empty( ) && m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
-	{
-		// matchmaking is enabled
-		// start a database query to determine the player's score
-		// when the query is complete we will call EventPlayerJoinedWithScore
-
-		m_ScoreChecks.push_back( m_GHost->m_DB->ThreadedScoreCheck( m_Map->GetMapMatchMakingCategory( ), joinPlayer->GetName( ), JoinedRealm ) );
-		return;
-	}
-
-
 		// [FROMENFORCER]
 	//Make sure from checking is enabled and config values are clean
 	if(!m_GHost->m_ApprovedCountries.empty( ) || m_GHost->m_ApprovedCountries.length() % 2 != 0)
@@ -1626,6 +1615,17 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 			return;
 		}
 	}
+
+	if( m_MatchMaking && m_AutoStartPlayers != 0 && !m_Map->GetMapMatchMakingCategory( ).empty( ) && m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
+	{
+		// matchmaking is enabled
+		// start a database query to determine the player's score
+		// when the query is complete we will call EventPlayerJoinedWithScore
+
+		m_ScoreChecks.push_back( m_GHost->m_DB->ThreadedScoreCheck( m_Map->GetMapMatchMakingCategory( ), joinPlayer->GetName( ), JoinedRealm ) );
+		return;
+	}
+
 
 
 	// check if the player is an admin or root admin on any connected realm for determining reserved status
@@ -1971,9 +1971,12 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	// check if the new player's score is within the limits
 
-	if( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) )
+	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] trying to join with score [" + UTIL_ToString( score, 2 ) + "]" );
+
+	if (score < m_MinimumScore || score > m_MaximumScore)
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + 
+potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
 		potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 		potential->SetDeleteMe( true );
 		return;
