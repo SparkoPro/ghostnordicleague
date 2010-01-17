@@ -1092,8 +1092,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			if( Command == "end" && m_GameLoaded )
 			{
 				m_MessageWasCommand = true;
-				CONSOLE_Print( "[GAME: " + m_GameName + "] is over (admin ended game)" );
-				StopPlayers( "was disconnected (admin ended game)" );
+				CONSOLE_Print( "[GAME: " + m_GameName + "] [ " + User + " ] Tried to !end the game.");
+				// StopPlayers( "was disconnected (admin ended game)" );
 			}
 
 			//
