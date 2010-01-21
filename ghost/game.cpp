@@ -683,6 +683,25 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			}
 
 			//
+			// !BALANCE
+			//
+
+			if( Command == "balance" && !m_CountDownStarted )
+			{
+				m_MessageWasCommand = true;
+				if (!m_GameLoading && !m_GameLoaded)
+				{
+					if (m_GHost->m_MatchMakingMethod == 4)
+					{
+						SendAllChat( "Trying to balance teams..." );
+						BalanceSlots();
+					}
+					else
+						SendAllChat( "Balance not avaliable." );
+				}
+			}
+
+			//
 			// !BANLAST
 			//
 
