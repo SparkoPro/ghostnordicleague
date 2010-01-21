@@ -1973,7 +1973,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] trying to join with score [" + UTIL_ToString( score, 2 ) + "]" );
 
-	if (score < m_MinimumScore || score > m_MaximumScore)
+	if (m_GHost->m_MatchMakingMethod != 4 && (score < m_MinimumScore || score > m_MaximumScore))
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + 
 potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
@@ -2005,7 +2005,7 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 		// no empty slot found, time to do some matchmaking!
 		// note: the database code uses a score of -100000 to denote "no score"
 
-		if( m_GHost->m_MatchMakingMethod == 0 )
+		if( m_GHost->m_MatchMakingMethod == 0 || m_GHost->m_MatchMakingMethod == 4 )
 		{
 			// method 0: don't do any matchmaking
 			// that was easy!
@@ -2363,8 +2363,11 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 
 	// balance the slots
 
-	if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
-		BalanceSlots( );
+	if (m_MatchMaking == 4)
+	{
+		if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
+			BalanceSlots( );
+	}
 }
 
 void CBaseGame :: EventPlayerLeft( CGamePlayer *player )
