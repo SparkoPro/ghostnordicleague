@@ -120,7 +120,7 @@ float UTIL_ToFloat( string &s )
 
 int main( int argc, char **argv )
 {
-	string CFGFile = "update_dota_nskill.cfg";
+	string CFGFile = "update_dota_nordicskill.cfg";
 
 	if( argc > 1 && argv[1] )
 		CFGFile = argv[1];
