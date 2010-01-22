@@ -46,10 +46,10 @@ using namespace std;
 #include <mysql/mysql.h>
 
 float gain_kill = 1; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
-float gain_death = -1.5; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
-float gain_assist = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
-float gain_tower = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
-float gain_rax = 0.7; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
+float gain_death = -2; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
+float gain_assist = 0.75; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
+float gain_tower = 0.4; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
+float gain_rax = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
 float gain_creepkill = 0.01; //= UTIL_ToFloat( CFG.GetString( "formula_creepkill_gain", "" ) );
 float gain_creepdenie = 0.04; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
 float gain_neutral = 0.02; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
@@ -352,7 +352,7 @@ int main( int argc, char **argv )
 
 					if( Winner != 1 && Winner != 2 )
 					{
-						cout << "gameid " << UTIL_ToString( GameID ) << " has no winner, ignoring" << endl;
+						//cout << "gameid " << UTIL_ToString( GameID ) << " has no winner, ignoring" << endl;
 						ignore = true;
 						break;
 					}
@@ -382,7 +382,7 @@ int main( int argc, char **argv )
 					}
 					else
 					{
-						cout << "new player [" << Row[1] << "] found" << endl;
+						//cout << "new player [" << Row[1] << "] found" << endl;
 						exists[num_players] = false;
 						player_ratings[num_players] = 1000.0;
 					}
@@ -403,7 +403,7 @@ int main( int argc, char **argv )
 					}
 					else
 					{
-						cout << "gameid " << UTIL_ToString( GameID ) << " has a player with an invalid newcolour, ignoring" << endl;
+						//cout << "gameid " << UTIL_ToString( GameID ) << " has a player with an invalid newcolour, ignoring" << endl;
 						ignore = true;
 						break;
 					}
@@ -436,7 +436,7 @@ int main( int argc, char **argv )
 						{
 							player_gain[i] = CalculateGain(player_kills[i], player_deaths[i], player_assists[i], player_creepkills[i], player_creepdenies[i], player_towerkills[i], player_raxkills[i], player_neutralkills[i]);
 
-							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << " Gain: " << player_gain[i] << endl;
+							//cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << " Gain: " << player_gain[i] << endl;
 							player_ratings[i] += player_gain[i];
 
 
