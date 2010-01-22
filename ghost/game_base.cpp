@@ -1583,36 +1583,43 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		string PlayerLocation;
 		bool playerIsApproved;
 
-		if(m_GHost->m_ApprovedCountries.length() == 2)
-			num = 1;
-		else
-			num = m_GHost->m_ApprovedCountries.length() / 2;
+                string NameLower = joinPlayer->GetName();
+                transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
 
-		//Loop through approved countries and construct an array
-		for(int i = 0; i < m_GHost->m_ApprovedCountries.length(); i += 2)
-			ApprovedLocations.push_back(m_GHost->m_ApprovedCountries.substr(i,2));
 
-		//Get their location
-		PlayerLocation = m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( potential->GetExternalIP( ), true ));
-
-		//Kick if not from an allowed location, ignore if their location is approved or cannot be found "??"
-		playerIsApproved = false;
-
-		//Try to make a match
-		for(int x = 0; x < num; x++)
+		if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips")
 		{
-			//Approve the player if their country is approved
-			if(PlayerLocation == ApprovedLocations[x])
-				playerIsApproved = true;
-		}
+			if(m_GHost->m_ApprovedCountries.length() == 2)
+				num = 1;
+			else
+				num = m_GHost->m_ApprovedCountries.length() / 2;
 
-		if(!playerIsApproved && PlayerLocation != "??")
-		{
-			//Player location has been found and is invalid, deny them entry
-			CONSOLE_Print("[FROMENFORCER] Player [" + joinPlayer->GetName() + "] tried to join the game but is not from an approved location (" + PlayerLocation + ")");
-			SendAllChat("[" + joinPlayer->GetName() + "] tried to join the game but is not from an approved location (" + PlayerLocation + ")");
-			potential->SetDeleteMe(true);
-			return;
+			//Loop through approved countries and construct an array
+			for(int i = 0; i < m_GHost->m_ApprovedCountries.length(); i += 2)
+				ApprovedLocations.push_back(m_GHost->m_ApprovedCountries.substr(i,2));
+
+			//Get their location
+			PlayerLocation = m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( potential->GetExternalIP( ), true ));
+
+			//Kick if not from an allowed location, ignore if their location is approved or cannot be found "??"
+			playerIsApproved = false;
+
+			//Try to make a match
+			for(int x = 0; x < num; x++)
+			{
+				//Approve the player if their country is approved
+				if(PlayerLocation == ApprovedLocations[x])
+					playerIsApproved = true;
+			}
+
+			if(!playerIsApproved && PlayerLocation != "??")
+			{
+				//Player location has been found and is invalid, deny them entry
+				CONSOLE_Print("[FROMENFORCER] Player [" + joinPlayer->GetName() + "] tried to join the game but is not from an approved location (" + PlayerLocation + ")");
+				SendAllChat("[" + joinPlayer->GetName() + "] tried to join the game but is not from an approved location (" + PlayerLocation + ")");
+				potential->SetDeleteMe(true);
+				return;
+			}
 		}
 	}
 
