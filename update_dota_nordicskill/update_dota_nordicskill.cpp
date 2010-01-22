@@ -46,12 +46,12 @@ using namespace std;
 #include <mysql/mysql.h>
 
 float gain_kill = 1; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
-float gain_death = -1; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
-float gain_assist = 0.3; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
-float gain_tower = 2.5; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
-float gain_rax = 4; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
+float gain_death = -1.5; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
+float gain_assist = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
+float gain_tower = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
+float gain_rax = 0.7; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
 float gain_creepkill = 0.01; //= UTIL_ToFloat( CFG.GetString( "formula_creepkill_gain", "" ) );
-float gain_creepdenie = 0.05; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
+float gain_creepdenie = 0.04; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
 float gain_neutral = 0.02; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
 
 float CalculateGain(int k, int d, int a, int ck, int cd, int t, int r, int n)
@@ -230,7 +230,7 @@ int main( int argc, char **argv )
 	cout << "creating tables" << endl;
 
 	string QCreate1 = "CREATE TABLE IF NOT EXISTS dota_nskill_scores ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(15) NOT NULL, server VARCHAR(100) NOT NULL, score REAL NOT NULL )";
-	string QCreate2 = "CREATE TABLE IF NOT EXISTS dota_nskill_games_scored ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, gameid INT NOT NULL )";
+	string QCreate2 = "CREATE TABLE IF NOT EXISTS dota_nskill_games_scored ( last_gameid INT NOT NULL PRIMARY KEY )";
 
 	if( mysql_real_query( Connection, QCreate1.c_str( ), QCreate1.size( ) ) != 0 )
 	{
@@ -247,7 +247,7 @@ int main( int argc, char **argv )
 	cout << "getting unscored games" << endl;
 	queue<uint32_t> UnscoredGames;
 
-	string QSelectUnscored = "SELECT id FROM games WHERE id NOT IN ( SELECT gameid FROM dota_nskill_games_scored ) ORDER BY id";
+	string QSelectUnscored = "SELECT id FROM games WHERE id > ( SELECT last_gameid FROM dota_nskill_games_scored LIMIT 1 ) ORDER BY id";
 
 	if( mysql_real_query( Connection, QSelectUnscored.c_str( ), QSelectUnscored.size( ) ) != 0 )
 	{
@@ -473,7 +473,7 @@ int main( int argc, char **argv )
 			}
 		}
 
-		string QInsertScored = "INSERT INTO dota_nskill_games_scored ( gameid ) VALUES ( " + UTIL_ToString( GameID ) + " )";
+		string QInsertScored = "UPDATE dota_nskill_games_scored set last_gameid = " + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QInsertScored.c_str( ), QInsertScored.size( ) ) != 0 )
 		{
