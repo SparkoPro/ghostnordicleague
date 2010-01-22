@@ -45,6 +45,60 @@ using namespace std;
 
 #include <mysql/mysql.h>
 
+float gain_kill = 1; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
+float gain_death = -1; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
+float gain_assist = 0.3; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
+float gain_tower = 2.5; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
+float gain_rax = 4; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
+float gain_creepkill = 0.01; //= UTIL_ToFloat( CFG.GetString( "formula_creepkill_gain", "" ) );
+float gain_creepdenie = 0.05; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
+float gain_neutral = 0.02; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
+
+float CalculateGain(int k, int d, int a, int ck, int cd, int t, int r, int n)
+{
+	float gain = 0;
+	float total_gain = 0;
+
+//	cout << "Calculating NordicSkill Rate.." << endl;
+
+	gain = k * gain_kill;
+	total_gain += gain;
+//	cout << "Kill gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = d * gain_death;
+	total_gain += gain;
+//	cout << "Death gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = a * gain_assist;
+	total_gain += gain;
+//	cout << "Assist gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = ck * gain_creepkill;
+	total_gain += gain;
+//	cout << "Creepkill gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = cd * gain_creepdenie;
+	total_gain += gain;
+//	cout << "CreepDenie gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = t * gain_tower;
+	total_gain += gain;
+//	cout << "TowerKill gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = r * gain_rax;
+	total_gain += gain;
+//	cout << "Rax gain: " << gain << " Total: " << total_gain << endl;
+
+	gain = n * gain_neutral;
+	total_gain += gain;
+//	cout << "NeutralKill gain: " << gain << " Total: " << total_gain << endl;
+
+
+	return total_gain;
+}
+
+
+
 void CONSOLE_Print( string message )
 {
 	cout << message << endl;
@@ -109,7 +163,7 @@ uint32_t UTIL_ToUInt32( string &s )
 	return result;
 }
 
-float UTIL_ToFloat( string &s )
+float UTIL_ToFloat( string s )
 {
 	float result;
 	stringstream SS;
@@ -132,6 +186,17 @@ int main( int argc, char **argv )
 	string User = CFG.GetString( "db_mysql_user", string( ) );
 	string Password = CFG.GetString( "db_mysql_password", string( ) );
 	int Port = CFG.GetInt( "db_mysql_port", 0 );
+
+	cout << "Gains:" << endl;
+	cout << "Kill: " << gain_kill << endl;
+	cout << "Death: " << gain_death << endl;
+	cout << "Assist: " << gain_assist << endl;
+	cout << "Tower: " << gain_tower << endl;
+	cout << "Rax: " << gain_rax << endl;
+	cout << "CK: " << gain_creepkill << endl;
+	cout << "CD: " << gain_creepdenie << endl;
+	cout << "Neutral: " << gain_neutral << endl;
+
 
 	cout << "connecting to database server" << endl;
 	MYSQL *Connection = NULL;
@@ -219,7 +284,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_nskill_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_nskill_scores ON dota_nskill_scores.name=gameplayers.name AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_nskill_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_nskill_scores ON dota_nskill_scores.name=gameplayers.name AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -241,10 +306,8 @@ int main( int argc, char **argv )
 				bool exists[10];
 				int num_players = 0;
 				float player_ratings[10];
+				float player_gain[10];
 				int player_teams[10];
-
-				uint32_t player_kills[10];
-				uint32_t player_deaths[10];
 
 				int num_teams = 2;
 				float team_ratings[2];
@@ -255,9 +318,18 @@ int main( int argc, char **argv )
 				team_numplayers[0] = 0;
 				team_numplayers[1] = 0;
 
+				uint32_t player_kills[10];
+				uint32_t player_deaths[10];
+				uint32_t player_assists[10];
+				uint32_t player_creepkills[10];
+				uint32_t player_creepdenies[10];
+				uint32_t player_towerkills[10];
+				uint32_t player_raxkills[10];
+				uint32_t player_neutralkills[10];
+
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 8 )
+				while( Row.size( ) == 14 )
 				{
 					if( num_players >= 10 )
 					{
@@ -267,11 +339,16 @@ int main( int argc, char **argv )
 					}
 
 					uint32_t Winner = UTIL_ToUInt32( Row[4] );
-					cout << "kills: " << Row[6] << " Deaths: " << Row[7] << endl;
+					//cout << "kills: " << Row[6] << " Deaths: " << Row[7] << " Assists: " << Row[8] << " CK: " << Row[9] << " CD: " << Row[10] << " TK: " << Row[11] << " RK: " << Row[12] << " NK: " << Row[13] << endl;
 
 					player_kills[num_players] = UTIL_ToUInt32( Row[6] );
 					player_deaths[num_players] = UTIL_ToUInt32( Row[7] );
-
+					player_assists[num_players] = UTIL_ToUInt32( Row[8] );
+					player_creepkills[num_players] = UTIL_ToUInt32( Row[9] );
+					player_creepdenies[num_players] = UTIL_ToUInt32( Row[10] );
+					player_towerkills[num_players] = UTIL_ToUInt32( Row[11] );
+					player_raxkills[num_players] = UTIL_ToUInt32( Row[12] );
+					player_neutralkills[num_players] = UTIL_ToUInt32( Row[13] );
 
 					if( Winner != 1 && Winner != 2 )
 					{
@@ -357,17 +434,21 @@ int main( int argc, char **argv )
 
 						for( int i = 0; i < num_players; i++ )
 						{
-							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
+							player_gain[i] = CalculateGain(player_kills[i], player_deaths[i], player_assists[i], player_creepkills[i], player_creepdenies[i], player_towerkills[i], player_raxkills[i], player_neutralkills[i]);
+
+							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << " Gain: " << player_gain[i] << endl;
+							player_ratings[i] += player_gain[i];
+
 
 							if( exists[i] )
 							{
-								/*string QUpdateScore = "UPDATE dota_nskill_scores SET score=" + UTIL_ToString( player_ratings[i], 2 ) + " WHERE id=" + UTIL_ToString( rowids[i] );
+								string QUpdateScore = "UPDATE dota_nskill_scores SET score=" + UTIL_ToString( player_ratings[i], 2 ) + " WHERE id=" + UTIL_ToString( rowids[i] );
 
 								if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
 								{
 									cout << "error: " << mysql_error( Connection ) << endl;
 									return 1;
-								}*/
+								}
 							}
 							else
 							{
@@ -375,11 +456,11 @@ int main( int argc, char **argv )
 								string EscServer = MySQLEscapeString( Connection, servers[i] );
 								string QInsertScore = "INSERT INTO dota_nskill_scores ( name, server, score ) VALUES ( '" + EscName + "', '" + EscServer + "', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
 
-								/*if( mysql_real_query( Connection, QInsertScore.c_str( ), QInsertScore.size( ) ) != 0 )
+								if( mysql_real_query( Connection, QInsertScore.c_str( ), QInsertScore.size( ) ) != 0 )
 								{
 									cout << "error: " << mysql_error( Connection ) << endl;
 									return 1;
-								}*/
+								}
 							}
 						}
 					}
@@ -394,19 +475,19 @@ int main( int argc, char **argv )
 
 		string QInsertScored = "INSERT INTO dota_nskill_games_scored ( gameid ) VALUES ( " + UTIL_ToString( GameID ) + " )";
 
-/*		if( mysql_real_query( Connection, QInsertScored.c_str( ), QInsertScored.size( ) ) != 0 )
+		if( mysql_real_query( Connection, QInsertScored.c_str( ), QInsertScored.size( ) ) != 0 )
 		{
 			cout << "error: " << mysql_error( Connection ) << endl;
 			return 1;
-		}*/
+		}
 	}
 
-	cout << "copying dota elo scores to scores table" << endl;
+	cout << "copying dota nskill scores to scores table" << endl;
 
 	string QCopyScores1 = "DELETE FROM scores WHERE category='dota_nskill'";
 	string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_nskill', name, server, score FROM dota_nskill_scores";
 
-/*	if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
+	if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
 	{
 		cout << "error: " << mysql_error( Connection ) << endl;
 		return 1;
@@ -427,8 +508,10 @@ int main( int argc, char **argv )
 		cout << "error: " << mysql_error( Connection ) << endl;
 		return 1;
 	}
-*/
+
 
 	cout << "done" << endl;
 	return 0;
 }
+
+
