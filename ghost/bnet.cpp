@@ -2704,39 +2704,45 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					string RegFile;
 					string RegUser = User;
 
-					if( !Payload.empty( ) )
-						RegMail = Payload;
-
-					// check for potential abuse
-
-					if (RegMail.empty())
+					if (!Whisper)
 					{
-						QueueChatCommand( "No email adress specified! Usage: !register mymail@domain.com" , User, Whisper );
+						QueueChatCommand( "Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true);
 					}
 					else
 					{
 
-					        // @disturbed_oc
-					        // write registration data for scripts to handle later
-						RegFile = "register/" + RegUser;
+						if( !Payload.empty( ) )
+							RegMail = Payload;
+						// check for potential abuse
 
-					        ofstream out(RegFile.c_str());
+						if (RegMail.empty())
+						{
+							QueueChatCommand( "No email adress specified! Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true );
+						}
+						else
+						{
 
-					        if( !out )
-					        {
-					                CONSOLE_Print( "[REGISTER] [ERROR] failed to write registration data [ register/" + RegUser + " ]" );
-							QueueChatCommand( "Something went terribly wrong, a error report has been filed and a admin will review it asap." , User, Whisper );
-					        }
-					        else
-					        {
-					                out << RegMail.c_str();
-					                CONSOLE_Print( "[REGISTER] Wrote registration data to [register/" + RegUser + "] with email [" + RegMail + "]" );
-							QueueChatCommand( "Your account [ " + RegUser + " ] has been registered with e-mail [ " + RegMail + " ] a mail with further instructions will be sent to you shortly!" , User, Whisper );
-					        }
+						        // @disturbed_oc
+						        // write registration data for scripts to handle later
+							RegFile = "register/" + RegUser;
 
-					        out.close();
-					        // @end
+						        ofstream out(RegFile.c_str());
 
+						        if( !out )
+						        {
+						                CONSOLE_Print( "[REGISTER] [ERROR] failed to write registration data [ register/" + RegUser + " ]" );
+								QueueChatCommand( "Something went terribly wrong, a error report has been filed and a admin will review it asap." , User, true );
+					        	}
+						        else
+						        {
+						                out << RegMail.c_str();
+						                CONSOLE_Print( "[REGISTER] Wrote registration data to [register/" + RegUser + "] with email [" + RegMail + "]" );
+								QueueChatCommand( "Your account [ " + RegUser + " ] has been registered with e-mail [ " + RegMail + " ] a mail with further instructions will be sent to you shortly!" , User, true );
+						        }
+
+						        out.close();
+						        // @end
+						}
 					}
 				}
 

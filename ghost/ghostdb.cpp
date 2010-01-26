@@ -132,7 +132,7 @@ uint32_t CGHostDB :: DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string killer, string victim )
+uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
 {
 	return 0;
 }
@@ -267,7 +267,7 @@ CCallableDotAGameAdd *CGHostDB :: ThreadedDotAGameAdd( uint32_t gameid, uint32_t
 	return NULL;
 }
 
-CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string killer, string victim )
+CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
 {
 	return NULL;
 }

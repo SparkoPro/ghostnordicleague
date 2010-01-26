@@ -113,7 +113,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								if( Killer && Victim )
 								{
 									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + "] killed player [" + Victim->GetName( ) + "]" );
-									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName()) );
+									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
 								}
 								else if( Victim )
 								{
