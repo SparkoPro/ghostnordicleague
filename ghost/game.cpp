@@ -1891,6 +1891,41 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	* NON ADMIN COMMANDS *
 	*********************/
 
+			//
+			// !CHECKBALANCE / !CB
+			//
+
+			if ( Command == "checkbalance" || Command == "cb" )
+			{
+
+			        for( unsigned char i = 0; i < 12; i++ )
+			        {
+			                bool TeamHasPlayers = false;
+			                double TeamScore = 0.0;
+
+		        	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+		                	{
+		                        	unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
+
+			                        if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
+			                        {
+		        	                        TeamHasPlayers = true;
+			                                double Score = (*j)->GetScore( );
+
+		                	                if( Score < -99999.0 )
+		                        	                Score = m_Map->GetMapDefaultPlayerScore( );
+
+		                              		TeamScore += Score;
+			                        }
+			                }
+
+			                if( TeamHasPlayers )
+		        	                SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ) ) );
+				}
+
+			}
+
+
 	//
 	// !CHECKME
 	//
