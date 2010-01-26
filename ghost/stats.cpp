@@ -35,7 +35,7 @@ CStats :: ~CStats( )
 
 }
 
-bool CStats :: ProcessAction( CIncomingAction *Action )
+bool CStats :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost)
 {
 	return false;
 }

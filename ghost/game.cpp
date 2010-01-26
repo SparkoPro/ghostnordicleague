@@ -379,7 +379,7 @@ void CGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *action )
 
 	// give the stats class a chance to process the action
 
-	if( m_Stats && m_Stats->ProcessAction( action ) && m_GameOverTime == 0 )
+	if( m_Stats && m_Stats->ProcessAction( action, m_GHost->m_DB, m_GHost ) && m_GameOverTime == 0 )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] gameover timer started (stats class reported game over)" );
 		SendEndMessage( );
@@ -1111,8 +1111,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			if( Command == "end" && m_GameLoaded )
 			{
 				m_MessageWasCommand = true;
-				CONSOLE_Print( "[GAME: " + m_GameName + "] [ " + User + " ] Tried to !end the game.");
-				// StopPlayers( "was disconnected (admin ended game)" );
+				CONSOLE_Print( "[GAME: " + m_GameName + "] [ " + User + " ] Used !end to kill the game.");
+				StopPlayers( "was disconnected (admin ended game)" );
 			}
 
 			//

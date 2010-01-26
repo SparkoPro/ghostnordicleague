@@ -52,7 +52,7 @@ CStatsDOTA :: ~CStatsDOTA( )
 	}
 }
 
-bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
+bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost)
 {
 	unsigned int i = 0;
 	BYTEARRAY *ActionData = Action->GetAction( );
@@ -110,9 +110,11 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action )
 								uint32_t VictimColour = UTIL_ToUInt32( VictimColourString );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
-
 								if( Killer && Victim )
+								{
 									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + "] killed player [" + Victim->GetName( ) + "]" );
+									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName()) );
+								}
 								else if( Victim )
 								{
 									if( ValueInt == 0 )
