@@ -91,7 +91,7 @@ public:
 	virtual uint32_t GamePlayerCount( string name );
 	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( string name );
 	virtual uint32_t DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual uint32_t DotAEventAdd( uint32_t gameid, string killer, string victim );
+	virtual uint32_t DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
 	virtual uint32_t DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
 	virtual uint32_t DotAPlayerCount( string name );
 	virtual CDBDotAPlayerSummary *DotAPlayerSummaryCheck( string name );
@@ -121,7 +121,7 @@ public:
 	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim );
+	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
@@ -432,9 +432,10 @@ protected:
 	string m_Killer;
 	string m_Victim;
 	uint32_t m_Result;
+	uint32_t m_KillerColour, m_VictimColour;
 
 public:
-	CCallableDotAEventAdd( uint32_t nGameID, string nKiller, string nVictim ) : CBaseCallable( ), m_GameID( nGameID), m_Killer( nKiller ), m_Victim( nVictim ), m_Result( 0 ) { }
+	CCallableDotAEventAdd( uint32_t nGameID, string nKiller, string nVictim, uint32_t kcolour, uint32_t vcolour ) : CBaseCallable( ), m_GameID( nGameID), m_Killer( nKiller ), m_Victim( nVictim ), m_KillerColour( kcolour ), m_VictimColour( vcolour ), m_Result( 0 ) { }
 	virtual ~CCallableDotAEventAdd( );
 
 	virtual uint32_t GetResult( )				{ return m_Result; }
