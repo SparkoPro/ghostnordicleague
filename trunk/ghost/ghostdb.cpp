@@ -132,6 +132,11 @@ uint32_t CGHostDB :: DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min
 	return 0;
 }
 
+uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string killer, string victim )
+{
+	return 0;
+}
+
 uint32_t CGHostDB :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
 {
 	return 0;
@@ -262,6 +267,11 @@ CCallableDotAGameAdd *CGHostDB :: ThreadedDotAGameAdd( uint32_t gameid, uint32_t
 	return NULL;
 }
 
+CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string killer, string victim )
+{
+	return NULL;
+}
+
 CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
 {
 	return NULL;
@@ -386,6 +396,12 @@ CCallableDotAGameAdd :: ~CCallableDotAGameAdd( )
 {
 
 }
+
+CCallableDotAEventAdd :: ~CCallableDotAEventAdd( )
+{
+
+}
+
 
 CCallableDotAPlayerAdd :: ~CCallableDotAPlayerAdd( )
 {

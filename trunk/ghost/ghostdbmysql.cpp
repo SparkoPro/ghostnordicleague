@@ -344,6 +344,19 @@ CCallableDotAGameAdd *CGHostDBMySQL :: ThreadedDotAGameAdd( uint32_t gameid, uin
 	return Callable;
 }
 
+CCallableDotAEventAdd *CGHostDBMySQL :: ThreadedDotAEventAdd( uint32_t gameid, string killer, string victim )
+{
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableDotAEventAdd *Callable = new CMySQLCallableDotAEventAdd( gameid, killer, victim, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CreateThread( Callable );
+	m_OutstandingCallables++;
+	return Callable;
+}
+
 CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
 {
 	void *Connection = GetIdleConnection( );
@@ -869,6 +882,19 @@ uint32_t MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t g
 	return RowID;
 }
 
+uint32_t MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string killer, string victim )
+{
+	uint32_t RowID = 0;
+	string Query = "INSERT INTO dotaevents ( killer, victim ) VALUES ( '" + killer + "', '" + victim + "')";
+
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+		*error = mysql_error( (MYSQL *)conn );
+	else
+		RowID = mysql_insert_id( (MYSQL *)conn );
+
+	return RowID;
+}
+
 uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
 {
 	uint32_t RowID = 0;
@@ -1372,6 +1398,16 @@ void CMySQLCallableDotAGameAdd :: operator( )( )
 
 	if( m_Error.empty( ) )
 		m_Result = MySQLDotAGameAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_Winner, m_Min, m_Sec );
+
+	Close( );
+}
+
+void CMySQLCallableDotAEventAdd :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLDotAEventAdd( m_Connection, &m_Error, m_GameID, m_Killer, m_Victim );
 
 	Close( );
 }
