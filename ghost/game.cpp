@@ -1895,7 +1895,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			// !CHECKBALANCE / !CB
 			//
 
-			if ( Command == "checkbalance" || Command == "cb" )
+			if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
 			{
 
 			        for( unsigned char i = 0; i < 12; i++ )
