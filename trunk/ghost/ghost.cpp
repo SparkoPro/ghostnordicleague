@@ -399,9 +399,15 @@ CGHost :: CGHost( CConfig *CFG )
 	m_AutoHostGameName = CFG->GetString( "autohost_gamename", string( ) );
 	m_AutoHostOwner = CFG->GetString( "autohost_owner", string( ) );
 	m_LastAutoHostTime = GetTime( );
-	m_AutoHostMatchMaking = false;
-	m_AutoHostMinimumScore = 0.0;
-	m_AutoHostMaximumScore = 0.0;
+	m_AutoHostMatchMaking = CFG->GetInt( "autohost_matchmaking", 0 ) ? true : false;
+	m_AutoHostMinimumScore = CFG->GetInt( "autohostmm_minscore", 0 );
+	m_AutoHostMaximumScore = CFG->GetInt( "autohostmm_maxscore", 10000);
+
+	if (m_AutoHostMatchMaking)
+		CONSOLE_Print( "[AUTOHOST] Mode: Matchmaking");
+	else
+		CONSOLE_Print( "[AUTOHOST] Mode: Standard");
+
 	m_AllGamesFinishedTime = 0;
 	m_HostPort = CFG->GetInt( "bot_hostport", 6112 );
 	m_DefaultMap = CFG->GetString( "bot_defaultmap", "map" );
