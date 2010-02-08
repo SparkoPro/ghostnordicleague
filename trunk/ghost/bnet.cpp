@@ -2749,7 +2749,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							QueueChatCommand( "No email adress specified! Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true );
 						else
 						{
-							boost::regex expression("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$");
+							boost::regex expression(m_GHost->m_RegisterEmailRegEx);
 
  							if( boost :: regex_match( RegMail, expression ) )
 								m_PairedRegisterPlayerAdds.push_back( PairedRegisterPlayerAdd( User, m_GHost->m_DB->ThreadedRegisterPlayerAdd( User, RegMail, string() ) ) );
