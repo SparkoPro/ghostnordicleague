@@ -117,6 +117,11 @@ uint32_t CGHostDB :: GamePlayerAdd( uint32_t gameid, string name, string ip, uin
 	return 0;
 }
 
+uint32_t CGHostDB :: RegisterPlayerAdd( string name, string email, string ip )
+{
+	return 0;
+}
+
 uint32_t CGHostDB :: GamePlayerCount( string name )
 {
 	return 0;
@@ -257,6 +262,11 @@ CCallableGamePlayerAdd *CGHostDB :: ThreadedGamePlayerAdd( uint32_t gameid, stri
 	return NULL;
 }
 
+CCallableRegisterPlayerAdd *CGHostDB :: ThreadedRegisterPlayerAdd( string name, string email, string ip )
+{
+	return NULL;
+}
+
 CCallableGamePlayerSummaryCheck *CGHostDB :: ThreadedGamePlayerSummaryCheck( string name )
 {
 	return NULL;
@@ -383,6 +393,11 @@ CCallableGameAdd :: ~CCallableGameAdd( )
 }
 
 CCallableGamePlayerAdd :: ~CCallableGamePlayerAdd( )
+{
+
+}
+
+CCallableRegisterPlayerAdd :: ~CCallableRegisterPlayerAdd( )
 {
 
 }

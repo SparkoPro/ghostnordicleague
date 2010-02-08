@@ -128,6 +128,7 @@ CBNET :: CBNET( CGHost *nGHost, string nServer, string nServerAlias, string nBNL
 	m_HoldFriends = nHoldFriends;
 	m_HoldClan = nHoldClan;
 	m_PublicCommands = nPublicCommands;
+
 }
 
 CBNET :: ~CBNET( )
@@ -163,6 +164,9 @@ CBNET :: ~CBNET( )
 		m_GHost->m_Callables.push_back( i->second );
 
 	for( vector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); i++ )
+		m_GHost->m_Callables.push_back( i->second );
+
+	for( vector<PairedRegisterPlayerAdd> :: iterator i = m_PairedRegisterPlayerAdds.begin( ); i != m_PairedRegisterPlayerAdds.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
 	for( vector<PairedBanRemove> :: iterator i = m_PairedBanRemoves.begin( ); i != m_PairedBanRemoves.end( ); i++ )
@@ -308,6 +312,30 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
 			i = m_PairedBanAdds.erase( i );
+		}
+		else
+			i++;
+	}
+
+	for( vector<PairedRegisterPlayerAdd> :: iterator i = m_PairedRegisterPlayerAdds.begin( ); i != m_PairedRegisterPlayerAdds.end( ); )
+	{
+		if( i->second->GetReady( ) )
+		{
+			if( i->second->GetResult( ) > 1)
+			{
+				QueueChatCommand( "Your account [ " + i->second->GetUser() + " ] has been registered with e-mail [ " + i->second->GetMail() + " ] a mail with further instructions will be sent to you shortly!" , i->first, true );
+			}
+			else if (i->second->GetResult( ) == 1)
+				 QueueChatCommand( "Your account [ " + i->second->GetUser() + " ] is already registered!", i->first, true);
+			else
+			{
+				QueueChatCommand( "Something went terribly wrong..", i->first, true);
+				CONSOLE_Print("[REGISTER] Error registering " + i->second->GetUser() + " with mail " + i->second->GetMail());
+			}
+
+			m_GHost->m_DB->RecoverCallable( i->second );
+			delete i->second;
+			i = m_PairedRegisterPlayerAdds.erase( i );
 		}
 		else
 			i++;
@@ -697,8 +725,10 @@ void CBNET :: ProcessPackets( )
 				if( m_Protocol->RECEIVE_SID_ENTERCHAT( Packet->GetData( ) ) )
 				{
 					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] joining channel [" + m_FirstChannel + "]" );
+
 					m_InChat = true;
 					m_Socket->PutBytes( m_Protocol->SEND_SID_JOINCHANNEL( m_FirstChannel ) );
+
 				}
 
 				break;
@@ -2713,35 +2743,18 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						if( !Payload.empty( ) )
 							RegMail = Payload;
-						// check for potential abuse
 
+						// check for potential abuse
 						if (RegMail.empty())
-						{
 							QueueChatCommand( "No email adress specified! Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true );
-						}
 						else
 						{
+							boost::regex expression("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$");
 
-						        // @disturbed_oc
-						        // write registration data for scripts to handle later
-							RegFile = "register/" + RegUser;
-
-						        ofstream out(RegFile.c_str());
-
-						        if( !out )
-						        {
-						                CONSOLE_Print( "[REGISTER] [ERROR] failed to write registration data [ register/" + RegUser + " ]" );
-								QueueChatCommand( "Something went terribly wrong, a error report has been filed and a admin will review it asap." , User, true );
-					        	}
-						        else
-						        {
-						                out << RegMail.c_str();
-						                CONSOLE_Print( "[REGISTER] Wrote registration data to [register/" + RegUser + "] with email [" + RegMail + "]" );
-								QueueChatCommand( "Your account [ " + RegUser + " ] has been registered with e-mail [ " + RegMail + " ] a mail with further instructions will be sent to you shortly!" , User, true );
-						        }
-
-						        out.close();
-						        // @end
+ 							if( boost :: regex_match( RegMail, expression ) )
+								m_PairedRegisterPlayerAdds.push_back( PairedRegisterPlayerAdd( User, m_GHost->m_DB->ThreadedRegisterPlayerAdd( User, RegMail, string() ) ) );
+							else
+								QueueChatCommand( "Invalid email adress specified! Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true );
 						}
 					}
 				}

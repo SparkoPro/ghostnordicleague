@@ -39,6 +39,7 @@ class CCallableBanList;
 class CCallableGameAdd;
 class CCallableGamePlayerAdd;
 class CCallableGamePlayerSummaryCheck;
+class CCallableRegisterPlayerAdd;
 class CCallableDotAGameAdd;
 class CCallableDotAEventAdd;
 class CCallableDotAPlayerAdd;
@@ -88,6 +89,7 @@ public:
 	virtual vector<CDBBan *> BanList( string server );
 	virtual uint32_t GameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 	virtual uint32_t GamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
+	virtual uint32_t RegisterPlayerAdd( string name, string email, string ip );
 	virtual uint32_t GamePlayerCount( string name );
 	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( string name );
 	virtual uint32_t DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
@@ -119,6 +121,7 @@ public:
 	virtual CCallableBanList *ThreadedBanList( string server );
 	virtual CCallableGameAdd *ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
+	virtual CCallableRegisterPlayerAdd *ThreadedRegisterPlayerAdd( string name, string email, string ip );
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
@@ -392,6 +395,25 @@ public:
 	virtual uint32_t GetResult( )				{ return m_Result; }
 	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
 };
+
+class CCallableRegisterPlayerAdd : virtual public CBaseCallable
+{
+protected:
+	string m_Name, m_Email, m_IP;
+	uint32_t m_Result;
+
+public:
+	CCallableRegisterPlayerAdd( string nName, string nEmail, string nIP) : CBaseCallable( ), m_Name( nName ), m_IP( nIP ),m_Email( nEmail ), m_Result( 0 ) { }
+	virtual ~CCallableRegisterPlayerAdd( );
+
+	virtual string GetUser() { return m_Name; }
+	virtual string GetMail() { return m_Email; }
+
+	virtual uint32_t GetResult( )				{ return m_Result; }
+	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+};
+
+
 
 class CCallableGamePlayerSummaryCheck : virtual public CBaseCallable
 {
