@@ -318,6 +318,19 @@ CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( uint32_t gameid,
 	return Callable;
 }
 
+CCallableRegisterPlayerAdd *CGHostDBMySQL :: ThreadedRegisterPlayerAdd( string name, string email, string ip )
+{
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableRegisterPlayerAdd *Callable = new CMySQLCallableRegisterPlayerAdd( name, email, ip, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CreateThread( Callable );
+	m_OutstandingCallables++;
+	return Callable;
+}
+
 CCallableGamePlayerSummaryCheck *CGHostDBMySQL :: ThreadedGamePlayerSummaryCheck( string name )
 {
 	void *Connection = GetIdleConnection( );
@@ -815,6 +828,46 @@ uint32_t MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t
 	string EscSpoofedRealm = MySQLEscapeString( conn, spoofedrealm );
 	string EscLeftReason = MySQLEscapeString( conn, leftreason );
 	string Query = "INSERT INTO gameplayers ( botid, gameid, name, ip, spoofed, reserved, loadingtime, `left`, leftreason, team, colour, spoofedrealm ) VALUES ( " + UTIL_ToString( botid ) + ", " + UTIL_ToString( gameid ) + ", '" + EscName + "', '" + EscIP + "', " + UTIL_ToString( spoofed ) + ", " + UTIL_ToString( reserved ) + ", " + UTIL_ToString( loadingtime ) + ", " + UTIL_ToString( left ) + ", '" + EscLeftReason + "', " + UTIL_ToString( team ) + ", " + UTIL_ToString( colour ) + ", '" + EscSpoofedRealm + "' )";
+
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+		*error = mysql_error( (MYSQL *)conn );
+	else
+		RowID = mysql_insert_id( (MYSQL *)conn );
+
+	return RowID;
+}
+
+uint32_t MySQLRegisterPlayerAdd( void *conn, string *error, string name, string email, string ip )
+{
+	string EscName = MySQLEscapeString( conn, name );
+	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	uint32_t RowID = 0;
+	string EscEmail = MySQLEscapeString( conn, email );
+	string EscIP = MySQLEscapeString( conn, ip );
+
+	string QueryCheck = "SELECT name from registration where LOWER(name) = LOWER('" + EscName + "')";
+
+	if( mysql_real_query( (MYSQL *)conn, QueryCheck.c_str( ), QueryCheck.size( ) ) != 0 )
+	{
+		*error = mysql_error( (MYSQL *)conn );
+		return 0;
+	}
+	else
+	{
+		//RowID = mysql_insert_id( (MYSQL *)conn );
+		MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
+		
+		if (Result)
+		{
+			vector<string> Row = MySQLFetchRow( Result );
+			mysql_free_result( Result );
+
+			if (Row.size( ) == 1)
+				return 1;
+		}
+	}
+
+	string Query = "INSERT INTO registration ( name, email, ip ) VALUES ( '" + EscName + "', '" + EscEmail + "', '" + EscIP + "' )";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1378,6 +1431,16 @@ void CMySQLCallableGamePlayerAdd :: operator( )( )
 
 	if( m_Error.empty( ) )
 		m_Result = MySQLGamePlayerAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_Name, m_IP, m_Spoofed, m_SpoofedRealm, m_Reserved, m_LoadingTime, m_Left, m_LeftReason, m_Team, m_Colour );
+
+	Close( );
+}
+
+void CMySQLCallableRegisterPlayerAdd :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLRegisterPlayerAdd( m_Connection, &m_Error, m_Name, m_Email, m_IP );
 
 	Close( );
 }
