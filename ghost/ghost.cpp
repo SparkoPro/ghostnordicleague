@@ -1112,6 +1112,8 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_DisplayAdminInGameFile = CFG->GetString( "bot_adminingamefile", "adminingame.txt" );
 	m_SendDownloadLink = CFG->GetInt( "map_senddownloadlink", 0 ) == 0 ? false : true;
 	m_MapDownloadLink = CFG->GetString( "map_downloadlink", "Map downloads are disabled, please download the latest DotA map at http://www.getdota.com!" );
+
+	m_RegisterEmailRegEx = CFG->GetString( "register_email_regex", "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$");
 }
 
 void CGHost :: ExtractScripts( )

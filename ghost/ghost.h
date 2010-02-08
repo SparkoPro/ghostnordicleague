@@ -135,6 +135,7 @@ public:
 	string m_DisplayAdminInGameFile;		// config value: adminingame.txt
 	bool m_SendDownloadLink;				// config value: send a download link if map downloads are disabled
 	string m_MapDownloadLink;				// config value: the download link to send
+	string m_RegisterEmailRegEx;
 
 	// @end
 
