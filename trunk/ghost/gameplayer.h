@@ -116,6 +116,7 @@ private:
 	bool m_Muted;								// if the player is muted or not
 	bool m_LeftMessageSent;						// if the playerleave message has been sent or not
 	bool m_Admin;								// if the player is admin or not;
+	bool m_HasLeft;
 	
 	#define MTNUM 6
 	uint32_t m_MessageTimes[MTNUM];				// ticks of the last MTNUM messages sent by the user
@@ -164,6 +165,8 @@ public:
 	bool GetMuted( )						{ return m_Muted; }
 	bool GetLeftMessageSent( )				{ return m_LeftMessageSent; }
 	bool IsAdmin( )							{ return m_Admin; }
+	bool HasLeft( )						{ return m_HasLeft; }
+	void SetLeft( bool nLeft )				{ m_HasLeft = nLeft; }
 
 	void SetLeftReason( string nLeftReason )								{ m_LeftReason = nLeftReason; }
 	void SetSpoofedRealm( string nSpoofedRealm )							{ m_SpoofedRealm = nSpoofedRealm; }

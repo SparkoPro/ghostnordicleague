@@ -787,6 +787,7 @@ private:
 	uint32_t m_CourierKills;
 	uint32_t m_Rank;
 	uint32_t m_Score;
+	bool	m_HasLeft;
 
 public:
 	CDBDotAPlayer( );
@@ -812,6 +813,9 @@ public:
 	uint32_t GetCourierKills( )	{ return m_CourierKills; }
 	uint32_t GetRank( )		{ return m_Rank; }
 	uint32_t GetScore( )		{ return m_Score; }
+
+	bool HasLeft( )		{ return m_HasLeft; }
+	void HasLeft( bool nLeft )	{ m_HasLeft = nLeft; }
 
 	void SetColour( uint32_t nColour )				{ m_Colour = nColour; }
 	void SetKills( uint32_t nKills )				{ m_Kills = nKills; }
