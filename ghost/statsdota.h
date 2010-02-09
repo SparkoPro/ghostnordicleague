@@ -34,6 +34,7 @@ private:
 	uint32_t m_Winner;
 	uint32_t m_Min;
 	uint32_t m_Sec;
+	uint32_t m_LeaverKills[12];
 
 public:
 	CStatsDOTA( CBaseGame *nGame );

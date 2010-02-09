@@ -1399,6 +1399,7 @@ void CBaseGame :: EventPlayerDisconnectTimedOut( CGamePlayer *player )
 
 	if( GetTime( ) >= m_LastLagScreenTime + 10 )
 	{
+		player->SetLeft( true );
 		player->SetDeleteMe( true );
 		player->SetLeftReason( m_GHost->m_Language->HasLostConnectionTimedOut( ) );
 		player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
@@ -1413,6 +1414,7 @@ void CBaseGame :: EventPlayerDisconnectPlayerError( CGamePlayer *player )
 	// at the time of this comment there's only one player error and that's when we receive a bad packet from the player
 	// since TCP has checks and balances for data corruption the chances of this are pretty slim
 
+	player->SetLeft( true );
 	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionPlayerError( player->GetErrorString( ) ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
@@ -1423,6 +1425,7 @@ void CBaseGame :: EventPlayerDisconnectPlayerError( CGamePlayer *player )
 
 void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 {
+	player->SetLeft( true );
 	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionSocketError( player->GetSocket( )->GetErrorString( ) ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
@@ -1433,6 +1436,7 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 
 void CBaseGame :: EventPlayerDisconnectConnectionClosed( CGamePlayer *player )
 {
+	player->SetLeft( true );
 	player->SetDeleteMe( true );
 	player->SetLeftReason( m_GHost->m_Language->HasLostConnectionClosedByRemoteHost( ) );
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );

@@ -38,6 +38,9 @@ CStatsDOTA :: CStatsDOTA( CBaseGame *nGame ) : CStats( nGame )
 	for( unsigned int i = 0; i < 12; i++ )
 		m_Players[i] = NULL;
 
+	for( unsigned int i = 0; i < 12; i++ )
+		m_LeaverKills[i] = 0;
+
 	m_Winner = 0;
 	m_Min = 0;
 	m_Sec = 0;
@@ -114,6 +117,12 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								{
 									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + "] killed player [" + Victim->GetName( ) + "]" );
 									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
+
+									if( Victim->HasLeft( ) )
+									{
+										CONSOLE_Print( "[ANTIFARM] player [" + Killer->GetName() + "] killed a leaver [" + Victim->GetName() + "]" );
+										m_LeaverKills[ValueInt]++;
+									}
 								}
 								else if( Victim )
 								{
@@ -318,7 +327,12 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								// Key "id"		-> ID (1-5 for sentinel, 6-10 for scourge, accurate after using -sp and/or -switch)
 
 								if( KeyString == "1" )
-									m_Players[ID]->SetKills( ValueInt );
+								{
+									if (m_LeaverKills[ID] > 0)
+										CONSOLE_Print( "[ANTIFARM] Player with colour [" + UTIL_ToString(ID) + "] got [" + UTIL_ToString(ValueInt) + "] kills, removing [" + UTIL_ToString(m_LeaverKills[ID]) + "]" );
+
+									m_Players[ID]->SetKills( ValueInt - m_LeaverKills[ID] );
+								}
 								else if( KeyString == "2" )
 									m_Players[ID]->SetDeaths( ValueInt );
 								else if( KeyString == "3" )

@@ -223,6 +223,7 @@ CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSock
 		m_MessageTimes[i] = 0;
 
 	m_Admin = false;
+	m_HasLeft = false;
 }
 
 CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
@@ -262,6 +263,7 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, str
 	m_KickVote = false;
 	m_Muted = false;
 	m_LeftMessageSent = false;
+	m_HasLeft = false;
 
 	m_MTCursor = 0;
 	m_WarnTime = 0;
@@ -406,6 +408,7 @@ void CGamePlayer :: ProcessPackets( )
 			case CGameProtocol :: W3GS_LEAVEGAME:
 				if( m_Protocol->RECEIVE_W3GS_LEAVEGAME( Packet->GetData( ) ) )
 					m_Game->EventPlayerLeft( this );
+					m_HasLeft = true;
 
 				break;
 
