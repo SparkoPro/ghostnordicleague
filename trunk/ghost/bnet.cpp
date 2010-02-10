@@ -2736,7 +2736,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					if (!Whisper)
 					{
-						QueueChatCommand( "Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true);
+						QueueChatCommand( "Usage: /w NordicOnlyBot2 !register mymail@domain.com" , User, true);
 					}
 					else
 					{
@@ -2746,7 +2746,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 						// check for potential abuse
 						if (RegMail.empty())
-							QueueChatCommand( "No email adress specified! Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true );
+							QueueChatCommand( "No email adress specified! Usage: /w NordicOnlyBot2 !register mymail@domain.com" , User, true );
 						else
 						{
 							boost::regex expression(m_GHost->m_RegisterEmailRegEx);
