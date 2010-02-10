@@ -117,12 +117,11 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								{
 									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + "] killed player [" + Victim->GetName( ) + "]" );
 									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
-
-									if( Victim->HasLeft( ) )
-									{
-										CONSOLE_Print( "[ANTIFARM] player [" + Killer->GetName() + "] killed a leaver [" + Victim->GetName() + "]" );
-										m_LeaverKills[ValueInt]++;
-									}
+								}
+								else if ( Killer && !Victim)
+								{
+									m_LeaverKills[ValueInt]++;
+									CONSOLE_Print( "[ANTIFARM] player [" + Killer->GetName() + "] killed a leaver. Total [" + UTIL_ToString(m_LeaverKills[ValueInt]) + "]" );
 								}
 								else if( Victim )
 								{

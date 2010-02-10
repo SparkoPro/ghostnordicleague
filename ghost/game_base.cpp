@@ -1311,7 +1311,11 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 		return;
 
 	if( m_GameLoaded )
+	{
+		player->SetLeft( true );
+		CONSOLE_Print( "[ANTIFARM] Stopping kill-counter on [" + player->GetName() + "]" );
 		SendAllChat( player->GetName( ) + " " + player->GetLeftReason( ) + "." );
+	}
 
 	if( player->GetLagging( ) )
 		SendAll( m_Protocol->SEND_W3GS_STOP_LAG( player ) );
