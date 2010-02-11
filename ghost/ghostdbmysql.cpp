@@ -370,14 +370,14 @@ CCallableDotAEventAdd *CGHostDBMySQL :: ThreadedDotAEventAdd( uint32_t gameid, s
 	return Callable;
 }
 
-CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableDotAPlayerAdd *Callable = new CMySQLCallableDotAPlayerAdd( gameid, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableDotAPlayerAdd *Callable = new CMySQLCallableDotAPlayerAdd( gameid, name, colour, kills, deaths, creepkills, creepdenies, assists, gold, neutralkills, item1, item2, item3, item4, item5, item6, hero, newcolour, towerkills, raxkills, courierkills, outcome, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -948,7 +948,9 @@ uint32_t MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string k
 	return RowID;
 }
 
-uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, string name, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t 
+assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, 
+uint32_t courierkills, uint32_t outcome )
 {
 	uint32_t RowID = 0;
 	string EscItem1 = MySQLEscapeString( conn, item1 );
@@ -973,7 +975,9 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	string EscName = MySQLEscapeString( conn, name );
 	CDBDotAPlayerSummary *DotAPlayerSummary = NULL;
-	string Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
+	//string Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
+
+	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills FROM dotastats WHERE player_name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -981,80 +985,31 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 	{
 		MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
 
-		if( Result )
+		if( Result && Result->row_count > 0)
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			if( Row.size( ) == 10 )
+			if( Row.size( ) == 12 )
 			{
-				uint32_t TotalGames = UTIL_ToUInt32( Row[0] );
+				uint32_t TotalGames = UTIL_ToUInt32( Row[0] ) + UTIL_ToUInt32( Row[1] ) + UTIL_ToUInt32( Row[2] );
 
 				if( TotalGames > 0 )
 				{
-					uint32_t TotalWins = 0;
-					uint32_t TotalLosses = 0;
-					uint32_t TotalKills = UTIL_ToUInt32( Row[1] );
-					uint32_t TotalDeaths = UTIL_ToUInt32( Row[2] );
-					uint32_t TotalCreepKills = UTIL_ToUInt32( Row[3] );
-					uint32_t TotalCreepDenies = UTIL_ToUInt32( Row[4] );
-					uint32_t TotalAssists = UTIL_ToUInt32( Row[5] );
-					uint32_t TotalNeutralKills = UTIL_ToUInt32( Row[6] );
-					uint32_t TotalTowerKills = UTIL_ToUInt32( Row[7] );
-					uint32_t TotalRaxKills = UTIL_ToUInt32( Row[8] );
-					uint32_t TotalCourierKills = UTIL_ToUInt32( Row[9] );
+
+					uint32_t TotalWins = UTIL_ToUInt32( Row[0] );
+					uint32_t TotalLosses = UTIL_ToUInt32( Row[1] );
+					uint32_t TotalKills = UTIL_ToUInt32( Row[3] );
+					uint32_t TotalDeaths = UTIL_ToUInt32( Row[4] );
+					uint32_t TotalCreepKills = UTIL_ToUInt32( Row[5] );
+					uint32_t TotalCreepDenies = UTIL_ToUInt32( Row[6] );
+					uint32_t TotalAssists = UTIL_ToUInt32( Row[7] );
+					uint32_t TotalNeutralKills = UTIL_ToUInt32( Row[8] );
+					uint32_t TotalTowerKills = UTIL_ToUInt32( Row[9] );
+					uint32_t TotalRaxKills = UTIL_ToUInt32( Row[10] );
+					uint32_t TotalCourierKills = UTIL_ToUInt32( Row[11] );
 
 					uint32_t Score = 0;
 					uint32_t Rank = 0;
-
-					// calculate total wins
-
-					string Query2 = "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour LEFT JOIN dotagames ON games.id=dotagames.gameid WHERE name='" + EscName + "' AND ((winner=1 AND dotaplayers.newcolour>=1 AND dotaplayers.newcolour<=5) OR (winner=2 AND dotaplayers.newcolour>=7 AND dotaplayers.newcolour<=11))";
-
-					if( mysql_real_query( (MYSQL *)conn, Query2.c_str( ), Query2.size( ) ) != 0 )
-						*error = mysql_error( (MYSQL *)conn );
-					else
-					{
-						MYSQL_RES *Result2 = mysql_store_result( (MYSQL *)conn );
-
-						if( Result2 )
-						{
-							vector<string> Row2 = MySQLFetchRow( Result2 );
-
-							if( Row2.size( ) == 1 )
-								TotalWins = UTIL_ToUInt32( Row2[0] );
-							else
-								*error = "error checking dotaplayersummary wins [" + name + "] - row doesn't have 1 column";
-
-							mysql_free_result( Result2 );
-						}
-						else
-							*error = mysql_error( (MYSQL *)conn );
-					}
-
-					// calculate total losses
-
-					string Query3 = "SELECT COUNT(*) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour LEFT JOIN dotagames ON games.id=dotagames.gameid WHERE name='" + EscName + "' AND ((winner=2 AND dotaplayers.newcolour>=1 AND dotaplayers.newcolour<=5) OR (winner=1 AND dotaplayers.newcolour>=7 AND dotaplayers.newcolour<=11))";
-
-					if( mysql_real_query( (MYSQL *)conn, Query3.c_str( ), Query3.size( ) ) != 0 )
-						*error = mysql_error( (MYSQL *)conn );
-					else
-					{
-						MYSQL_RES *Result3 = mysql_store_result( (MYSQL *)conn );
-
-						if( Result3 )
-						{
-							vector<string> Row3 = MySQLFetchRow( Result3 );
-
-							if( Row3.size( ) == 1 )
-								TotalLosses = UTIL_ToUInt32( Row3[0] );
-							else
-								*error = "error checking dotaplayersummary losses [" + name + "] - row doesn't have 1 column";
-
-							mysql_free_result( Result3 );
-						}
-						else
-							*error = mysql_error( (MYSQL *)conn );
-					}
 
 					// calculate score and rank
 
@@ -1480,7 +1435,8 @@ void CMySQLCallableDotAPlayerAdd :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLDotAPlayerAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_Colour, m_Kills, m_Deaths, m_CreepKills, m_CreepDenies, m_Assists, m_Gold, m_NeutralKills, m_Item1, m_Item2, m_Item3, m_Item4, m_Item5, m_Item6, m_Hero, m_NewColour, m_TowerKills, m_RaxKills, m_CourierKills );
+		m_Result = MySQLDotAPlayerAdd( m_Connection, &m_Error, m_SQLBotID, m_Name, m_GameID, m_Colour, m_Kills, m_Deaths, m_CreepKills, m_CreepDenies, m_Assists, m_Gold, m_NeutralKills, m_Item1, 
+m_Item2, m_Item3, m_Item4, m_Item5, m_Item6, m_Hero, m_NewColour, m_TowerKills, m_RaxKills, m_CourierKills, m_Outcome );
 
 	Close( );
 }
