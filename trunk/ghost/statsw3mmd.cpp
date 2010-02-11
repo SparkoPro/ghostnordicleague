@@ -346,7 +346,7 @@ bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 	return false;
 }
 
-void CStatsW3MMD :: Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID )
+void CStatsW3MMD :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID )
 {
 	CONSOLE_Print( "[STATSW3MMD: " + m_Game->GetGameName( ) + "] received " + UTIL_ToString( m_NextValueID ) + "/" + UTIL_ToString( m_NextCheckID ) + " value/check messages" );
 

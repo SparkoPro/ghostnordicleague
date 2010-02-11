@@ -142,7 +142,9 @@ uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string killer, string victim
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+uint32_t CGHostDB :: DotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t 
+neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t 
+outcome )
 {
 	return 0;
 }
@@ -282,7 +284,9 @@ CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string
 	return NULL;
 }
 
-CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills )
+CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t 
+gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, 
+uint32_t outcome )
 {
 	return NULL;
 }
@@ -580,11 +584,10 @@ CDBDotAPlayer :: CDBDotAPlayer( )
 	m_CourierKills = 0;
 	m_Rank = 0;
 	m_Score = 1000;
-	m_HasLeft = false;
-	m_KillReduction = 0;
+	m_Outcome = 0;
 }
 
-CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills )
+CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, string nName, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, uint32_t nOutcome )
 {
 	m_ID = nID;
 	m_GameID = nGameID;
@@ -607,11 +610,11 @@ CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, uint32_t nGameID, uint32_t nColour
 	m_TowerKills = nTowerKills;
 	m_RaxKills = nRaxKills;
 	m_CourierKills = nCourierKills;
-	m_HasLeft = false;
-	m_KillReduction = 0;
+	m_Outcome = 0;
+	m_Name = nName;
 }
 
-CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, uint32_t nRank, uint32_t nScore )
+CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, string nName, uint32_t nGameID,uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, uint32_t nRank, uint32_t nScore, uint32_t nOutcome )
 {
 	m_ID = nID;
 	m_GameID = nGameID;
@@ -636,8 +639,8 @@ CDBDotAPlayer :: CDBDotAPlayer( uint32_t nID, uint32_t nGameID, uint32_t nColour
 	m_CourierKills = nCourierKills;
 	m_Rank = nRank;
 	m_Score = nScore;
-	m_HasLeft = false;
-	m_KillReduction = 0;
+	m_Outcome = nOutcome;
+	m_Name = nName;
 }
 
 CDBDotAPlayer :: ~CDBDotAPlayer( )

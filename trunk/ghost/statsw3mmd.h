@@ -24,7 +24,7 @@
 //
 // CStatsW3MMD
 //
-
+class CDBGamePlayer;
 typedef pair<uint32_t,string> VarP;
 
 class CStatsW3MMD : public CStats
@@ -48,7 +48,7 @@ public:
 	virtual ~CStatsW3MMD( );
 
 	virtual bool ProcessAction( CIncomingAction *Action );
-	virtual void Save( CGHost *GHost, CGHostDB *DB, uint32_t GameID );
+	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );
 	virtual vector<string> TokenizeKey( string key );
 };
 

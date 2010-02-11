@@ -97,7 +97,7 @@ CGame :: ~CGame( )
 			// store the stats in the database
 
 			if( m_Stats )
-				m_Stats->Save( m_GHost, m_GHost->m_DB, m_CallableGameAdd->GetResult( ) );
+				m_Stats->Save( m_GHost, m_DBGamePlayers, m_GHost->m_DB, m_CallableGameAdd->GetResult( ) );
 		}
 		else
 			CONSOLE_Print( "[GAME: " + m_GameName + "] unable to save player/stats data to database" );
