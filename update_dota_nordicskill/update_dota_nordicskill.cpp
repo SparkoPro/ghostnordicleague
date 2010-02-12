@@ -45,11 +45,11 @@ using namespace std;
 
 #include <mysql/mysql.h>
 
-float gain_kill = 1; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
+float gain_kill = 1.5; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
 float gain_death = -2; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
 float gain_assist = 0.75; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
-float gain_tower = 0.4; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
-float gain_rax = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
+float gain_tower = 0.6; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
+float gain_rax = 0.8; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
 float gain_creepkill = 0.01; //= UTIL_ToFloat( CFG.GetString( "formula_creepkill_gain", "" ) );
 float gain_creepdenie = 0.04; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
 float gain_neutral = 0.02; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
