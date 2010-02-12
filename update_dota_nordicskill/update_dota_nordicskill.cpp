@@ -448,7 +448,7 @@ int main( int argc, char **argv )
 							player_gain[i] = CalculateGain(player_kills[i], player_deaths[i], player_assists[i], player_creepkills[i], player_creepdenies[i], player_towerkills[i], player_raxkills[i], player_neutralkills[i]);
 
 
-							string QAddToGaintable = "INSERT INTO dota_nskill_gains (gameid, botid, name, colour, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", " + UTIL_ToString(BotID) + ", '" + EscName + "', " + UTIL_ToString(player_colours[i]) + ", " + UTIL_ToString(player_ratings[i]) + ", " + UTIL_ToString((player_ratings[i] - old_player_ratings[i]) + player_gain[i]) + " )";
+							string QAddToGaintable = "INSERT INTO dota_nskill_gains (gameid, botid, name, colour, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", " + UTIL_ToString(BotID) + ", '" + EscName + "', " + UTIL_ToString(player_colours[i]) + ", " + UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString((player_ratings[i] - old_player_ratings[i]) + player_gain[i], 2) + " )";
 							cout << QAddToGaintable << endl;
 							
 							if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
