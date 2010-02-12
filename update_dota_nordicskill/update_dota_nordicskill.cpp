@@ -284,7 +284,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_nskill_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_nskill_scores ON dota_nskill_scores.name=gameplayers.name AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_nskill_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills, dotaplayers.botid FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_nskill_scores ON dota_nskill_scores.name=gameplayers.name AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -298,6 +298,8 @@ int main( int argc, char **argv )
 			if( Result )
 			{
 				cout << "gameid " << UTIL_ToString( GameID ) << " found" << endl;
+				
+				uint32_t BotID;
 
 				bool ignore = false;
 				uint32_t rowids[10];
@@ -326,10 +328,11 @@ int main( int argc, char **argv )
 				uint32_t player_towerkills[10];
 				uint32_t player_raxkills[10];
 				uint32_t player_neutralkills[10];
-
+				uint32_t player_colours[10];
+				
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 14 )
+				while( Row.size( ) == 15 )
 				{
 					if( num_players >= 10 )
 					{
@@ -341,6 +344,7 @@ int main( int argc, char **argv )
 					uint32_t Winner = UTIL_ToUInt32( Row[4] );
 					//cout << "kills: " << Row[6] << " Deaths: " << Row[7] << " Assists: " << Row[8] << " CK: " << Row[9] << " CD: " << Row[10] << " TK: " << Row[11] << " RK: " << Row[12] << " NK: " << Row[13] << endl;
 
+					player_colours[num_players] = UTIL_ToUInt32( Row[3] );
 					player_kills[num_players] = UTIL_ToUInt32( Row[6] );
 					player_deaths[num_players] = UTIL_ToUInt32( Row[7] );
 					player_assists[num_players] = UTIL_ToUInt32( Row[8] );
@@ -349,7 +353,8 @@ int main( int argc, char **argv )
 					player_towerkills[num_players] = UTIL_ToUInt32( Row[11] );
 					player_raxkills[num_players] = UTIL_ToUInt32( Row[12] );
 					player_neutralkills[num_players] = UTIL_ToUInt32( Row[13] );
-
+					BotID = UTIL_ToUInt32( Row[14] );
+					
 					if( Winner != 1 && Winner != 2 )
 					{
 						//cout << "gameid " << UTIL_ToString( GameID ) << " has no winner, ignoring" << endl;
@@ -434,8 +439,19 @@ int main( int argc, char **argv )
 
 						for( int i = 0; i < num_players; i++ )
 						{
+							string EscName = MySQLEscapeString( Connection, names[i] );
 							player_gain[i] = CalculateGain(player_kills[i], player_deaths[i], player_assists[i], player_creepkills[i], player_creepdenies[i], player_towerkills[i], player_raxkills[i], player_neutralkills[i]);
 
+
+							string QAddToGaintable = "INSERT INTO dota_nskill_gains (gameid, botid, name, colour, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", " + UTIL_ToString(BotID) + ", '" + EscName + "', " + UTIL_ToString(player_colours[i]) + ", " + UTIL_ToString(player_ratings[i]) + ", " + UTIL_ToString((player_ratings[i] - old_player_ratings[i]) + player_gain[i]) + " )";
+							cout << QAddToGaintable << endl;
+							
+							if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
+							{
+								cout << "error: " << mysql_error( Connection ) << endl;
+								//return 1;
+							}
+							
 							//cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << " Gain: " << player_gain[i] << endl;
 							player_ratings[i] += player_gain[i];
 
@@ -452,7 +468,6 @@ int main( int argc, char **argv )
 							}
 							else
 							{
-								string EscName = MySQLEscapeString( Connection, names[i] );
 								string EscServer = MySQLEscapeString( Connection, servers[i] );
 								string QInsertScore = "INSERT INTO dota_nskill_scores ( name, server, score ) VALUES ( '" + EscName + "', '" + EscServer + "', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
 
