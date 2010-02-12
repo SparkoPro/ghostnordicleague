@@ -278,6 +278,11 @@ int main( int argc, char **argv )
 	}
 
 	cout << "found " << UnscoredGames.size( ) << " unscored games" << endl;
+	
+	bool CopyScores = false;
+	
+	if (UnscoredGames.size( ) > 0)
+		CopyScores = true;
 
 	while( !UnscoredGames.empty( ) )
 	{
@@ -497,21 +502,24 @@ int main( int argc, char **argv )
 		}
 	}
 
-	cout << "copying dota nskill scores to scores table" << endl;
-
-	string QCopyScores1 = "DELETE FROM scores WHERE category='dota_nskill'";
-	string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_nskill', name, server, score FROM dota_nskill_scores";
-
-	if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
+	if (CopyScores)
 	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
-	}
+		cout << "copying dota nskill scores to scores table" << endl;
 
-	if( mysql_real_query( Connection, QCopyScores2.c_str( ), QCopyScores2.size( ) ) != 0 )
-	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
+		string QCopyScores1 = "DELETE FROM scores WHERE category='dota_nskill'";
+		string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_nskill', name, server, score FROM dota_nskill_scores";
+
+		if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
+		{
+			cout << "error: " << mysql_error( Connection ) << endl;
+			return 1;
+		}
+
+		if( mysql_real_query( Connection, QCopyScores2.c_str( ), QCopyScores2.size( ) ) != 0 )
+		{
+			cout << "error: " << mysql_error( Connection ) << endl;
+			return 1;
+		}
 	}
 
 	cout << "committing transaction" << endl;
