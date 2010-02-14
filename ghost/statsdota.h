@@ -36,10 +36,13 @@ private:
 	uint32_t m_Min;
 	uint32_t m_Sec;
 	uint32_t m_LeaverKills[12];
+	uint32_t m_GameStart;
 
 public:
 	CStatsDOTA( CBaseGame *nGame );
 	virtual ~CStatsDOTA( );
+	
+	virtual CDBDotAPlayer *GetPlayerStats(uint32_t id);
 
 	virtual bool ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost);
 	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );

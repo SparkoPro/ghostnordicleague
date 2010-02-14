@@ -207,7 +207,7 @@ public:
 	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, 
 uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t 
-courierkills, uint32_t outcome );
+courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server );
@@ -244,7 +244,7 @@ uint32_t MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t g
 uint32_t MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
 uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, string name, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t 
 assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, 
-uint32_t courierkills, uint32_t outcome );
+uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
 CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
 bool MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server );
@@ -460,9 +460,9 @@ public:
 
 	CMySQLCallableDotAPlayerAdd( uint32_t nGameID, string nName, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, 
 uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t 
-nCourierKills, uint32_t nOutcome, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), 
+nCourierKills, uint32_t nOutcome, uint32_t nLevel, uint32_t nApm, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), 
 CCallableDotAPlayerAdd( nGameID, nName, nColour, nKills, nDeaths, nCreepKills, nCreepDenies, nAssists, nGold, nNeutralKills, nItem1, nItem2, nItem3, nItem4, nItem5, nItem6, nHero, nNewColour, 
-nTowerKills, nRaxKills, nCourierKills, nOutcome ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+nTowerKills, nRaxKills, nCourierKills, nOutcome, nLevel, nApm ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 
 	virtual ~CMySQLCallableDotAPlayerAdd( ) { }
 

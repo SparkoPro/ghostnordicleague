@@ -66,6 +66,7 @@ uint32_t GetTicks( );		// milliseconds
 // output
 
 void CONSOLE_Print( string message );
+void CONSOLE_PrintStats( string message );
 void DEBUG_Print( string message );
 void DEBUG_Print( BYTEARRAY b );
 

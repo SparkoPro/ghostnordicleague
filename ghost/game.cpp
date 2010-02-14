@@ -1719,40 +1719,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			}
 
 
-                                if( Command == "top10" )
-                                {
-                                        uint32_t Count = 0;
-                                        string Line;
-					ifstream in;
-
-                                        Count = 0;
-                                        Line = "";
-
-                                        in.open( "league/top10.txt" );
-
-                                        if( !in.fail( ) )
-                                        {
-                                                // don't print more than 1 line1
-
-                                                while( !in.eof( ) && Count < 2 )
-                                                {
-                                                        getline( in, Line );
-
-                                                        if( !Line.empty( ) )
-                                                                SendAllChat( Line );
-
-                                                        Count++;
-                                                }
-
-                                                in.close( );
-                                        }
-					else
-					{
-						CONSOLE_Print( "[GAME: " + m_GameName + "] Failed to open league/top10.txt!" );
-					}
-                                }
-
-
 			//
 			// !UNHOST
 			//
@@ -1872,6 +1838,72 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					SendAllChat("Normal WC3 countdown disabled");
 				}
 			}
+			
+			
+			//
+			// !statsobserver
+			//
+			
+			if ( ( Command == "statsanalyze" || Command == "stata" ) && m_GameLoaded && !Payload.empty())
+			{
+				
+				m_MessageWasCommand = true;
+				uint32_t ValueInt = UTIL_ToUInt32(Payload);
+				string Name;
+				
+				if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
+				{
+					CDBDotAPlayer *Player = m_Stats->GetPlayerStats(ValueInt);
+					
+					if (Player)
+					{
+						string Name;
+						if (Player->GetName().empty())
+						{
+							for ( vector<CDBGamePlayer *> :: iterator it = m_DBGamePlayers.begin( ); it != m_DBGamePlayers.end( ); it++ )
+							{
+								if ( ValueInt == (*it)->GetColour( ) )
+								{
+									Name = (*it)->GetName();
+									break;
+								}
+							}
+						}
+						SendAllChat("Player [ " + Name + " ] with colour " + UTIL_ToString(ValueInt) + " has K/D of " + UTIL_ToString(Player->GetKills()) + "/" + UTIL_ToString(Player->GetDeaths()) + " and a T/R/C of " + UTIL_ToString(Player->GetTowerKills()) + "/" + UTIL_ToString(Player->GetRaxKills()) + "/" + UTIL_ToString(Player->GetCourierKills()));
+					}
+					else
+						SendAllChat( "Player with colour " + UTIL_ToString(ValueInt) + " not found." );
+				}
+				else
+				{
+					SendAllChat("Please specify which player-color to analyze. Valid colours are: 1-5 and 6-11.");
+				}
+				
+			}
+			
+			//
+			// !allow
+			//
+			
+			if ( Command == "allow" && !m_GameLoaded && !Payload.empty())
+			{
+				transform( Payload.begin( ), Payload.end( ), Payload.begin( ), (int(*)(int))toupper );
+				
+				if ( Payload == "ALL")
+				{
+					m_GHost->m_ApprovedCountries.erase();
+				}
+				else if ( Payload.length() % 2 == 0 )
+				{
+                	
+					m_GHost->m_ApprovedCountries = Payload;
+					SendAllChat("Allowing countries: " + Payload);
+					
+				}
+				else
+					SendAllChat("Error! Country-codes is 2 characters each, u have given an uneven length string.");
+			}
+			
 		}
 		else
 		{
@@ -1890,6 +1922,39 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	/*********************
 	* NON ADMIN COMMANDS *
 	*********************/
+
+	if( Command == "top10" )
+	{
+		uint32_t Count = 0;
+		string Line;
+		ifstream in;
+
+		Count = 0;
+		Line = "";
+
+		in.open( "league/top10.txt" );
+
+		if( !in.fail( ) )
+		{
+			// don't print more than 2 line1
+
+			while( !in.eof( ) && Count < 2 )
+			{
+				getline( in, Line );
+
+				if( !Line.empty( ) )
+					SendAllChat( Line );
+
+				Count++;
+			}
+
+			in.close( );
+		}
+		else
+		{
+			CONSOLE_Print( "[GAME: " + m_GameName + "] Failed to open league/top10.txt!" );
+		}
+	}
 
 			//
 			// !CHECKBALANCE / !CB
