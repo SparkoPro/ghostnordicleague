@@ -269,6 +269,29 @@ void CONSOLE_Print( string message )
 	}
 }
 
+void CONSOLE_PrintStats( string message )
+{
+	cout << message << endl;
+
+	// logging
+
+	ofstream Log;
+	Log.open( "debug.stats.log", ios :: app );
+
+	if( !Log.fail( ) )
+	{
+		time_t Now = time( NULL );
+		string Time = asctime( localtime( &Now ) );
+
+		// erase the newline
+			
+		Time.erase( Time.size( ) - 1 );
+		Log << "[" << Time << "] " << message << endl;
+		Log.close( );
+	}
+
+}
+
 void DEBUG_Print( string message )
 {
 	cout << message << endl;

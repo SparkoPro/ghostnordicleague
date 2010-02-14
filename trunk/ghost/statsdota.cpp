@@ -36,10 +36,10 @@ CStatsDOTA :: CStatsDOTA( CBaseGame *nGame ) : CStats( nGame )
 	CONSOLE_Print( "[STATSDOTA] using dota stats" );
 
 	for( unsigned int i = 0; i < 12; i++ )
-		m_Players[i] = NULL;
-
-	for( unsigned int i = 0; i < 12; i++ )
+	{
+		m_Players[i] = NULL; // new CDBDotAPlayer( );
 		m_LeaverKills[i] = 0;
+	}
 
 	m_Winner = 0;
 	m_Min = 0;
@@ -97,7 +97,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 						string KeyString = string( Key.begin( ), Key.end( ) );
 						uint32_t ValueInt = UTIL_ByteArrayToUInt32( Value, false );
 
-						// CONSOLE_Print( "[STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
+						//CONSOLE_PrintStats( "[DEBUG-STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
 
 						if( DataString == "Data" )
 						{
@@ -113,23 +113,77 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								uint32_t VictimColour = UTIL_ToUInt32( VictimColourString );
 								CGamePlayer *Killer = m_Game->GetPlayerFromColour( ValueInt );
 								CGamePlayer *Victim = m_Game->GetPlayerFromColour( VictimColour );
+							
 								if( Killer && Victim )
 								{
-									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + "] killed player [" + Victim->GetName( ) + "]" );
+									
+									if (!m_Players[ValueInt])
+												m_Players[ValueInt] = new CDBDotAPlayer( );
+
+									m_Players[ValueInt]->SetKills( m_Players[ValueInt]->GetKills() + 1 );
+									m_Players[ValueInt]->SetColour( ValueInt );
+									
+									if (!m_Players[VictimColour])
+												m_Players[VictimColour] = new CDBDotAPlayer( );
+												
+									m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
+									m_Players[VictimColour]->SetColour( VictimColour );
+									
+									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
 									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
 								}
 								else if ( Killer && !Victim)
 								{
 									m_LeaverKills[ValueInt]++;
-									CONSOLE_Print( "[ANTIFARM] player [" + Killer->GetName() + "] killed a leaver. Total [" + UTIL_ToString(m_LeaverKills[ValueInt]) + "]" );
+									//CONSOLE_Print( "[ANTIFARM] player [" + Killer->GetName() + "] killed a leaver. Total [" + UTIL_ToString(m_LeaverKills[ValueInt]) + "]" );
 								}
 								else if( Victim )
 								{
+									if (!m_Players[VictimColour])
+												m_Players[VictimColour] = new CDBDotAPlayer( );
+												
+									m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
+									
 									if( ValueInt == 0 )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Sentinel killed player [" + Victim->GetName( ) + "]" );
 									else if( ValueInt == 6 )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Scourge killed player [" + Victim->GetName( ) + "]" );
 								}
+							}
+							else if( KeyString.size( ) >= 6 && KeyString.substr( 0, 5 ) == "Level" )
+							{
+								string LevelString = KeyString.substr( 5 );
+								uint32_t Level = UTIL_ToUInt32( LevelString );
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( ValueInt );
+								
+								//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Level up detected. [ Colour " + UTIL_ToString(ValueInt) + " Level " + UTIL_ToString(Level) + " ]" );
+								
+								if (Player)
+								{
+									if (!m_Players[ValueInt])
+												m_Players[ValueInt] = new CDBDotAPlayer( );
+										
+									m_Players[ValueInt]->SetLevel(Level);
+									//m_Game->SendAllChat("[OBSERVER] "+ Player->GetName() + " is now level " + UTIL_ToString(m_Players[ValueInt]->GetLevel()) );
+									CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] "+ Player->GetName() + " is now level " + UTIL_ToString(m_Players[ValueInt]->GetLevel()) );
+								}
+								//CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
+								
+							}
+							else if( KeyString.size( ) >= 7 && KeyString.substr( 0, 6 ) == "Assist" )
+							{
+								string AssistString = KeyString.substr( 6 );
+								uint32_t Assist = UTIL_ToUInt32(AssistString);
+								//CGamePlayer *Player = m_Game->GetPlayerFromColour( PlayerColour );
+								//m_Game->SendAllChat("[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected. Value: " + UTIL_ToString(ValueInt) + " Assist ( " + AssistString + " - " + UTIL_ToString(Assist) + " )");
+								//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected. Value: " + UTIL_ToString(ValueInt) + " Assist ( " + AssistString + " - " + UTIL_ToString(Assist) + " )" );
+								
+								//if (Player)
+								//{
+									//CONSOLE_Print(" [OBSERVER] Level up detected " + Player->GetName() + " is now level " + UTIL_ToString(ValueInt));
+								//}
+								//CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
+								
 							}
 							else if( KeyString.size( ) >= 8 && KeyString.substr( 0, 7 ) == "Courier" )
 							{
@@ -272,6 +326,42 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							{
 								// a player disconnected
 							}
+							else if( KeyString.size( ) >= 3 && KeyString.substr( 0, 3 ) == "CSK" )
+							{
+								// creep kill value recieved (aprox every 3 - 4)
+								string PlayerID = KeyString.substr( 3 );
+								uint32_t ID = UTIL_ToUInt32( PlayerID );
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
+								
+								if (Player)
+								{
+									if (!m_Players[ID])
+												m_Players[ID] = new CDBDotAPlayer( );
+												
+									m_Players[ID]->SetCreepKills(ValueInt);
+									CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetCreepKills()) + " ] CreepKills" ); 
+								}
+							}
+							else if( KeyString.size( ) >= 4 && KeyString.substr( 0, 2 ) == "CSD" )
+							{
+								// creep denie value recieved (aprox every 3 - 4)
+								string PlayerID = KeyString.substr( 3 );
+								uint32_t ID = UTIL_ToUInt32( PlayerID );
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
+								
+								if (Player)
+								{
+									if (!m_Players[ID])
+												m_Players[ID] = new CDBDotAPlayer( );
+												
+									m_Players[ID]->SetCreepDenies(ValueInt);
+									CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetCreepKills()) + " ] CreepKills" ); 
+								}
+							}
+							else if( KeyString.size( ) >= 9 && KeyString.substr( 0, 9 ) == "GameStart" )
+							{
+								m_GameStart = GetTicks( ) / 1000;
+							}
 						}
 						else if( DataString == "Global" )
 						{
@@ -299,6 +389,9 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 						else if( DataString.size( ) <= 2 && DataString.find_first_not_of( "1234567890" ) == string :: npos )
 						{
 							// these are only received at the end of the game
+							// *edit:
+							// ID recieved at game start
+							// 9 (Hero) Recieved at Pick
 
 							uint32_t ID = UTIL_ToUInt32( DataString );
 
@@ -307,8 +400,9 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								if( !m_Players[ID] )
 								{
 									m_Players[ID] = new CDBDotAPlayer( );
-									m_Players[ID]->SetColour( ID );
 								}
+								
+								m_Players[ID]->SetColour( ID );
 
 								// Key "1"		-> Kills
 								// Key "2"		-> Deaths
@@ -323,17 +417,26 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								// Key "8_3"	-> Item 4
 								// Key "8_4"	-> Item 5
 								// Key "8_5"	-> Item 6
+								// Key "9"		-> Hero
 								// Key "id"		-> ID (1-5 for sentinel, 6-10 for scourge, accurate after using -sp and/or -switch)
 
 								if( KeyString == "1" )
 								{
-									if (m_LeaverKills[ID] > 0)
-										CONSOLE_Print( "[ANTIFARM] Player with colour [" + UTIL_ToString(ID) + "] got [" + UTIL_ToString(ValueInt) + "] kills, removing [" + UTIL_ToString(m_LeaverKills[ID]) + "]" );
+									// Kills recieved, but we have already coverd this
+									
+									//if (m_LeaverKills[ID] > 0)
+									//	CONSOLE_Print( "[ANTIFARM] Player with colour [" + UTIL_ToString(ID) + "] got [" + UTIL_ToString(ValueInt) + "] kills, removing [" + UTIL_ToString(m_LeaverKills[ID]) + "]" );
 
-									m_Players[ID]->SetKills( ValueInt - m_LeaverKills[ID] );
+									//CONSOLE_Print( "[OBSERVER] The map sent [ " + UTIL_ToString(ValueInt) + " ] kills, we registered [ " + UTIL_ToString(m_Players[ID]->GetKills()) + " / " + UTIL_ToString(m_LeaverKills[ID]) + " / " + UTIL_ToString(m_Players[ID]->GetKills() + m_LeaverKills[ID]) + " ] kills/leaverkills/total." );
+									//m_Players[ID]->SetKills( ValueInt - m_LeaverKills[ID] );
 								}
 								else if( KeyString == "2" )
-									m_Players[ID]->SetDeaths( ValueInt );
+								{
+									// Deaths recieved, but we have already coverd this
+									
+									//CONSOLE_Print( "[OBSERVER] The map sent [ " + UTIL_ToString(ValueInt) + " ] deaths, we registered [ " + UTIL_ToString(m_Players[ID]->GetDeaths()) + " ] " );
+									//m_Players[ID]->SetDeaths( ValueInt );
+								}
 								else if( KeyString == "3" )
 									m_Players[ID]->SetCreepKills( ValueInt );
 								else if( KeyString == "4" )
@@ -399,6 +502,18 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 		// the dotaplayer stats are only saved if the game is properly finished
 
 		unsigned int Players = 0;
+		
+		if (m_Min == 0 && m_Sec == 0 && m_GameStart > 0)
+		{
+			uint32_t GameLength = (GetTicks( ) / 1000) - m_GameStart;
+			
+			while (GameLength >= 60)
+			{
+				m_Min++;
+				GameLength -= 60;
+			}
+			m_Sec = GameLength;
+		}
 
 		// save the dotagame
 
@@ -440,7 +555,6 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 			{
 				//GHost->m_Callables.push_back( DB->ThreadedDotAPlayerAdd( GameID, m_Players[i]->GetColour( ), m_Players[i]->GetKills( ), m_Players[i]->GetDeaths( ),m_Players[i]->GetCreepKills( ), m_Players[i]->GetCreepDenies( ), m_Players[i]->GetAssists( ), m_Players[i]->GetGold( ), m_Players[i]->GetNeutralKills( ), m_Players[i]->GetItem( 0 ), m_Players[i]->GetItem( 1 ), m_Players[i]->GetItem( 2 ), m_Players[i]->GetItem( 3 ), m_Players[i]->GetItem( 4 ), m_Players[i]->GetItem( 5 ), m_Players[i]->GetHero( ), m_Players[i]->GetNewColour( ), m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetCourierKills( ) ) );
 
-
 				for ( vector<CDBGamePlayer *> :: iterator it = DBGamePlayers.begin( ); it != DBGamePlayers.end( ); it++ )
 				{
 					if ( m_Players[i]->GetColour( ) == (*it)->GetColour( ) )
@@ -468,7 +582,7 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 
 				GHost->m_Callables.push_back( DB->ThreadedDotAPlayerAdd( GameID, m_Players[i]->GetName( ), m_Players[i]->GetColour( ), m_Players[i]->GetKills( ), m_Players[i]->GetDeaths( ), m_Players[i]->GetCreepKills( ), m_Players[i]->GetCreepDenies( ), m_Players[i]->GetAssists( ), m_Players[i]->GetGold( ), m_Players[i]->GetNeutralKills( ), m_Players[i]->GetItem( 0 
 ), m_Players[i]->GetItem( 1 ), m_Players[i]->GetItem( 2 ), m_Players[i]->GetItem( 3 ), m_Players[i]->GetItem( 4 ), m_Players[i]->GetItem( 5 ), m_Players[i]->GetHero( ), m_Players[i]->GetNewColour( ), 
-m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetCourierKills( ), m_Players[i]->GetOutcome( ) ) );
+m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetCourierKills( ), m_Players[i]->GetOutcome( ), m_Players[i]->GetLevel(), 0 ) );
 
 
 
@@ -483,4 +597,11 @@ m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetC
 	}
 	else
 		CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] unable to begin database transaction, data not saved" );
+}
+
+CDBDotAPlayer *CStatsDOTA :: GetPlayerStats(uint32_t id)
+{
+	if( ( id >= 1 && id <= 5 ) || ( id >= 7 && id <= 11 ) )
+		return m_Players[id];
+	return NULL;
 }

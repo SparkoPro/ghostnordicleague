@@ -35,6 +35,7 @@
 class CIncomingAction;
 class CGHostDB;
 class CDBGamePlayer;
+class CDBDotAPlayer;
 
 class CStats
 {
@@ -44,8 +45,9 @@ protected:
 public:
 	CStats( CBaseGame *nGame );
 	virtual ~CStats( );
+	virtual CDBDotAPlayer *GetPlayerStats(uint32_t id);
 
-        virtual bool ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost);
+    virtual bool ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost);
 	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );
 };
 

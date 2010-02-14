@@ -44,3 +44,8 @@ void CStats :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHo
 {
 
 }
+
+CDBDotAPlayer *CStats :: GetPlayerStats(uint32_t id)
+{
+	return NULL;
+}

@@ -25,6 +25,8 @@
 // CStatsW3MMD
 //
 class CDBGamePlayer;
+class CDBDotAPlayer;
+
 typedef pair<uint32_t,string> VarP;
 
 class CStatsW3MMD : public CStats
@@ -46,6 +48,8 @@ private:
 public:
 	CStatsW3MMD( CBaseGame *nGame, string nCategory );
 	virtual ~CStatsW3MMD( );
+	
+	virtual CDBDotAPlayer *GetPlayerStats(uint32_t id);
 
 	virtual bool ProcessAction( CIncomingAction *Action );
 	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );

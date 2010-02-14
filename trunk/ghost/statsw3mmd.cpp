@@ -44,6 +44,11 @@ CStatsW3MMD :: ~CStatsW3MMD( )
 
 }
 
+CDBDotAPlayer *CStatsW3MMD :: GetPlayerStats(uint32_t id)
+{
+	return NULL;
+}
+
 bool CStatsW3MMD :: ProcessAction( CIncomingAction *Action )
 {
 	unsigned int i = 0;
