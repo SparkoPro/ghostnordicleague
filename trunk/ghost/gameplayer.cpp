@@ -469,8 +469,7 @@ void CGamePlayer :: ProcessPackets( )
 								
 							m_Muted = true;
 						}
-					
-						else if (m_Muted && m_WarnTime != 0)
+						else if (m_Muted && m_WarnTime != 0 && !m_Game->GetGameLoaded())
 						{
 							m_Game->SendAllChat(GetName() + " has been kicked for spamming!");
 							SetDeleteMe(true);
