@@ -82,6 +82,7 @@ private:
 	CCallableAdminList *m_CallableAdminList;		// threaded database admin list in progress
 	CCallableBanList *m_CallableBanList;			// threaded database ban list in progress
 	vector<string> m_Admins;						// vector of cached admins
+	vector<string> m_Moderators;					// vector of cached moderators
 	vector<CDBBan *> m_Bans;						// vector of cached bans
 	bool m_Exiting;									// set to true and this class will be deleted next update
 	string m_Server;								// battle.net server to connect to
@@ -176,6 +177,7 @@ public:
 	// other functions
 
 	bool IsAdmin( string name );
+	bool IsModerator( string name );
 	bool IsRootAdmin( string name );
 	CDBBan *IsBannedName( string name );
 	CDBBan *IsBannedIP( string ip );

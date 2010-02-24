@@ -594,6 +594,145 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						SendAllChat( m_GHost->m_Language->UnableToBanFoundMoreThanOneMatch( Victim ) );
 				}
 			}
+			
+			
+			//
+			// !TEMPBAN
+			// !TBAN
+			//
+
+			if( ( Command == "tempban" || Command == "tban" ) && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
+			{
+				m_MessageWasCommand = true;
+				// extract the victim and the reason
+				// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
+
+				string Victim;
+				string Reason;
+				
+				uint32_t Amount;
+				uint32_t BanTime;
+				string Suffix;
+				
+				stringstream SS;
+				SS << Payload;
+				SS >> Victim;
+
+				if( SS.fail( ) || Victim.empty() )
+					CONSOLE_Print( "[TEMPBAN] bad input #1 to !TEMPBAN command" );
+				else
+				{
+					SS >> Amount;
+					
+					if( SS.fail( ) || Amount == 0 )
+						CONSOLE_Print( "[TEMPBAN] bad input #2 to !TEMPBAN command" );
+					else
+					{
+						SS >> Suffix;
+						
+						if (SS.fail() || Suffix.empty())
+							CONSOLE_Print( "[TEMPBAN] bad input #3 to autohost command" );
+						else
+						{
+							uint32_t BanTime = 0;
+							
+							// handle suffix
+							// valid suffix is: hour, h, week, w, day, d, month, m
+							
+							bool ValidSuffix = false;
+							transform( Suffix.begin( ), Suffix.end( ), Suffix.begin( ), (int(*)(int))tolower );
+							
+							if (Suffix == "minute" || Suffix == "minutes" || Suffix == "m")
+							{
+								BanTime = Amount * 3600;
+								ValidSuffix = true;
+							}
+							else if (Suffix == "hour" || Suffix == "hours" || Suffix == "h")
+							{
+								BanTime = Amount * 3600;
+								ValidSuffix = true;
+							}
+							else if (Suffix == "day" || Suffix == "days" || Suffix == "d")
+							{
+								BanTime = Amount * 86400;
+								ValidSuffix = true;
+							}
+							else if (Suffix == "week" || Suffix == "weeks" || Suffix == "w")
+							{
+								BanTime = Amount * 604800;
+								ValidSuffix = true;
+							}
+							else if (Suffix == "month" || Suffix == "months" || Suffix == "m")
+							{
+								BanTime = Amount * 2419200;
+								ValidSuffix = true;
+							}
+							
+							
+							if (ValidSuffix)
+							{
+							
+								if (!SS.eof())
+								{
+									getline( SS, Reason );
+									string :: size_type Start = Reason.find_first_not_of( " " );
+
+									if( Start != string :: npos )
+										Reason = Reason.substr( Start );
+								}
+							
+								SendAllChat("Temporary ban: " + Victim + " for " + UTIL_ToString(Amount) + " " + Suffix + " with reason: " + Reason);
+							
+								if( m_GameLoaded )
+								{
+									string VictimLower = Victim;
+									transform( VictimLower.begin( ), VictimLower.end( ), VictimLower.begin( ), (int(*)(int))tolower );
+									uint32_t Matches = 0;
+									CDBBan *LastMatch = NULL;
+
+									// try to match each player with the passed string (e.g. "Varlock" would be matched with "lock")
+									// we use the m_DBBans vector for this in case the player already left and thus isn't in the m_Players vector anymore
+								
+									for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+									{
+										string TestName = (*i)->GetName( );
+										transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
+
+										if( TestName.find( VictimLower ) != string :: npos )
+										{
+											Matches++;
+											LastMatch = *i;
+										}
+									}
+
+									if( Matches == 0 )
+										SendAllChat( m_GHost->m_Language->UnableToBanNoMatchesFound( Victim ) );
+									else if( Matches == 1 )
+										m_PairedBanAdds.push_back( PairedBanAdd( User, m_GHost->m_DB->ThreadedBanAdd( LastMatch->GetServer( ), LastMatch->GetName( ), LastMatch->GetIP( ), m_GameName, User, Reason, BanTime ) ) );
+									else
+										SendAllChat( m_GHost->m_Language->UnableToBanFoundMoreThanOneMatch( Victim ) );
+								}
+								else
+								{
+									CGamePlayer *LastMatch = NULL;
+									uint32_t Matches = GetPlayerFromNamePartial( Victim, &LastMatch );
+
+									if( Matches == 0 )
+										SendAllChat( m_GHost->m_Language->UnableToBanNoMatchesFound( Victim ) );
+									else if( Matches == 1 )
+										m_PairedBanAdds.push_back( PairedBanAdd( User, m_GHost->m_DB->ThreadedBanAdd( LastMatch->GetJoinedRealm( ), LastMatch->GetName( ), LastMatch->GetExternalIPString( ), m_GameName, User, Reason, BanTime ) ) );
+									else
+										SendAllChat( m_GHost->m_Language->UnableToBanFoundMoreThanOneMatch( Victim ) );
+								}
+							}
+							else
+							{
+								SendAllChat( "Bad input, expected minute(s)/hour(s)/day(s)/week(s)/month(s) but you said: " + Suffix );								
+							}
+						}
+					}
+				}
+			}
 
 			//
 			// !ANNOUNCE
@@ -1988,7 +2127,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		        	                SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ) ) );
 				}
 
-			}
+	}
 
 
 	//

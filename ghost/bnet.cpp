@@ -447,8 +447,9 @@ bool CBNET :: Update( void *fd, void *send_fd )
 	}
 
 	// refresh the ban list every 60 minutes
+	// NordicLeague: changed to every 5 minutes to make temporary bans more accurate
 
-	if( !m_CallableBanList && GetTime( ) >= m_LastBanRefreshTime + 3600 )
+	if( !m_CallableBanList && GetTime( ) >= m_LastBanRefreshTime + 360 )
 		m_CallableBanList = m_GHost->m_DB->ThreadedBanList( m_Server );
 
 	if( m_CallableBanList && m_CallableBanList->GetReady( ) )
@@ -1074,6 +1075,105 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						QueueChatCommand( m_GHost->m_Language->UserIsAlreadyBanned( m_Server, Victim ), User, Whisper );
 					else
 						m_PairedBanAdds.push_back( PairedBanAdd( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanAdd( m_Server, Victim, string( ), string( ), User, Reason ) ) );
+				}
+				
+				//
+				// !TEMPBAN
+				// !TBAN
+				//
+				
+				if( ( Command == "tempban" || Command == "tban" ) && !Payload.empty( ) )
+				{
+					// extract the victim and the reason
+					// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
+
+					string Victim;
+					string Reason;
+
+					uint32_t Amount;
+					uint32_t BanTime;
+					string Suffix;
+
+					stringstream SS;
+					SS << Payload;
+					SS >> Victim;
+
+					if( SS.fail( ) || Victim.empty() )
+						CONSOLE_Print( "[TEMPBAN] bad input #1 to !TEMPBAN command" );
+					else
+					{
+						SS >> Amount;
+
+						if( SS.fail( ) || Amount == 0 )
+							CONSOLE_Print( "[TEMPBAN] bad input #2 to !TEMPBAN command" );
+						else
+						{
+							SS >> Suffix;
+
+							if (SS.fail() || Suffix.empty())
+								CONSOLE_Print( "[TEMPBAN] bad input #3 to autohost command" );
+							else
+							{
+								
+								transform( Suffix.begin( ), Suffix.end( ), Suffix.begin( ), (int(*)(int))tolower );
+								
+								// handle suffix
+								// valid suffix is: hour, h, week, w, day, d, month, m
+								
+								bool ValidSuffix = false;
+								if (Suffix == "minute" || Suffix == "minutes" || Suffix == "m")
+								{
+									BanTime = Amount * 3600;
+									ValidSuffix = true;
+								}							
+								else if (Suffix == "hour" || Suffix == "hours" || Suffix == "h")
+								{
+									BanTime = Amount * 3600;
+									ValidSuffix = true;
+								}
+								else if (Suffix == "day" || Suffix == "days" || Suffix == "d")
+								{
+									BanTime = Amount * 86400;
+									ValidSuffix = true;
+								}
+								else if (Suffix == "week" || Suffix == "weeks" || Suffix == "w")
+								{
+									BanTime = Amount * 604800;
+									ValidSuffix = true;
+								}
+								else if (Suffix == "month" || Suffix == "months" || Suffix == "m")
+								{
+									BanTime = Amount * 2419200;
+									ValidSuffix = true;
+								}
+								
+								
+								if (ValidSuffix)
+								{
+								
+									if (!SS.eof())
+									{
+										getline( SS, Reason );
+										string :: size_type Start = Reason.find_first_not_of( " " );
+
+										if( Start != string :: npos )
+											Reason = Reason.substr( Start );
+									}
+
+									QueueChatCommand("Temporary ban: " + Victim + " for " + UTIL_ToString(Amount) + " " + Suffix + " with reason: " + Reason, User, Whisper);
+
+									if( IsBannedName( Victim ) )
+										QueueChatCommand( m_GHost->m_Language->UserIsAlreadyBanned( m_Server, Victim ), User, Whisper );
+									else
+										m_PairedBanAdds.push_back( PairedBanAdd( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanAdd( m_Server, Victim, string( ), string( ), User, Reason, BanTime ) ) );
+								}
+								else
+								{
+									QueueChatCommand("Bad input, expected minute(s)/hour(s)/day(s)/week(s)/month(s), you said: " + Suffix, User, Whisper);
+								}
+							}
+						}
+					}
 				}
 
 				//
@@ -3028,6 +3128,19 @@ bool CBNET :: IsAdmin( string name )
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 
 	for( vector<string> :: iterator i = m_Admins.begin( ); i != m_Admins.end( ); i++ )
+	{
+		if( *i == name )
+			return true;
+	}
+
+	return false;
+}
+
+bool CBNET :: IsModerator( string name )
+{
+	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+
+	for( vector<string> :: iterator i = m_Moderators.begin( ); i != m_Moderators.end( ); i++ )
 	{
 		if( *i == name )
 			return true;

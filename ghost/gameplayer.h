@@ -116,6 +116,7 @@ private:
 	bool m_Muted;								// if the player is muted or not
 	bool m_LeftMessageSent;						// if the playerleave message has been sent or not
 	bool m_Admin;								// if the player is admin or not;
+	bool m_Moderator;
 	bool m_HasLeft;
 	
 	#define MTNUM 6
@@ -165,8 +166,8 @@ public:
 	bool GetMuted( )						{ return m_Muted; }
 	bool GetLeftMessageSent( )				{ return m_LeftMessageSent; }
 	bool IsAdmin( )							{ return m_Admin; }
+	bool IsModerator( )					{ return m_Moderator; }
 	bool HasLeft( )						{ return m_HasLeft; }
-	void SetLeft( bool nLeft )				{ m_HasLeft = nLeft; }
 
 	void SetLeftReason( string nLeftReason )								{ m_LeftReason = nLeftReason; }
 	void SetSpoofedRealm( string nSpoofedRealm )							{ m_SpoofedRealm = nSpoofedRealm; }
@@ -194,6 +195,8 @@ public:
 	void SetMuted( bool nMuted )											{ m_Muted = nMuted; }
 	void SetLeftMessageSent( bool nLeftMessageSent )						{ m_LeftMessageSent = nLeftMessageSent; }
 	void SetAdmin( bool nAdmin )											{ m_Admin = nAdmin; }
+	void SetModerator( bool nModerator )									{ m_Moderator = nModerator; }
+	void SetLeft( bool nLeft )												{ m_HasLeft = nLeft; }
 
 	string GetNameTerminated( );
 	uint32_t GetPing( bool LCPing );
