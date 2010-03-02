@@ -45,14 +45,14 @@ using namespace std;
 
 #include <mysql/mysql.h>
 
-float gain_kill = 1.5; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
-float gain_death = -2; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
-float gain_assist = 0.75; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
-float gain_tower = 0.6; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
-float gain_rax = 0.8; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
+float gain_kill = 0.65; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
+float gain_death = -1.2; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
+float gain_assist = 0.5; //UTIL_ToFloat( CFG.GetString( "formula_assist_gain", "" ) );
+float gain_tower = 0.2; //UTIL_ToFloat( CFG.GetString( "formula_tower_gain", "" ) );
+float gain_rax = 0.3; //UTIL_ToFloat( CFG.GetString( "formula_rax_gain", "" ) );
 float gain_creepkill = 0.01; //= UTIL_ToFloat( CFG.GetString( "formula_creepkill_gain", "" ) );
-float gain_creepdenie = 0.04; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
-float gain_neutral = 0.02; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
+float gain_creepdenie = 0.1; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
+float gain_neutral = 0.05; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
 
 float CalculateGain(int k, int d, int a, int ck, int cd, int t, int r, int n)
 {
@@ -289,7 +289,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_nskill_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills, dotaplayers.botid FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_nskill_scores ON dota_nskill_scores.name=gameplayers.name AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_nskill_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills, dotaplayers.botid FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_nskill_scores ON LOWER(dota_nskill_scores.name)=LOWER(gameplayers.name) AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
