@@ -1,0 +1,83 @@
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+Gains:
+Kill: 0.65
+Death: -1.2
+Assist: 0.5
+Tower: 0.275
+Rax: 0.29
+CK: 0.01
+CD: 0.1
+Neutral: 0.05
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15392 found
+gameid 15392 is calculating
+copying dota lame scores to scores table
+committing transaction
+done
+Running score decay..
+Score decay not ready to run yet.
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+Gains:
+Kill: 0.65
+Death: -1.2
+Assist: 0.5
+Tower: 0.275
+Rax: 0.29
+CK: 0.01
+CD: 0.1
+Neutral: 0.05
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+done
+Running score decay..
+Score decay not ready to run yet.
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+Gains:
+Kill: 0.65
+Death: -1.2
+Assist: 0.5
+Tower: 0.275
+Rax: 0.29
+CK: 0.01
+CD: 0.1
+Neutral: 0.05
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+done
+Running score decay..
+Score decay not ready to run yet.
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+Gains:
+Kill: 0.65
+Death: -1.2
+Assist: 0.5
+Tower: 0.275
+Rax: 0.29
+CK: 0.01
+CD: 0.1
+Neutral: 0.05
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+done
+Running score decay..
+Score decay not ready to run yet.
