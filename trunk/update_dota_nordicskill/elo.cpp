@@ -24,7 +24,7 @@
  */
 
 #include "elo.h"
-
+#include <stdio.h>
 /* FIXME: this table is about the ugliest thing ever.  It holds the CDF's of
    the normalized normal distribution. */
 static double ztable[301] = {
@@ -405,7 +405,7 @@ static void elo_compute_expectations(int num, float *ratings, float *probs)
 		sum += probs[i];
 	}
 
-	/* dbg_msg(GGZ_DBG_STATS, "Probabilities sum to %f; normalizing.", sum); */
+	//printf("Probabilities sum to %f; normalizing.", sum); */
 	for (i = 0; i < num; i++)
 		probs[i] /= sum;
 
@@ -425,30 +425,42 @@ void elo_recalculate_ratings(int num_players, float *player_ratings,
 	/* Debugging data */
 	for (i = 0; i < num_players; i++) {
 		int team = num_teams > 0 ? player_teams[i] : i;
-		/* dbg_msg(GGZ_DBG_STATS,
-			"Player %d has rating %f, expectation %f.", i,
-			team_ratings[team], team_probs[team]); */
+		//printf(	"Player %d has rating %f, expectation %f.", i,
+		//	team_ratings[team], team_probs[team]);
 	}
 
 	/* Calculate new ratings for all players. */
 	for (i = 0; i < num_players; i++) {
 		int team = num_teams > 0 ? player_teams[i] : i;
-		float K, diff;
+		float K, diff, lossK;
 
 		/* FIXME: this is the chess distribution; games should be
 		   able to set their own. */
 		if (player_ratings[i] < 2000)
+		{
 			K = 30.0;
-		else if (player_ratings[i] > 2400)
-			K = 10.0;
-		else
-			K = 130.0 - player_ratings[i] / 20.0;
+			//lossK = 25;
+		}
+		else // if (player_ratings[i] > 2400)
+		{
+			K = 20.0;
+			//lossK = 27;
+		}
+		//else
+		//{
+		//	K = 130.0 - player_ratings[i] / 20.0;
+		//	//lossK = 145.0 - player_ratings[i] / 20.0;
+		//}
 
-		diff = K * (team_winners[team] - team_probs[team]);
+		//if (team_probs[team] > 0.75 && team_winners[team] == 0)
+		//	diff = lossK * (team_winners[team] - team_probs[team]);
+		//else
+			diff = K * (team_winners[team] - team_probs[team]);
+
+
 		player_ratings[i] += diff;
-		/* dbg_msg(GGZ_DBG_STATS,
-			"Player %d has new rating %f (slope %f).", i,
-			player_ratings[i], K); */
+		//printf(	"Player %d has new rating %f (slope %f).", i,
+		//	player_ratings[i], K); 
 	}
 
 	delete [] team_probs;
