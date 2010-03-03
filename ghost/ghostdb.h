@@ -881,11 +881,11 @@ private:
 	uint32_t m_TotalRaxKills;		// total number of rax kills
 	uint32_t m_TotalCourierKills;	// total number of courier kills
 	uint32_t m_Rank;
-	uint32_t m_Score;
+	double m_Score;
 
 public:
 	CDBDotAPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills );
-	CDBDotAPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills, uint32_t nRank, uint32_t nScore );
+	CDBDotAPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills, uint32_t nRank, double nScore );
 	~CDBDotAPlayerSummary( );
 
 	string GetServer( )					{ return m_Server; }
@@ -903,7 +903,7 @@ public:
 	uint32_t GetTotalRaxKills( )		{ return m_TotalRaxKills; }
 	uint32_t GetTotalCourierKills( )	{ return m_TotalCourierKills; }
 	uint32_t GetRank( )		{ return m_Rank; }
-	uint32_t GetScore( )		{ return m_Score; }
+	double GetScore( )		{ return m_Score; }
 
 	float GetAvgKills( )				{ return m_TotalGames > 0 ? (float)m_TotalKills / m_TotalGames : 0; }
 	float GetAvgDeaths( )				{ return m_TotalGames > 0 ? (float)m_TotalDeaths / m_TotalGames : 0; }
