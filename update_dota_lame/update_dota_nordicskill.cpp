@@ -58,6 +58,9 @@ float gain_creepkill = 0.01; //= UTIL_ToFloat( CFG.GetString( "formula_creepkill
 float gain_creepdenie = 0.1; //UTIL_ToFloat( CFG.GetString( "formula_creepdenie_gain", "" ) );
 float gain_neutral = 0.05; //UTIL_ToFloat( CFG.GetString( "formula_neutral_gain", "" ) );
 
+
+float GetHeroBonus(string hero, MYSQL *Connection);
+
 float CalculateGain(int k, int d, int a, int ck, int cd, int t, int r, int n)
 {
 	float gain = 0;
@@ -96,8 +99,6 @@ float CalculateGain(int k, int d, int a, int ck, int cd, int t, int r, int n)
 	gain = n * gain_neutral;
 	total_gain += gain;
 //	cout << "NeutralKill gain: " << gain << " Total: " << total_gain << endl;
-
-
 	return total_gain;
 }
 
@@ -167,6 +168,15 @@ uint32_t UTIL_ToUInt32( string &s )
 	return result;
 }
 
+int32_t UTIL_ToInt32( string &s )
+{
+        int32_t result;
+        stringstream SS;
+        SS << s;
+        SS >> result;
+        return result;
+}
+
 float UTIL_ToFloat( string s )
 {
 	float result;
@@ -191,7 +201,7 @@ int main( int argc, char **argv )
 	string Password = CFG.GetString( "db_mysql_password", string( ) );
 	int Port = CFG.GetInt( "db_mysql_port", 0 );
 
-	cout << "Gains:" << endl;
+/*	cout << "Gains:" << endl;
 	cout << "Kill: " << gain_kill << endl;
 	cout << "Death: " << gain_death << endl;
 	cout << "Assist: " << gain_assist << endl;
@@ -200,7 +210,7 @@ int main( int argc, char **argv )
 	cout << "CK: " << gain_creepkill << endl;
 	cout << "CD: " << gain_creepdenie << endl;
 	cout << "Neutral: " << gain_neutral << endl;
-
+*/
 
 	cout << "connecting to database server" << endl;
 	MYSQL *Connection = NULL;
@@ -219,6 +229,8 @@ int main( int argc, char **argv )
 		cout << "error: " << mysql_error( Connection ) << endl;
 		return 1;
 	}
+
+	//GetHeroBonus("H00H", Connection);
 
 	cout << "connected" << endl;
 	cout << "beginning transaction" << endl;
@@ -293,7 +305,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT " + DBTable + ".id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills, dotaplayers.botid FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN " + DBTable + " ON LOWER(" + DBTable + ".name)=LOWER(gameplayers.name) AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT " + DBTable + ".id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills, dotaplayers.botid, dotaplayers.hero, gameplayers.left, min, sec FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN " + DBTable + " ON LOWER(" + DBTable + ".name)=LOWER(gameplayers.name) AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -329,6 +341,11 @@ int main( int argc, char **argv )
 				team_numplayers[0] = 0;
 				team_numplayers[1] = 0;
 
+				uint32_t team_leavers[2];
+
+				team_leavers[0] = 0;
+				team_leavers[1] = 0;
+
 				uint32_t player_kills[10];
 				uint32_t player_deaths[10];
 				uint32_t player_assists[10];
@@ -338,10 +355,16 @@ int main( int argc, char **argv )
 				uint32_t player_raxkills[10];
 				uint32_t player_neutralkills[10];
 				uint32_t player_colours[10];
+
+				string	 player_heroes[10];
+
+				bool	 player_isleaver[10];
+				uint32_t player_left[10];
+
 				
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 15 )
+				while( Row.size( ) == 19 )
 				{
 					if( num_players >= 10 )
 					{
@@ -363,7 +386,12 @@ int main( int argc, char **argv )
 					player_raxkills[num_players] = UTIL_ToUInt32( Row[12] );
 					player_neutralkills[num_players] = UTIL_ToUInt32( Row[13] );
 					BotID = UTIL_ToUInt32( Row[14] );
-					
+
+
+					player_heroes[num_players] = Row[15];
+					player_left[num_players] = UTIL_ToUInt32(Row[16]);
+
+
 					if( Winner != 1 && Winner != 2 )
 					{
 						//cout << "gameid " << UTIL_ToString( GameID ) << " has no winner, ignoring" << endl;
@@ -422,9 +450,34 @@ int main( int argc, char **argv )
 						break;
 					}
 
+
+					// We want to keep track of leavers and adjust score for loosing team if they are less than winning team..
+
+					float game_min = UTIL_ToFloat(Row[17]);
+					float game_sec = UTIL_ToFloat(Row[18]);
+					float game_duration = game_min * 60 + game_sec + 180; // add 3 minutes for 2 min before game and 1 min as gameover timer
+					
+					//cout << "Game duration: " + UTIL_ToString(game_duration, 0) << endl;
+
+					// ok we got game duration
+					// flag player as leaver if he left more than X minutes before game end (we loose 3 minutes that still is recorded as gamelength, 2 minutes before game start and 1 after game is over so if we want 5 minutes we have to use 8 to get 5, eh. :)
+
+					if ((game_duration - (60 * 5)) > player_left[num_players])
+					{
+						cout << "We got a premature leaver." << endl;
+						player_isleaver[num_players] = true;
+						team_leavers[player_teams[num_players]]++;
+					}
+					else
+					{
+						player_isleaver[num_players] = false;
+					}
+
 					num_players++;
 					Row = MySQLFetchRow( Result );
 				}
+
+				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
 
 				mysql_free_result( Result );
 
@@ -445,14 +498,42 @@ int main( int argc, char **argv )
 						team_ratings[0] /= team_numplayers[0];
 						team_ratings[1] /= team_numplayers[1];
 						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners );
+						float scourge_bonus, sentinel_bonus;
+						float scourge_hero_bonus, sentinel_hero_bonus;
+
+						for (int i = 0; i < num_players; i++)
+						{
+							if (player_teams[i] == 0)
+								sentinel_hero_bonus -= GetHeroBonus(player_heroes[i], Connection);
+							else
+								scourge_hero_bonus -= GetHeroBonus(player_heroes[i], Connection);
+						}
+						
+						sentinel_bonus = sentinel_hero_bonus - scourge_hero_bonus;			
+						scourge_bonus = scourge_hero_bonus - sentinel_hero_bonus;
+
+
+						cout << "Sentinel hero bonus: " << UTIL_ToString(sentinel_bonus, 2) << endl;			
+						cout << "Scourge hero bonus: " << UTIL_ToString(scourge_bonus, 2) << endl;			
 
 						for( int i = 0; i < num_players; i++ )
 						{
+
+							//cout << "Hero bonus: " + UTIL_ToString(GetHeroBonus(player_heroes[i], Connection), 2) << endl;
+
 							if (player_ratings[i] < 0)
 								player_ratings[i] = 0;
 
 							string EscName = MySQLEscapeString( Connection, names[i] );
 							player_gain[i] = CalculateGain(player_kills[i], player_deaths[i], player_assists[i], player_creepkills[i], player_creepdenies[i], player_towerkills[i], player_raxkills[i], player_neutralkills[i]);
+
+							player_gain[i] -= GetHeroBonus(player_heroes[i], Connection);
+
+							if (player_teams[i] == 0)
+								player_gain[i] += sentinel_bonus;
+							else
+								player_gain[i] += scourge_bonus;
+
 
 							if (player_ratings[i] == 0 && player_gain[i] < 0)
 							{
@@ -469,6 +550,15 @@ int main( int argc, char **argv )
 
 							float new_gain = (player_ratings[i] - old_player_ratings[i]) + player_gain[i];
 
+							/*
+							 * Compensate for leavers, leavers will still loose full.
+							 */
+							// todo: have to come up with a good algorithm for loss-reduction.
+
+							// if (team_leavers[player_teams[i])
+
+							player_ratings[i] += player_gain[i];
+
 							string QAddToGaintable = "INSERT INTO " + DBGainTable + " (gameid, botid, name, colour, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", " + UTIL_ToString(BotID) + ", '" + EscName + "', " + UTIL_ToString(player_colours[i]) + ", " + UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(new_gain, 2) + " )";
 							//cout << QAddToGaintable << endl;
 							
@@ -478,8 +568,7 @@ int main( int argc, char **argv )
 								//return 1;
 							}
 							
-							//cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << " Gain: " << player_gain[i] << endl;
-							player_ratings[i] += player_gain[i];
+
 
 
 							if( exists[i] )
@@ -553,12 +642,11 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-
-	cout << "done" << endl;
 	cout << "Running score decay.." << endl;
 
 	/*
 	 * Execute score decay once per day
+	 * (also rebuilds hero-balance table)
 	 * 
 	 */
 
@@ -633,6 +721,31 @@ int main( int argc, char **argv )
 						cout << "error: " << mysql_error( Connection ) << endl;
 						return 1;
 					}
+
+
+					/*
+					 * Update herostats bonus system
+					 */
+
+					string QHeroStatsClean = "DELETE FROM herostats";
+					string QHeroStats = "INSERT INTO herostats (count, name, hero, result) SELECT count(dota_entitys.name) as ncount, dota_entitys.name, hero, SUM(IF(winner > 0, IF((newcolour <= 5 && dotagames.winner = 1) || (newcolour >= 7 && dotagames.winner=2), 1, -1), 0)) as nresult FROM `dotaplayers` LEFT JOIN dotagames on dotagames.gameid = dotaplayers.gameid LEFT JOIN dota_entitys on dota_entitys.entity_id = hero WHERE name NOT LIKE '' group by name";
+
+					if ( mysql_real_query( Connection, QHeroStatsClean.c_str( ), QHeroStatsClean.size( ) ) != 0 )
+                                        {
+                                                cout << "error: " << mysql_error( Connection ) << endl;
+   						return 1;
+                                        }
+					else
+						cout << "Cleaned herostats, trying to repopulate... ";
+
+					if ( mysql_real_query( Connection, QHeroStats.c_str( ), QHeroStats.size( ) ) != 0 )
+                                        {
+                                                cout << "error: " << mysql_error( Connection ) << endl;
+   						return 1;
+                                        }
+					else
+						cout << "success!";
+
 				}
 			}
 			else
@@ -640,8 +753,48 @@ int main( int argc, char **argv )
 		}
 	}
 
+	cout << "done" << endl;
 
 	return 0;
 }
 
 
+float GetHeroBonus(string hero, MYSQL *Connection)
+{
+	int sum, count;
+	float bonus;
+	
+        string QGetHero = "select result,count from dota_entitys LEFT JOIN herostats ON herostats.name = dota_entitys.name where dota_entitys.entity_id LIKE '" + hero + "' LIMIT 1";
+	//cout << "Hero sql: " << QGetHero << endl;
+
+        if( mysql_real_query( Connection, QGetHero.c_str( ), QGetHero.size( ) ) != 0 )
+        {
+                cout << "error: " << mysql_error( Connection ) << endl;
+                return 0;
+        }
+        else
+        {
+                MYSQL_RES *Result = mysql_store_result( Connection );
+		//cout << "trying.";
+                if( Result )
+                {
+			//cout << ".";
+                        vector<string> Row = MySQLFetchRow( Result );
+
+			if ( Row.size() == 2)
+			{
+				float res, count;
+				
+				res = UTIL_ToFloat(Row[0]);
+				count = UTIL_ToFloat(Row[1]);
+				//cout << ". done." << endl;
+				bonus = (res / count) * 4;
+
+				cout << "result: " + UTIL_ToString(res, 2) + " Count: " + UTIL_ToString(count, 2) + " Bonus: " + UTIL_ToString(bonus, 2) << endl;
+			}
+			mysql_free_result(Result);
+		}
+	}
+
+	return bonus;
+}
