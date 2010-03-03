@@ -413,12 +413,12 @@ bool CBNET :: Update( void *fd, void *send_fd )
 
                                 uint32_t rank = DotAPlayerSummary->GetRank( );
                                 if (rank > 0)
-                                        Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore()) + " points.";
+                                        Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore(), 2) + " points.";
                                 else
                                         Summary += " Rank: Unranked";
 
-
 				QueueChatCommand( Summary, i->first, !i->first.empty( ) );
+
 			}
 			else
 				QueueChatCommand( m_GHost->m_Language->HasntPlayedDotAGamesWithThisBot( i->second->GetName( ) ), i->first, !i->first.empty( ) );
@@ -2091,6 +2091,46 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						Owner = Payload.substr( 0, GameNameStart );
 						GameName = Payload.substr( GameNameStart + 1 );
 						m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Owner, User, m_Server, Whisper );
+					}
+				}
+				
+				//
+				// !PRIVMM (host private matchmaking game)
+				//
+
+				if( Command == "privmm" && !Payload.empty( ) )
+				{
+					m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, Payload, User, User, m_Server, Whisper );
+
+					m_GHost->m_CurrentGame->SetMatchMaking( true );
+					m_GHost->m_CurrentGame->SetMinimumScore( 0 );
+					m_GHost->m_CurrentGame->SetMaximumScore( 10000 );
+					m_GHost->m_CurrentGame->SetAutoStartPlayers( 10 );
+				}
+
+				//
+				// !PRIVMMBY (host private matchmaking game by other player)
+				//
+
+				if( Command == "privmmby" && !Payload.empty( ) )
+				{
+					// extract the owner and the game name
+					// e.g. "Varlock dota 6.54b arem ~~~" -> owner: "Varlock", game name: "dota 6.54b arem ~~~"
+
+					string Owner;
+					string GameName;
+					string :: size_type GameNameStart = Payload.find( " " );
+
+					if( GameNameStart != string :: npos )
+					{
+						Owner = Payload.substr( 0, GameNameStart );
+						GameName = Payload.substr( GameNameStart + 1 );
+						m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Owner, User, m_Server, Whisper );
+
+						m_GHost->m_CurrentGame->SetMatchMaking( true );
+						m_GHost->m_CurrentGame->SetMinimumScore( 0 );
+						m_GHost->m_CurrentGame->SetMaximumScore( 10000 );
+						m_GHost->m_CurrentGame->SetAutoStartPlayers( 10 );
 					}
 				}
 

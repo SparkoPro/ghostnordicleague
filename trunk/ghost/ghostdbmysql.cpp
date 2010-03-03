@@ -1015,12 +1015,12 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 					uint32_t TotalRaxKills = UTIL_ToUInt32( Row[10] );
 					uint32_t TotalCourierKills = UTIL_ToUInt32( Row[11] );
 
-					uint32_t Score = 0;
+					double Score = 0;
 					uint32_t Rank = 0;
 
 					// calculate score and rank
 
-					string Query4 = "SELECT score FROM dota_nskill_scores WHERE name='" + EscName + "'";
+					string Query4 = "SELECT score FROM dota_lame_scores WHERE name='" + EscName + "'";
 					
 					CONSOLE_Print( "[MYSQL] statsdota: " + Query4 );
 
@@ -1035,7 +1035,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 							vector<string> Row4 = MySQLFetchRow( Result4 );
 
 							if( Row4.size( ) == 1 )
-								Score = UTIL_ToUInt32( Row4[0] );
+								Score = UTIL_ToDouble( Row4[0] );
 							else
 								*error = "error checking dotaplayersummary score [" + name + "] - row doesn't have 1 column";
 
@@ -1047,7 +1047,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// calculate rank
 
-					string Query5 = "select COUNT(score) from dota_nskill_scores where score >= " + UTIL_ToString(Score);
+					string Query5 = "select COUNT(score) from dota_lame_scores where score >= " + UTIL_ToString(Score, 2);
 
 					CONSOLE_Print( "[MYSQL] statsdota: " + Query5 );
 
@@ -1071,6 +1071,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
                                        	}
 					
 					// done
+
 
 					DotAPlayerSummary = new CDBDotAPlayerSummary( string( ), name, TotalGames, TotalWins, TotalLosses, TotalKills, TotalDeaths, TotalCreepKills, TotalCreepDenies, TotalAssists, TotalNeutralKills, TotalTowerKills, TotalRaxKills, TotalCourierKills, Rank, Score );
 				}

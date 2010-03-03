@@ -1276,8 +1276,10 @@ void CGHost :: LoadIPToCountryData( )
 	}
 }
 
-void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper )
+bool CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper )
 {
+	bool Success = false;
+	
 	if( !m_Enabled )
 	{
 		for( vector<CBNET *> :: iterator i = m_BNETs.begin( ); i != m_BNETs.end( ); i++ )
@@ -1289,7 +1291,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		if( m_AdminGame )
 			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameDisabled( gameName ) );
 
-		return;
+		return false;
 	}
 
 	if( gameName.size( ) > 31 )
@@ -1303,7 +1305,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		if( m_AdminGame )
 			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameNameTooLong( gameName ) );
 
-		return;
+		return false;
 	}
 
 	if( !map->GetValid( ) )
@@ -1317,7 +1319,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		if( m_AdminGame )
 			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameInvalidMap( gameName ) );
 
-		return;
+		return false;
 	}
 
 	if( saveGame )
@@ -1333,7 +1335,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 			if( m_AdminGame )
 				m_AdminGame->SendAllChat( m_Language->UnableToCreateGameInvalidSaveGame( gameName ) );
 
-			return;
+			return false;
 		}
 
 		string MapPath1 = m_SaveGame->GetMapPath( );
@@ -1354,7 +1356,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 			if( m_AdminGame )
 				m_AdminGame->SendAllChat( m_Language->UnableToCreateGameSaveGameMapMismatch( gameName ) );
 
-			return;
+			return false;
 		}
 
 		if( m_EnforcePlayers.empty( ) )
@@ -1368,7 +1370,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 			if( m_AdminGame )
 				m_AdminGame->SendAllChat( m_Language->UnableToCreateGameMustEnforceFirst( gameName ) );
 
-			return;
+			return false;
 		}
 	}
 
@@ -1383,7 +1385,7 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		if( m_AdminGame )
 			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameAnotherGameInLobby( gameName, m_CurrentGame->GetDescription( ) ) );
 
-		return;
+		return false;
 	}
 
 	if( m_Games.size( ) >= m_MaxGames )
@@ -1397,10 +1399,11 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		if( m_AdminGame )
 			m_AdminGame->SendAllChat( m_Language->UnableToCreateGameMaxGamesReached( gameName, UTIL_ToString( m_MaxGames ) ) );
 
-		return;
+		return false;
 	}
 
 	CONSOLE_Print( "[GHOST] creating game [" + gameName + "]" );
+	Success = true;
 
 	if( saveGame )
 		m_CurrentGame = new CGame( this, map, m_SaveGame, m_HostPort, gameState, gameName, ownerName, creatorName, creatorServer );
@@ -1473,6 +1476,8 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 		if( (*i)->GetHoldClan( ) )
 			(*i)->HoldClan( m_CurrentGame );
 	}
+	
+	return Success;
 }
 
 void CONSOLE_RequestPrint(string message,string user)

@@ -291,7 +291,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 
 				uint32_t rank = DotAPlayerSummary->GetRank( );
 				if (rank > 0)
-					Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore()) + " points.";
+					Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore(), 2) + " points.";
 				else
 					Summary += " Rank: Unranked";
 
