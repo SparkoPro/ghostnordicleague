@@ -15284,3 +15284,3268 @@ committing transaction
 Running score decay..
 Score decay not ready to run yet.
 done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15490 found
+We got a premature leaver.
+Sentinel leavers: 0 Scourge Leavers: 1
+gameid 15490 is calculating
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 72.00 Count: 1395.00 Bonus: 0.21
+result: 156.00 Count: 1713.00 Bonus: 0.36
+result: 34.00 Count: 1111.00 Bonus: 0.12
+result: -56.00 Count: 1020.00 Bonus: -0.22
+result: 65.00 Count: 2495.00 Bonus: 0.10
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: -117.00 Count: 2355.00 Bonus: -0.20
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -119.00 Count: 2195.00 Bonus: -0.22
+Sentinel hero bonus: -0.31
+Scourge hero bonus: 0.31
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 72.00 Count: 1395.00 Bonus: 0.21
+result: 156.00 Count: 1713.00 Bonus: 0.36
+result: 34.00 Count: 1111.00 Bonus: 0.12
+result: -56.00 Count: 1020.00 Bonus: -0.22
+result: 65.00 Count: 2495.00 Bonus: 0.10
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: -117.00 Count: 2355.00 Bonus: -0.20
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -119.00 Count: 2195.00 Bonus: -0.22
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15491 found
+Sentinel leavers: 0 Scourge Leavers: 0
+gameid 15491 is calculating
+result: -65.00 Count: 1915.00 Bonus: -0.14
+result: -119.00 Count: 2195.00 Bonus: -0.22
+result: 9.00 Count: 1625.00 Bonus: 0.02
+result: 33.00 Count: 1962.00 Bonus: 0.07
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 65.00 Count: 1801.00 Bonus: 0.14
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 138.00 Count: 1727.00 Bonus: 0.32
+result: -91.00 Count: 1708.00 Bonus: -0.21
+result: 72.00 Count: 1395.00 Bonus: 0.21
+Sentinel hero bonus: 0.60
+Scourge hero bonus: -0.60
+result: -65.00 Count: 1915.00 Bonus: -0.14
+result: -119.00 Count: 2195.00 Bonus: -0.22
+result: 9.00 Count: 1625.00 Bonus: 0.02
+result: 33.00 Count: 1962.00 Bonus: 0.07
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 65.00 Count: 1801.00 Bonus: 0.14
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 138.00 Count: 1727.00 Bonus: 0.32
+result: -91.00 Count: 1708.00 Bonus: -0.21
+result: 72.00 Count: 1395.00 Bonus: 0.21
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15492 found
+We got a premature leaver.
+Sentinel leavers: 0 Scourge Leavers: 1
+gameid 15492 is calculating
+result: -96.00 Count: 1350.00 Bonus: -0.28
+result: 158.00 Count: 1954.00 Bonus: 0.32
+result: -70.00 Count: 2022.00 Bonus: -0.14
+result: 87.00 Count: 2214.00 Bonus: 0.16
+result: 156.00 Count: 1713.00 Bonus: 0.36
+result: -119.00 Count: 2195.00 Bonus: -0.22
+result: 66.00 Count: 2012.00 Bonus: 0.13
+result: -5.00 Count: 1428.00 Bonus: -0.01
+result: 47.00 Count: 1189.00 Bonus: 0.16
+result: 50.00 Count: 1940.00 Bonus: 0.10
+Sentinel hero bonus: -0.26
+Scourge hero bonus: 0.26
+result: -96.00 Count: 1350.00 Bonus: -0.28
+result: 158.00 Count: 1954.00 Bonus: 0.32
+result: -70.00 Count: 2022.00 Bonus: -0.14
+result: 87.00 Count: 2214.00 Bonus: 0.16
+result: 156.00 Count: 1713.00 Bonus: 0.36
+result: -119.00 Count: 2195.00 Bonus: -0.22
+result: 66.00 Count: 2012.00 Bonus: 0.13
+result: -5.00 Count: 1428.00 Bonus: -0.01
+result: 47.00 Count: 1189.00 Bonus: 0.16
+result: 50.00 Count: 1940.00 Bonus: 0.10
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 2 unscored games
+gameid 15493 found
+We got a premature leaver.
+Sentinel leavers: 0 Scourge Leavers: 1
+gameid 15493 is calculating
+result: 43.00 Count: 1904.00 Bonus: 0.09
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: 50.00 Count: 714.00 Bonus: 0.28
+result: 72.00 Count: 1395.00 Bonus: 0.21
+result: 8.00 Count: 1370.00 Bonus: 0.02
+result: -61.00 Count: 1370.00 Bonus: -0.18
+result: 47.00 Count: 1189.00 Bonus: 0.16
+result: 11.00 Count: 1365.00 Bonus: 0.03
+Sentinel hero bonus: -0.77
+Scourge hero bonus: 0.77
+result: 43.00 Count: 1904.00 Bonus: 0.09
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: 50.00 Count: 714.00 Bonus: 0.28
+result: 72.00 Count: 1395.00 Bonus: 0.21
+result: 8.00 Count: 1370.00 Bonus: 0.02
+result: -61.00 Count: 1370.00 Bonus: -0.18
+result: 47.00 Count: 1189.00 Bonus: 0.16
+result: 11.00 Count: 1365.00 Bonus: 0.03
+gameid 15494 found
+We got a premature leaver.
+Sentinel leavers: 0 Scourge Leavers: 1
+gameid 15494 is calculating
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: 47.00 Count: 1189.00 Bonus: 0.16
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 116.00 Count: 1524.00 Bonus: 0.30
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: -69.00 Count: 870.00 Bonus: -0.32
+result: 87.00 Count: 2214.00 Bonus: 0.16
+result: 85.00 Count: 1540.00 Bonus: 0.22
+result: -92.00 Count: 950.00 Bonus: -0.39
+Sentinel hero bonus: -1.72
+Scourge hero bonus: 1.72
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: 47.00 Count: 1189.00 Bonus: 0.16
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 116.00 Count: 1524.00 Bonus: 0.30
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: -69.00 Count: 870.00 Bonus: -0.32
+result: 87.00 Count: 2214.00 Bonus: 0.16
+result: 85.00 Count: 1540.00 Bonus: 0.22
+result: -92.00 Count: 950.00 Bonus: -0.39
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15495 found
+We got a premature leaver.
+Sentinel leavers: 1 Scourge Leavers: 0
+gameid 15495 is calculating
+result: -30.00 Count: 1419.00 Bonus: -0.08
+result: -70.00 Count: 2022.00 Bonus: -0.14
+result: -94.00 Count: 1883.00 Bonus: -0.20
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 101.00 Count: 1730.00 Bonus: 0.23
+result: 66.00 Count: 1156.00 Bonus: 0.23
+result: 65.00 Count: 2495.00 Bonus: 0.10
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 68.00 Count: 1619.00 Bonus: 0.17
+Sentinel hero bonus: 1.02
+Scourge hero bonus: -1.02
+result: -30.00 Count: 1419.00 Bonus: -0.08
+result: -70.00 Count: 2022.00 Bonus: -0.14
+result: -94.00 Count: 1883.00 Bonus: -0.20
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 101.00 Count: 1730.00 Bonus: 0.23
+result: 66.00 Count: 1156.00 Bonus: 0.23
+result: 65.00 Count: 2495.00 Bonus: 0.10
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 68.00 Count: 1619.00 Bonus: 0.17
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15496 found
+Sentinel leavers: 0 Scourge Leavers: 0
+gameid 15496 is calculating
+result: 113.00 Count: 1411.00 Bonus: 0.32
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -18.00 Count: 1247.00 Bonus: -0.06
+result: -30.00 Count: 1419.00 Bonus: -0.08
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 205.00 Count: 1360.00 Bonus: 0.60
+result: -174.00 Count: 2290.00 Bonus: -0.30
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: 22.00 Count: 1071.00 Bonus: 0.08
+Sentinel hero bonus: 0.13
+Scourge hero bonus: -0.13
+result: 113.00 Count: 1411.00 Bonus: 0.32
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -18.00 Count: 1247.00 Bonus: -0.06
+result: -30.00 Count: 1419.00 Bonus: -0.08
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 205.00 Count: 1360.00 Bonus: 0.60
+result: -174.00 Count: 2290.00 Bonus: -0.30
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: 22.00 Count: 1071.00 Bonus: 0.08
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15497 found
+We got a premature leaver.
+Sentinel leavers: 1 Scourge Leavers: 0
+gameid 15497 is calculating
+result: 50.00 Count: 1940.00 Bonus: 0.10
+result: 33.00 Count: 1962.00 Bonus: 0.07
+result: 66.00 Count: 2012.00 Bonus: 0.13
+result: -39.00 Count: 750.00 Bonus: -0.21
+result: 65.00 Count: 1470.00 Bonus: 0.18
+result: 161.00 Count: 1927.00 Bonus: 0.33
+result: -21.00 Count: 1555.00 Bonus: -0.05
+result: 129.00 Count: 1966.00 Bonus: 0.26
+result: -77.00 Count: 1429.00 Bonus: -0.22
+result: 16.00 Count: 1945.00 Bonus: 0.03
+Sentinel hero bonus: 0.09
+Scourge hero bonus: -0.09
+result: 50.00 Count: 1940.00 Bonus: 0.10
+result: 33.00 Count: 1962.00 Bonus: 0.07
+result: 66.00 Count: 2012.00 Bonus: 0.13
+result: -39.00 Count: 750.00 Bonus: -0.21
+result: 65.00 Count: 1470.00 Bonus: 0.18
+result: 161.00 Count: 1927.00 Bonus: 0.33
+result: -21.00 Count: 1555.00 Bonus: -0.05
+result: 129.00 Count: 1966.00 Bonus: 0.26
+result: -77.00 Count: 1429.00 Bonus: -0.22
+result: 16.00 Count: 1945.00 Bonus: 0.03
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15498 found
+We got a premature leaver.
+Sentinel leavers: 0 Scourge Leavers: 1
+gameid 15498 is calculating
+result: 138.00 Count: 1727.00 Bonus: 0.32
+result: 156.00 Count: 1713.00 Bonus: 0.36
+result: 39.00 Count: 1995.00 Bonus: 0.08
+result: -96.00 Count: 1350.00 Bonus: -0.28
+result: 43.00 Count: 1904.00 Bonus: 0.09
+result: 65.00 Count: 1470.00 Bonus: 0.18
+result: -69.00 Count: 870.00 Bonus: -0.32
+result: -248.00 Count: 1886.00 Bonus: -0.53
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -73.00 Count: 2144.00 Bonus: -0.14
+Sentinel hero bonus: -1.34
+Scourge hero bonus: 1.34
+result: 138.00 Count: 1727.00 Bonus: 0.32
+result: 156.00 Count: 1713.00 Bonus: 0.36
+result: 39.00 Count: 1995.00 Bonus: 0.08
+result: -96.00 Count: 1350.00 Bonus: -0.28
+result: 43.00 Count: 1904.00 Bonus: 0.09
+result: 65.00 Count: 1470.00 Bonus: 0.18
+result: -69.00 Count: 870.00 Bonus: -0.32
+result: -248.00 Count: 1886.00 Bonus: -0.53
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -73.00 Count: 2144.00 Bonus: -0.14
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15499 found
+We got a premature leaver.
+Sentinel leavers: 0 Scourge Leavers: 1
+gameid 15499 is calculating
+result: 80.00 Count: 1690.00 Bonus: 0.19
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: 105.00 Count: 1289.00 Bonus: 0.33
+result: -53.00 Count: 1253.00 Bonus: -0.17
+result: 34.00 Count: 1111.00 Bonus: 0.12
+result: 161.00 Count: 1927.00 Bonus: 0.33
+result: -69.00 Count: 870.00 Bonus: -0.32
+result: -86.00 Count: 1817.00 Bonus: -0.19
+result: 129.00 Count: 1966.00 Bonus: 0.26
+result: 31.00 Count: 1641.00 Bonus: 0.08
+Sentinel hero bonus: -0.61
+Scourge hero bonus: 0.61
+result: 80.00 Count: 1690.00 Bonus: 0.19
+result: 199.00 Count: 2572.00 Bonus: 0.31
+result: 105.00 Count: 1289.00 Bonus: 0.33
+result: -53.00 Count: 1253.00 Bonus: -0.17
+result: 34.00 Count: 1111.00 Bonus: 0.12
+result: 161.00 Count: 1927.00 Bonus: 0.33
+result: -69.00 Count: 870.00 Bonus: -0.32
+result: -86.00 Count: 1817.00 Bonus: -0.19
+result: 129.00 Count: 1966.00 Bonus: 0.26
+result: 31.00 Count: 1641.00 Bonus: 0.08
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15500 found
+Sentinel leavers: 0 Scourge Leavers: 0
+gameid 15500 is calculating
+result: -49.00 Count: 2134.00 Bonus: -0.09
+result: 66.00 Count: 2012.00 Bonus: 0.13
+result: 68.00 Count: 1619.00 Bonus: 0.17
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: -99.00 Count: 1821.00 Bonus: -0.22
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: -39.00 Count: 750.00 Bonus: -0.21
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 4.00 Count: 1164.00 Bonus: 0.01
+Sentinel hero bonus: 0.37
+Scourge hero bonus: -0.37
+result: -49.00 Count: 2134.00 Bonus: -0.09
+result: 66.00 Count: 2012.00 Bonus: 0.13
+result: 68.00 Count: 1619.00 Bonus: 0.17
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: -99.00 Count: 1821.00 Bonus: -0.22
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: -39.00 Count: 750.00 Bonus: -0.21
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 4.00 Count: 1164.00 Bonus: 0.01
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15501 found
+We got a premature leaver.
+We got a premature leaver.
+We got a premature leaver.
+Sentinel leavers: 2 Scourge Leavers: 1
+gameid 15501 is calculating
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 113.00 Count: 1411.00 Bonus: 0.32
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: -98.00 Count: 1625.00 Bonus: -0.24
+result: 129.00 Count: 1966.00 Bonus: 0.26
+Sentinel hero bonus: -0.25
+Scourge hero bonus: 0.25
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 113.00 Count: 1411.00 Bonus: 0.32
+result: 92.00 Count: 2095.00 Bonus: 0.18
+result: 10.00 Count: 1051.00 Bonus: 0.04
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: -98.00 Count: 1625.00 Bonus: -0.24
+result: 129.00 Count: 1966.00 Bonus: 0.26
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15502 found
+We got a premature leaver.
+Sentinel leavers: 1 Scourge Leavers: 0
+gameid 15502 is calculating
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 39.00 Count: 1995.00 Bonus: 0.08
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: -118.00 Count: 1971.00 Bonus: -0.24
+result: 85.00 Count: 1540.00 Bonus: 0.22
+result: -117.00 Count: 2355.00 Bonus: -0.20
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: -119.00 Count: 2195.00 Bonus: -0.22
+Sentinel hero bonus: -0.37
+Scourge hero bonus: 0.37
+result: 14.00 Count: 1849.00 Bonus: 0.03
+result: -73.00 Count: 2144.00 Bonus: -0.14
+result: 51.00 Count: 1323.00 Bonus: 0.15
+result: 39.00 Count: 1995.00 Bonus: 0.08
+result: 52.00 Count: 1292.00 Bonus: 0.16
+result: -118.00 Count: 1971.00 Bonus: -0.24
+result: 85.00 Count: 1540.00 Bonus: 0.22
+result: -117.00 Count: 2355.00 Bonus: -0.20
+result: 167.00 Count: 1914.00 Bonus: 0.35
+result: -119.00 Count: 2195.00 Bonus: -0.22
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 1 unscored games
+gameid 15503 found
+We got a premature leaver.
+Sentinel leavers: 1 Scourge Leavers: 0
+gameid 15503 is calculating
+result: -18.00 Count: 1271.00 Bonus: -0.06
+result: 72.00 Count: 1395.00 Bonus: 0.21
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: -36.00 Count: 1009.00 Bonus: -0.14
+result: -65.00 Count: 1915.00 Bonus: -0.14
+result: 65.00 Count: 2495.00 Bonus: 0.10
+result: 87.00 Count: 2214.00 Bonus: 0.16
+result: -180.00 Count: 1984.00 Bonus: -0.36
+result: -49.00 Count: 2134.00 Bonus: -0.09
+result: 8.00 Count: 1370.00 Bonus: 0.02
+Sentinel hero bonus: -0.17
+Scourge hero bonus: 0.17
+result: -18.00 Count: 1271.00 Bonus: -0.06
+result: 72.00 Count: 1395.00 Bonus: 0.21
+result: 66.00 Count: 2072.00 Bonus: 0.13
+result: -36.00 Count: 1009.00 Bonus: -0.14
+result: -65.00 Count: 1915.00 Bonus: -0.14
+result: 65.00 Count: 2495.00 Bonus: 0.10
+result: 87.00 Count: 2214.00 Bonus: 0.16
+result: -180.00 Count: 1984.00 Bonus: -0.36
+result: -49.00 Count: 2134.00 Bonus: -0.09
+result: 8.00 Count: 1370.00 Bonus: 0.02
+copying dota lame scores to scores table
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
+[CONFIG] loading file [/home/ghost/ghostnordicleague/update_dota_lame/update_dota_nordicskill.cfg]
+connecting to database server
+connected
+beginning transaction
+creating tables
+getting unscored games
+found 0 unscored games
+committing transaction
+Running score decay..
+Score decay not ready to run yet.
+done
