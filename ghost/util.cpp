@@ -380,6 +380,16 @@ double UTIL_ToDouble( string &s )
 	return result;
 }
 
+float UTIL_ToFloat( string &s )
+{
+        float result;
+        stringstream SS;
+        SS << s;
+        SS >> result;
+        return result;
+}
+
+
 string UTIL_MSToString( uint32_t ms )
 {
 	string MinString = UTIL_ToString( ( ms / 1000 ) / 60 );
