@@ -1020,7 +1020,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// calculate score and rank
 
-					string Query4 = "SELECT score FROM dota_lame_scores WHERE name='" + EscName + "'";
+					string Query4 = "SELECT score FROM dota_elo_scores WHERE name='" + EscName + "'";
 					
 					CONSOLE_Print( "[MYSQL] statsdota: " + Query4 );
 
@@ -1047,7 +1047,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// calculate rank
 
-					string Query5 = "select COUNT(score) from dota_lame_scores where score >= " + UTIL_ToString(Score, 2);
+					string Query5 = "select COUNT(score) from dota_elo_scores where score >= " + UTIL_ToString(Score, 2);
 
 					CONSOLE_Print( "[MYSQL] statsdota: " + Query5 );
 
