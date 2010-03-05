@@ -48,6 +48,7 @@ using namespace std;
 string DBTable = "dota_lame_scores";
 string DBControllTable = "dota_lame_games_scored";
 string DBGainTable = "dota_lame_gains";
+string DBScoreCategory = "dota_lame";
 
 float gain_kill = 0.65; //UTIL_ToFloat( CFG.GetString( "formula_kill_gain", "" ) );
 float gain_death = -1.2; //UTIL_ToFloat( CFG.GetString( "formula_death_gain", "" ) );
@@ -66,39 +67,29 @@ float CalculateGain(int k, int d, int a, int ck, int cd, int t, int r, int n)
 	float gain = 0;
 	float total_gain = 0;
 
-//	cout << "Calculating NordicSkill Rate.." << endl;
-
 	gain = k * gain_kill;
 	total_gain += gain;
-//	cout << "Kill gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = d * gain_death;
 	total_gain += gain;
-//	cout << "Death gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = a * gain_assist;
 	total_gain += gain;
-//	cout << "Assist gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = ck * gain_creepkill;
 	total_gain += gain;
-//	cout << "Creepkill gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = cd * gain_creepdenie;
 	total_gain += gain;
-//	cout << "CreepDenie gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = t * gain_tower;
 	total_gain += gain;
-//	cout << "TowerKill gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = r * gain_rax;
 	total_gain += gain;
-//	cout << "Rax gain: " << gain << " Total: " << total_gain << endl;
 
 	gain = n * gain_neutral;
 	total_gain += gain;
-//	cout << "NeutralKill gain: " << gain << " Total: " << total_gain << endl;
 	return total_gain;
 }
 
@@ -212,7 +203,7 @@ int main( int argc, char **argv )
 	cout << "Neutral: " << gain_neutral << endl;
 */
 
-	cout << "connecting to database server" << endl;
+	//cout << "connecting to database server" << endl;
 	MYSQL *Connection = NULL;
 
 	if( !( Connection = mysql_init( NULL ) ) )
@@ -232,8 +223,8 @@ int main( int argc, char **argv )
 
 	//GetHeroBonus("H00H", Connection);
 
-	cout << "connected" << endl;
-	cout << "beginning transaction" << endl;
+	//cout << "connected" << endl;
+	//cout << "beginning transaction" << endl;
 
 	string QBegin = "BEGIN";
 
@@ -243,7 +234,7 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	cout << "creating tables" << endl;
+	//cout << "creating tables" << endl;
 
 	string QCreate1 = "CREATE TABLE IF NOT EXISTS " + DBTable + " ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(15) NOT NULL, server VARCHAR(100) NOT NULL, score REAL NOT NULL )";
 	string QCreate2 = "CREATE TABLE IF NOT EXISTS " + DBControllTable + " ( last_gameid INT NOT NULL PRIMARY KEY )";
@@ -260,7 +251,7 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	cout << "getting unscored games" << endl;
+	//cout << "getting unscored games" << endl;
 	queue<uint32_t> UnscoredGames;
 
 	string QSelectUnscored = "SELECT id FROM games WHERE id > ( SELECT last_gameid FROM " + DBControllTable + " LIMIT 1 ) ORDER BY id";
@@ -305,7 +296,13 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT " + DBTable + ".id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, neutralkills, dotaplayers.botid, dotaplayers.hero, gameplayers.left, min, sec FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN " + DBTable + " ON LOWER(" + DBTable + ".name)=LOWER(gameplayers.name) AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+/*		string QSelectPlayers = "SELECT " + DBTable + ".id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills, 
+neutralkills, dotaplayers.botid, dotaplayers.hero, gameplayers.left, min, sec FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON 
+gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN " + DBTable + " ON LOWER(" + DBTable + ".name)=LOWER(gameplayers.name) AND server=spoofedrealm WHERE 
+dotaplayers.gameid=" + UTIL_ToString( GameID );
+*/
+
+		string QSelectPlayers = "SELECT " + DBTable + ".id, gameplayers.name, spoofedrealm, newcolour, winner, score, kills, deaths, assists, creepkills, creepdenies, towerkills, raxkills,neutralkills, dotaplayers.botid, dotaplayers.hero, gameplayers.left, min, sec, games.duration FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN " + DBTable + " ON LOWER(" + DBTable + ".name)=LOWER(gameplayers.name) AND server='europe.battle.net' LEFT JOIN games on games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -359,12 +356,14 @@ int main( int argc, char **argv )
 				string	 player_heroes[10];
 
 				bool	 player_isleaver[10];
-				uint32_t player_left[10];
+				float	 player_left[10];
+
+				float	player_scale[10];
 
 				
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 19 )
+				while( Row.size( ) == 20 )
 				{
 					if( num_players >= 10 )
 					{
@@ -389,7 +388,7 @@ int main( int argc, char **argv )
 
 
 					player_heroes[num_players] = Row[15];
-					player_left[num_players] = UTIL_ToUInt32(Row[16]);
+					player_left[num_players] = UTIL_ToFloat(Row[16]);
 
 
 					if( Winner != 1 && Winner != 2 )
@@ -453,14 +452,15 @@ int main( int argc, char **argv )
 
 					// We want to keep track of leavers and adjust score for loosing team if they are less than winning team..
 
-					float game_min = UTIL_ToFloat(Row[17]);
-					float game_sec = UTIL_ToFloat(Row[18]);
-					float game_duration = game_min * 60 + game_sec + 180; // add 3 minutes for 2 min before game and 1 min as gameover timer
+					//float game_min = UTIL_ToFloat(Row[17]);
+					//float game_sec = UTIL_ToFloat(Row[18]);
+
+					float game_duration = UTIL_ToFloat(Row[19]);
 					
 					//cout << "Game duration: " + UTIL_ToString(game_duration, 0) << endl;
 
 					// ok we got game duration
-					// flag player as leaver if he left more than X minutes before game end (we loose 3 minutes that still is recorded as gamelength, 2 minutes before game start and 1 after game is over so if we want 5 minutes we have to use 8 to get 5, eh. :)
+					// flag player as leaver if he left more than X minutes before game end
 
 					if ((game_duration - (60 * 5)) > player_left[num_players])
 					{
@@ -473,11 +473,32 @@ int main( int argc, char **argv )
 						player_isleaver[num_players] = false;
 					}
 
+					if (player_left[num_players] >= game_duration)
+						player_scale[num_players] = 1.0;
+					else if (player_left[num_players] > 0)
+					{
+						player_scale[num_players] = player_left[num_players] / game_duration;
+						if (player_scale[num_players] > 0.99)
+							player_scale[num_players] = 1.0;
+					}
+					else
+						player_scale[num_players] = 0;
+
 					num_players++;
 					Row = MySQLFetchRow( Result );
 				}
 
 				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
+
+
+				/*
+				if (team_leavers[0] > team_leavers[1])
+					// give sent some kind of reduction
+				else if (team_leavers[1] < team_leavers[0])
+					// give scourge some kind if reduction
+				else
+					// no leavers or equal teams.
+				*/
 
 				mysql_free_result( Result );
 
@@ -554,18 +575,26 @@ int main( int argc, char **argv )
 							 * Compensate for leavers, leavers will still loose full.
 							 */
 							// todo: have to come up with a good algorithm for loss-reduction.
+							
+							// if (team_leavers[player_teams[i]])
 
-							// if (team_leavers[player_teams[i])
+							float unscaled_score = (player_ratings[i] - old_player_ratings[i] + player_gain[i]);
+							float scaled_score = (player_ratings[i] - old_player_ratings[i] + player_gain[i]) * player_scale[i];
 
+							cout << "Scaled score (scale: " + UTIL_ToString(player_scale[i], 8) + ") would give: " + UTIL_ToString(scaled_score, 2) + " Instead of: " + UTIL_ToString(unscaled_score, 2) << endl;
+
+							//player_ratings[i] -= old_player_ratings[i];
 							player_ratings[i] += player_gain[i];
+							/*player_ratings[i] *= player_scale[i];
+							player_ratings[i] += old_player_ratings[i];*/
 
-							string QAddToGaintable = "INSERT INTO " + DBGainTable + " (gameid, botid, name, colour, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", " + UTIL_ToString(BotID) + ", '" + EscName + "', " + UTIL_ToString(player_colours[i]) + ", " + UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(new_gain, 2) + " )";
-							//cout << QAddToGaintable << endl;
+							string QAddToGaintable = "INSERT INTO " + DBGainTable + " (gameid, botid, name, colour, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", " + UTIL_ToString(BotID) + ", '" + EscName + "', " + UTIL_ToString(player_colours[i]) + ", " + UTIL_ToString(old_player_ratings[i], 2) + ", " + UTIL_ToString(new_gain, 2) + " )";
+							cout << QAddToGaintable << endl;
 							
 							if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
 							{
 								cout << "error: " << mysql_error( Connection ) << endl;
-								//return 1;
+								return 1;
 							}
 							
 
@@ -584,7 +613,7 @@ int main( int argc, char **argv )
 							else
 							{
 								string EscServer = MySQLEscapeString( Connection, servers[i] );
-								string QInsertScore = "INSERT INTO " + DBTable + " ( name, server, score ) VALUES ( '" + EscName + "', '" + EscServer + "', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
+								string QInsertScore = "INSERT INTO " + DBTable + " ( name, server, score ) VALUES ( '" + EscName + "', 'europe.battle.net', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
 
 								if( mysql_real_query( Connection, QInsertScore.c_str( ), QInsertScore.size( ) ) != 0 )
 								{
@@ -616,8 +645,8 @@ int main( int argc, char **argv )
 	{
 		cout << "copying dota lame scores to scores table" << endl;
 
-		string QCopyScores1 = "DELETE FROM scores WHERE category='dota_lame'";
-		string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_lame', name, server, score FROM " + DBTable;
+		string QCopyScores1 = "DELETE FROM scores WHERE category='" + DBScoreCategory + "'";
+		string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT '" + DBScoreCategory + "', name, server, score FROM " + DBTable;
 
 		if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
 		{
@@ -632,7 +661,7 @@ int main( int argc, char **argv )
 		}
 	}
 
-	cout << "committing transaction" << endl;
+	//cout << "committing transaction" << endl;
 
 	string QCommit = "COMMIT";
 
@@ -642,7 +671,7 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	cout << "Running score decay.." << endl;
+	//cout << "Running score decay.." << endl;
 
 	/*
 	 * Execute score decay once per day
@@ -667,10 +696,10 @@ int main( int argc, char **argv )
 			
 			vector<string> dRow = MySQLFetchRow( dResult );
 
-			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > 86400)
+			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > 21600)
 			{
 				cout << "Executing score decay algorithm..." << endl;
-				string QFindScoreDecays = "select name, score, (score - (score - (score * 0.01))) * -1 as gain from scores where name IN (select distinct(name) from dota_lame_gains where name NOT IN (select DISTINCT(name) from dota_lame_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_lame'";
+				string QFindScoreDecays = "select name, score, (score - (score - (score * 0.01))) * -1 as gain from scores where name IN (select distinct(name) from " + DBGainTable + " where name NOT IN (select DISTINCT(name) from " + DBGainTable + " where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = '" + DBScoreCategory + "'";
 	
 				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
 			        {
@@ -744,7 +773,7 @@ int main( int argc, char **argv )
    						return 1;
                                         }
 					else
-						cout << "success!";
+						cout << "success!" << endl;
 
 				}
 			}
@@ -753,7 +782,7 @@ int main( int argc, char **argv )
 		}
 	}
 
-	cout << "done" << endl;
+	//cout << "done" << endl;
 
 	return 0;
 }
@@ -790,7 +819,7 @@ float GetHeroBonus(string hero, MYSQL *Connection)
 				//cout << ". done." << endl;
 				bonus = (res / count) * 4;
 
-				cout << "result: " + UTIL_ToString(res, 2) + " Count: " + UTIL_ToString(count, 2) + " Bonus: " + UTIL_ToString(bonus, 2) << endl;
+				//cout << "result: " + UTIL_ToString(res, 2) + " Count: " + UTIL_ToString(count, 2) + " Bonus: " + UTIL_ToString(bonus, 2) << endl;
 			}
 			mysql_free_result(Result);
 		}
