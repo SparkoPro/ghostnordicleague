@@ -36,9 +36,11 @@ class CCallableGamePlayerSummaryCheck;
 class CCallableDotAPlayerSummaryCheck;
 
 typedef pair<string,CCallableBanCheck *> PairedBanCheck;
+// typedef pair<string,CCallableSmurfCheck *> PairedSmurfCheck;
 typedef pair<string,CCallableBanAdd *> PairedBanAdd;
 typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<string,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
+
 
 class CGame : public CBaseGame
 {
@@ -50,6 +52,7 @@ protected:
 	CStats *m_Stats;							// class to keep track of game stats such as kills/deaths/assists in dota
 	CCallableGameAdd *m_CallableGameAdd;		// threaded database game addition in progress
 	vector<PairedBanCheck> m_PairedBanChecks;	// vector of paired threaded database ban checks in progress
+	//vector<PairedSmurfCheck> m_PairedSmurfChecks;	// vector of paired threaded database ban checks in progress
 	vector<PairedBanAdd> m_PairedBanAdds;		// vector of paired threaded database ban adds in progress
 	vector<PairedGPSCheck> m_PairedGPSChecks;	// vector of paired threaded database game player summary checks in progress
 	vector<PairedGPSCheck> m_PairedReliabilityChecks;	// vector of paired threaded database game player summary checks in progress
