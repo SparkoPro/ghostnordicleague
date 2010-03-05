@@ -213,6 +213,11 @@ int main( int argc, char **argv )
 	}
 
 	cout << "found " << UnscoredGames.size( ) << " unscored games" << endl;
+	
+	bool CopyScores = false;
+	
+	if (UnscoredGames.size( ) > 0)
+		CopyScores = true;
 
 	while( !UnscoredGames.empty( ) )
 	{
@@ -392,21 +397,25 @@ int main( int argc, char **argv )
 		}
 	}
 
-	cout << "copying dota elo scores to scores table" << endl;
-
-	string QCopyScores1 = "DELETE FROM scores WHERE category='dota_elo'";
-	string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_elo', name, server, score FROM dota_elo_scores";
-
-	if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
+	if (CopyScores)
 	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
-	}
 
-	if( mysql_real_query( Connection, QCopyScores2.c_str( ), QCopyScores2.size( ) ) != 0 )
-	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
+		cout << "copying dota elo scores to scores table" << endl;
+
+		string QCopyScores1 = "DELETE FROM scores WHERE category='dota_elo'";
+		string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_elo', name, server, score FROM dota_elo_scores";
+
+		if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
+		{
+			cout << "error: " << mysql_error( Connection ) << endl;
+			return 1;
+		}
+
+		if( mysql_real_query( Connection, QCopyScores2.c_str( ), QCopyScores2.size( ) ) != 0 )
+		{
+			cout << "error: " << mysql_error( Connection ) << endl;
+			return 1;
+		}
 	}
 
 	cout << "committing transaction" << endl;
@@ -417,6 +426,109 @@ int main( int argc, char **argv )
 	{
 		cout << "error: " << mysql_error( Connection ) << endl;
 		return 1;
+	}
+	
+	string QLastDecay = "SELECT UNIX_TIMESTAMP() - UNIX_TIMESTAMP(last_update) FROM dota_score_decay";
+
+        if( mysql_real_query( Connection, QLastDecay.c_str( ), QLastDecay.size( ) ) != 0 )
+        {
+                cout << "error: " << mysql_error( Connection ) << endl;
+                return 1;
+        }
+        else
+        {
+
+			MYSQL_RES *dResult = mysql_store_result( Connection );
+		
+			if ( dResult )
+			{
+			
+			vector<string> dRow = MySQLFetchRow( dResult );
+
+			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > 21600)
+			{
+				cout << "Executing score decay algorithm..." << endl;
+				string QFindScoreDecays = "select name, score, (score - (score - (score * 0.01))) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
+	
+				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
+			        {
+        				cout << "error: " << mysql_error( Connection ) << endl;
+                			return 1;
+			        }
+				else
+				{
+					MYSQL_RES *Result = mysql_store_result( Connection );
+
+					if( Result )
+					{
+						vector<string> Row = MySQLFetchRow( Result );
+			
+						while( !Row.empty( ) )
+						{
+							string QUpdateScore = "CALL AddScoreDecay('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
+				
+							if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
+	        					{
+               							cout << "error: " << mysql_error( Connection ) << endl;
+               							return 1;
+        						}
+							else
+							{
+								cout << "Score decay for " + Row[0] + " added (" + Row[2] + ")" << endl;
+							}
+	
+							Row = MySQLFetchRow( Result );
+						}
+
+						mysql_free_result( Result );
+
+						string QSetLastUpdate = "UPDATE dota_score_decay SET last_update = NOW()";
+
+						if( mysql_real_query( Connection, QSetLastUpdate.c_str( ), QSetLastUpdate.size( ) ) != 0 )
+                                                {
+                                                	cout << "error: " << mysql_error( Connection ) << endl;
+                                                        return 1;
+                                                }
+						else
+							cout << "Updating score decay last_update to current time." << endl;
+					
+
+					}
+					else
+					{
+						cout << "error: " << mysql_error( Connection ) << endl;
+						return 1;
+					}
+
+
+					/*
+					 * Update herostats bonus system
+					 */
+
+					string QHeroStatsClean = "DELETE FROM herostats";
+					string QHeroStats = "INSERT INTO herostats (count, name, hero, result) SELECT count(dota_entitys.name) as ncount, dota_entitys.name, hero, SUM(IF(winner > 0, IF((newcolour <= 5 && dotagames.winner = 1) || (newcolour >= 7 && dotagames.winner=2), 1, -1), 0)) as nresult FROM `dotaplayers` LEFT JOIN dotagames on dotagames.gameid = dotaplayers.gameid LEFT JOIN dota_entitys on dota_entitys.entity_id = hero WHERE name NOT LIKE '' group by name";
+
+					if ( mysql_real_query( Connection, QHeroStatsClean.c_str( ), QHeroStatsClean.size( ) ) != 0 )
+                                        {
+                                                cout << "error: " << mysql_error( Connection ) << endl;
+   						return 1;
+                                        }
+					else
+						cout << "Cleaned herostats, trying to repopulate... ";
+
+					if ( mysql_real_query( Connection, QHeroStats.c_str( ), QHeroStats.size( ) ) != 0 )
+                                        {
+                                                cout << "error: " << mysql_error( Connection ) << endl;
+   						return 1;
+                                        }
+					else
+						cout << "success!" << endl;
+
+				}
+			}
+			else
+				cout << "Score decay not ready to run yet." << endl;
+		}
 	}
 
 	cout << "done" << endl;
