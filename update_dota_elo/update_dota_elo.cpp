@@ -224,7 +224,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON dota_elo_scores.name=gameplayers.name AND server=spoofedrealm WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON dota_elo_scores.name=gameplayers.name LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -255,10 +255,11 @@ int main( int argc, char **argv )
 				team_ratings[1] = 0.0;
 				team_numplayers[0] = 0;
 				team_numplayers[1] = 0;
+				string gametime;
 
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 6 )
+				while( Row.size( ) == 7 )
 				{
 					if( num_players >= 10 )
 					{
@@ -327,6 +328,8 @@ int main( int argc, char **argv )
 						break;
 					}
 
+					gametime = Row[6];
+
 					num_players++;
 					Row = MySQLFetchRow( Result );
 				}
@@ -355,6 +358,15 @@ int main( int argc, char **argv )
 						{
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
 
+                                                        string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
+                                                        //cout << QAddToGaintable << endl;
+
+                                                        if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
+                                                        {
+                                                                cout << "error: " << mysql_error( Connection ) << endl;
+                                                                //return 1;
+                                                        }
+
 							if( exists[i] )
 							{
 								string QUpdateScore = "UPDATE dota_elo_scores SET score=" + UTIL_ToString( player_ratings[i], 2 ) + " WHERE id=" + UTIL_ToString( rowids[i] );
@@ -369,7 +381,7 @@ int main( int argc, char **argv )
 							{
 								string EscName = MySQLEscapeString( Connection, names[i] );
 								string EscServer = MySQLEscapeString( Connection, servers[i] );
-								string QInsertScore = "INSERT INTO dota_elo_scores ( name, server, score ) VALUES ( '" + EscName + "', '" + EscServer + "', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
+								string QInsertScore = "INSERT INTO dota_elo_scores ( name, server, score ) VALUES ( '" + EscName + "', 'europe.battle.net', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
 
 								if( mysql_real_query( Connection, QInsertScore.c_str( ), QInsertScore.size( ) ) != 0 )
 								{
@@ -445,10 +457,10 @@ int main( int argc, char **argv )
 			
 			vector<string> dRow = MySQLFetchRow( dResult );
 
-			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > 21600)
+			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > (60 * 60 * 24))
 			{
 				cout << "Executing score decay algorithm..." << endl;
-				string QFindScoreDecays = "select name, score, (score - (score - (score * 0.01))) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
+				string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
 	
 				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
 			        {
@@ -465,7 +477,7 @@ int main( int argc, char **argv )
 			
 						while( !Row.empty( ) )
 						{
-							string QUpdateScore = "CALL AddScoreDecay('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
+							string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
 				
 							if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
 	        					{
