@@ -398,6 +398,7 @@ int main( int argc, char **argv )
 						{
 							if (player_isleaver[i])
 							{
+								cout << "Player [" << names[i] << "] is a leaver, removing his score..";
 								if (player_ratings[i] > old_player_ratings[i])
 								{
 									team_bonus[player_teams[i]] += player_ratings[i] - old_player_ratings[i];
@@ -408,6 +409,8 @@ int main( int argc, char **argv )
 									// give the leavers score
 									team_bonus[player_teams[i]] += (old_player_ratings[i] - player_ratings[i]);
 								}
+								
+								cout << " gave team " << player_teams[i] << " total bonus of " << team_bonus[player_teams[i]] << endl;
 							}				
 						}
 
