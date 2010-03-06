@@ -262,6 +262,9 @@ int main( int argc, char **argv )
 				float	player_left[10];
 
 				float	player_scale[10];
+				
+				team_leavers[0] = 0;
+				team_leavers[1] = 0;
 
 
 				vector<string> Row = MySQLFetchRow( Result );
@@ -336,6 +339,8 @@ int main( int argc, char **argv )
 					}
 					
 					float game_duration = UTIL_ToFloat(Row[8]);
+					
+					player_left[num_players] = UTIL_ToUInt32(Row[7]);
 					
 					if ((game_duration - (60 * 5)) > player_left[num_players])
 					{
