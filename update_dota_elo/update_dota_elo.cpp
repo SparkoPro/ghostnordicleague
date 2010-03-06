@@ -413,11 +413,6 @@ int main( int argc, char **argv )
 								cout << " gave team " << player_teams[i] << " total bonus of " << team_bonus[player_teams[i]] << endl;
 							}				
 						}
-						
-						if (team_leavers[0] == 5)
-							team_leavers[0] = 4;
-						if (team_leavers[1] == 5)
-							team_leavers[1] = 4;
 							
 						for( int i = 0; i < num_players; i++ )
 						{
