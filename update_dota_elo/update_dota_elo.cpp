@@ -396,7 +396,7 @@ int main( int argc, char **argv )
 								if (player_ratings[i] > old_player_ratings[i])
 								{
 									team_bonus[player_teams[i]] += player_ratings[i] - old_player_ratings[i];
-									player_ratings[i] = old_player_ratings[i];
+									//player_ratings[i] = old_player_ratings[i];
 								}
 								else
 								{
