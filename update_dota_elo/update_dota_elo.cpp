@@ -421,7 +421,7 @@ int main( int argc, char **argv )
 							{
 								if ((player_teams[i] == 0 && team_leavers[1] <= 4) || (player_teams[i] == 1 && team_leavers[0] <= 4))
 								{
-									float bonus = team_bonus[player_teams[i]] / (6 - team_leavers[player_teams[i]]);
+									float bonus = team_bonus[player_teams[i]] / (5 - team_leavers[player_teams[i]]);
 									
 									if (bonus > 10)
 										bonus = 10;
