@@ -402,7 +402,7 @@ int main( int argc, char **argv )
 								if (player_ratings[i] > old_player_ratings[i])
 								{
 									team_bonus[player_teams[i]] += player_ratings[i] - old_player_ratings[i];
-									//player_ratings[i] = old_player_ratings[i];
+									player_ratings[i] = old_player_ratings[i];
 								}
 								else
 								{
@@ -413,13 +413,18 @@ int main( int argc, char **argv )
 								cout << " gave team " << player_teams[i] << " total bonus of " << team_bonus[player_teams[i]] << endl;
 							}				
 						}
-
+						
+						if (team_leavers[0] == 5)
+							team_leavers[0] = 4;
+						if (team_leavers[1] == 5)
+							team_leavers[1] = 4;
+							
 						for( int i = 0; i < num_players; i++ )
 						{
 							
 							if (!player_isleaver[i])
 							{
-								//player_ratings[i] += team_bonus[player_teams[i]];
+								player_ratings[i] += (team_bonus[player_teams[i]] / (6 - team_leavers[player_teams[i]]));
 								cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString((team_bonus[player_teams[i]] / (5 - team_leavers[player_teams[i]])), 2) << endl;
 							}
 							
