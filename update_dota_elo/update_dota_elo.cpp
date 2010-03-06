@@ -224,7 +224,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON dota_elo_scores.name=gameplayers.name LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime, gameplayers.left, games.duration FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON dota_elo_scores.name=gameplayers.name LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -256,10 +256,17 @@ int main( int argc, char **argv )
 				team_numplayers[0] = 0;
 				team_numplayers[1] = 0;
 				string gametime;
+				
+				int		team_leavers[2];
+				bool	player_isleaver[10];
+				float	player_left[10];
+
+				float	player_scale[10];
+
 
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 7 )
+				while( Row.size( ) == 9 )
 				{
 					if( num_players >= 10 )
 					{
@@ -327,14 +334,42 @@ int main( int argc, char **argv )
 						ignore = true;
 						break;
 					}
+					
+					float game_duration = UTIL_ToFloat(Row[8]);
+					
+					if ((game_duration - (60 * 5)) > player_left[num_players])
+					{
+						cout << "We got a premature leaver." << endl;
+						player_isleaver[num_players] = true;
+						team_leavers[player_teams[num_players]]++;
+					}
+					else
+					{
+						player_isleaver[num_players] = false;
+					}
+
+					if (player_left[num_players] >= game_duration)
+						player_scale[num_players] = 1.0;
+					else if (player_left[num_players] > 0)
+					{
+						player_scale[num_players] = player_left[num_players] / game_duration;
+						if (player_scale[num_players] > 0.99)
+							player_scale[num_players] = 1.0;
+					}
+					else
+						player_scale[num_players] = 0;
 
 					gametime = Row[6];
 
 					num_players++;
 					Row = MySQLFetchRow( Result );
 				}
+				
+				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
 
 				mysql_free_result( Result );
+				
+				float team_bonus[2];
 
 				if( !ignore )
 				{
@@ -353,19 +388,43 @@ int main( int argc, char **argv )
 						team_ratings[0] /= team_numplayers[0];
 						team_ratings[1] /= team_numplayers[1];
 						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners );
+						
+						for( int i = 0; i < num_players; i++ )
+						{
+							if (player_isleaver[i])
+							{
+								if (player_ratings[i] > old_player_ratings[i])
+								{
+									team_bonus[player_teams[i]] += player_ratings[i] - old_player_ratings[i];
+									player_ratings[i] = old_player_ratings[i];
+								}
+								else
+								{
+									// give the leavers score
+									team_bonus[player_teams[i]] += (old_player_ratings[i] - player_ratings[i]);
+								}
+							}				
+						}
 
 						for( int i = 0; i < num_players; i++ )
 						{
+							
+							if (!player_isleaver[i])
+							{
+								//player_ratings[i] += team_bonus[player_teams[i]];
+								cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString((team_bonus[player_teams[i]] / (5 - team_leavers[player_teams[i]])), 2) << endl;
+							}
+							
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
 
-                                                        string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
-                                                        //cout << QAddToGaintable << endl;
+                            string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
+                            //cout << QAddToGaintable << endl;
 
-                                                        if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
-                                                        {
-                                                                cout << "error: " << mysql_error( Connection ) << endl;
-                                                                //return 1;
-                                                        }
+                            if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
+                            {
+                            	cout << "error: " << mysql_error( Connection ) << endl;
+                            	//return 1;
+                            }
 
 							if( exists[i] )
 							{
