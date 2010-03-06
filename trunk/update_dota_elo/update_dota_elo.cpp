@@ -417,10 +417,13 @@ int main( int argc, char **argv )
 						for( int i = 0; i < num_players; i++ )
 						{
 							
-							if (!player_isleaver[i])
+							if (!player_isleaver[i] && (team_leavers[0] != team_leavers[1]))
 							{
-								player_ratings[i] += (team_bonus[player_teams[i]] / (6 - team_leavers[player_teams[i]]));
-								cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString((team_bonus[player_teams[i]] / (6 - team_leavers[player_teams[i]])), 2) << endl;
+								if ((player_teams[i] == 0 && team_leavers[1] <= 4) || (player_teams[i] == 1 && team_leavers[0] <= 4))
+								{
+									player_ratings[i] += (team_bonus[player_teams[i]] / (6 - team_leavers[player_teams[i]]));
+									cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString((team_bonus[player_teams[i]] / (6 - team_leavers[player_teams[i]])), 2) << endl;
+								}
 							}
 							
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
