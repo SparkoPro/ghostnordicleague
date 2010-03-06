@@ -407,7 +407,7 @@ int main( int argc, char **argv )
 								else
 								{
 									// give the leavers score
-									team_bonus[player_teams[i]] += (old_player_ratings[i] - player_ratings[i]);
+									team_bonus[player_teams[i]] += (old_player_ratings[i] - player_ratings[i]) * 1.5;
 								}
 								
 								cout << " gave team " << player_teams[i] << " total bonus of " << team_bonus[player_teams[i]] << endl;
