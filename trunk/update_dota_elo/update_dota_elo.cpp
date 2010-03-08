@@ -536,7 +536,8 @@ int main( int argc, char **argv )
 			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > (60 * 60 * 24))
 			{
 				cout << "Executing score decay algorithm..." << endl;
-				string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
+				string QFindScoreDecays = "select name, score from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
+				//string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
 	
 				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
 			        {
@@ -553,7 +554,11 @@ int main( int argc, char **argv )
 			
 						while( !Row.empty( ) )
 						{
-							string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
+                                                        float score = UTIL_ToFloat(Row[1]);
+                                                        float gain = (score * 0.01) * -1;
+                                                        string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + UTIL_ToString(score + gain, 2) + ", " + UTIL_ToString(gain, 2) + ")";
+
+							//string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
 				
 							if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
 	        					{
@@ -562,7 +567,7 @@ int main( int argc, char **argv )
         						}
 							else
 							{
-								cout << "Score decay for " + Row[0] + " added (" + Row[2] + ")" << endl;
+								cout << "Score decay for " + Row[0] + " added (" + UTIL_ToString(gain, 2) + ")" << endl;
 							}
 	
 							Row = MySQLFetchRow( Result );
