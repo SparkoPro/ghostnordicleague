@@ -393,7 +393,9 @@ int main( int argc, char **argv )
 						team_ratings[0] /= team_numplayers[0];
 						team_ratings[1] /= team_numplayers[1];
 						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners );
-						
+
+						team_bonus[0] = 0;
+						team_bonus[1] = 0;
 						for( int i = 0; i < num_players; i++ )
 						{
 							if (player_isleaver[i])
@@ -407,7 +409,12 @@ int main( int argc, char **argv )
 								else
 								{
 									// give the leavers score
-									team_bonus[player_teams[i]] += (old_player_ratings[i] - player_ratings[i]) * 1.5;
+									float add_bonus = (old_player_ratings[i] - player_ratings[i]) * 1.5;
+
+									if (add_bonus > 30)
+										add_bonus = 30;
+
+									team_bonus[player_teams[i]] += add_bonus;
 								}
 								
 								cout << " gave team " << player_teams[i] << " total bonus of " << team_bonus[player_teams[i]] << endl;
@@ -422,11 +429,25 @@ int main( int argc, char **argv )
 								if ((player_teams[i] == 0 && team_leavers[1] <= 4) || (player_teams[i] == 1 && team_leavers[0] <= 4))
 								{
 									float bonus = team_bonus[player_teams[i]] / (5 - team_leavers[player_teams[i]]);
+									float diff = player_ratings[i] - old_player_ratings[i];
 									
-									if (bonus > 10)
-										bonus = 10;
+									if (bonus > 30)
+										bonus = 30;
+
+									if (diff < 0 && bonus > (diff * -1))
+										bonus = diff * -1;
+
+									
+									if (diff > 0 && bonus > diff)
+										bonus = diff;
+
+									//if (bonus > diff)
+									//	bonus = diff;
 										
 									player_ratings[i] += bonus;
+
+									// handle it in some more efficient way
+									// this is kinda quick and dirty and gives strange amounts of bonuses from time to time.
 									
 									cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString(bonus, 2) << endl;
 								}
@@ -536,7 +557,7 @@ int main( int argc, char **argv )
 			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > (60 * 60 * 24))
 			{
 				cout << "Executing score decay algorithm..." << endl;
-				string QFindScoreDecays = "select name, score from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
+				string QFindScoreDecays = "select name, score from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo' AND score > 1010";
 				//string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
 	
 				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
