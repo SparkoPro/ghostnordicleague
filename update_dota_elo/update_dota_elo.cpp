@@ -556,6 +556,10 @@ int main( int argc, char **argv )
 
 			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > (60 * 60 * 24))
 			{
+
+				string TruncateDotaEvents = "DELETE FROM `dotaevents` WHERE UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timestamp) > 86400";
+				mysql_real_query( Connection, TruncateDotaEvents.c_str(), TruncateDotaEvents.size() );
+
 				cout << "Executing score decay algorithm..." << endl;
 				string QFindScoreDecays = "select name, score from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo' AND score > 1010";
 				//string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
