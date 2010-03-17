@@ -1595,7 +1595,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
                 transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
 
 
-		if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips")
+		if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips" && NameLower != "egc.devastated")
 		{
 			if(m_GHost->m_ApprovedCountries.length() == 2)
 				num = 1;
