@@ -239,9 +239,9 @@ bool CGame :: Update( void *fd, void *send_fd )
 			{
 				if( i->first.empty( ) )
 				{
-					if (GamePlayerSummary->GetTotalGames( ) >= 10 && GamePlayerSummary->GetAvgLeftPercent( ) < 75)
+					if (GamePlayerSummary->GetTotalGames( ) >= 2 && GamePlayerSummary->GetAvgLeftPercent( ) < 85)
 					{
-						SendAllChat( "Warning! Potential leaver:" + i->second->GetName( ) + "! Games: " + UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ) + " Avg. Stay: " +  UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) + "%");
+						SendAllChat( "Warning! Potential leaver: " + i->second->GetName( ) + "! Games: " + UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ) + " Avg. Stay: " +  UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) + "%");
 					}
 					
 					// SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ),UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
