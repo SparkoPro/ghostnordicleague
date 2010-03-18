@@ -417,6 +417,11 @@ bool CBNET :: Update( void *fd, void *send_fd )
                                 else
                                         Summary += " Rank: Unranked";
 
+				uint32_t streak = DotAPlayerSummary->GetStreak();
+
+				if (streak > 1)
+					Summary += " Win streak: " + UTIL_ToString(streak);
+
 				QueueChatCommand( Summary, i->first, !i->first.empty( ) );
 
 			}

@@ -690,6 +690,7 @@ CDBDotAPlayerSummary :: CDBDotAPlayerSummary( string nServer, string nName, uint
 	m_TotalCourierKills = nTotalCourierKills;
 	m_Score = 0;
 	m_Rank = 0;
+	m_Streak = 0;
 }
 
 CDBDotAPlayerSummary :: CDBDotAPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills, uint32_t nRank, double nScore)
@@ -710,6 +711,28 @@ CDBDotAPlayerSummary :: CDBDotAPlayerSummary( string nServer, string nName, uint
 	m_TotalCourierKills = nTotalCourierKills;
 	m_Rank = nRank;
 	m_Score	= nScore;
+	m_Streak = 0;
+}
+
+CDBDotAPlayerSummary :: CDBDotAPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalCreepKills, uint32_t nTotalCreepDenies, uint32_t nTotalAssists, uint32_t nTotalNeutralKills, uint32_t nTotalTowerKills, uint32_t nTotalRaxKills, uint32_t nTotalCourierKills, uint32_t nRank, double nScore, uint32_t nStreak)
+{
+	m_Server = nServer;
+	m_Name = nName;
+	m_TotalGames = nTotalGames;
+	m_TotalWins = nTotalWins;
+	m_TotalLosses = nTotalLosses;
+	m_TotalKills = nTotalKills;
+	m_TotalDeaths = nTotalDeaths;
+	m_TotalCreepKills = nTotalCreepKills;
+	m_TotalCreepDenies = nTotalCreepDenies;
+	m_TotalAssists = nTotalAssists;
+	m_TotalNeutralKills = nTotalNeutralKills;
+	m_TotalTowerKills = nTotalTowerKills;
+	m_TotalRaxKills = nTotalRaxKills;
+	m_TotalCourierKills = nTotalCourierKills;
+	m_Rank = nRank;
+	m_Score	= nScore;
+	m_Streak = nStreak;
 }
 
 CDBDotAPlayerSummary :: ~CDBDotAPlayerSummary( )

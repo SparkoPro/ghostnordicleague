@@ -984,7 +984,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 	CDBDotAPlayerSummary *DotAPlayerSummary = NULL;
 	//string Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
 
-	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills FROM dotastats WHERE player_name='" + EscName + "'";
+	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills, streak FROM dotastats WHERE player_name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -996,7 +996,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			if( Row.size( ) == 12 )
+			if( Row.size( ) == 13 )
 			{
 				uint32_t TotalGames = UTIL_ToUInt32( Row[0] ) + UTIL_ToUInt32( Row[1] ) + UTIL_ToUInt32( Row[2] );
 
@@ -1014,6 +1014,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 					uint32_t TotalTowerKills = UTIL_ToUInt32( Row[9] );
 					uint32_t TotalRaxKills = UTIL_ToUInt32( Row[10] );
 					uint32_t TotalCourierKills = UTIL_ToUInt32( Row[11] );
+					uint32_t Streak = UTIL_ToUInt32( Row[12] );
 
 					double Score = 0;
 					uint32_t Rank = 0;
@@ -1073,7 +1074,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 					// done
 
 
-					DotAPlayerSummary = new CDBDotAPlayerSummary( string( ), name, TotalGames, TotalWins, TotalLosses, TotalKills, TotalDeaths, TotalCreepKills, TotalCreepDenies, TotalAssists, TotalNeutralKills, TotalTowerKills, TotalRaxKills, TotalCourierKills, Rank, Score );
+					DotAPlayerSummary = new CDBDotAPlayerSummary( string( ), name, TotalGames, TotalWins, TotalLosses, TotalKills, TotalDeaths, TotalCreepKills, TotalCreepDenies, TotalAssists, TotalNeutralKills, TotalTowerKills, TotalRaxKills, TotalCourierKills, Rank, Score, Streak );
 				}
 			}
 			else
