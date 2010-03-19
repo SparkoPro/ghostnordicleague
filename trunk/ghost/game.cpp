@@ -808,19 +808,21 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			if( Command == "autostart" && !m_CountDownStarted )
 			{
 				m_MessageWasCommand = true;
-				if( Payload.empty( ) || Payload == "off" )
+				if( Payload.empty( ) || Payload == "0" || Payload == "off" )
 				{
 					SendAllChat( m_GHost->m_Language->AutoStartDisabled( ) );
 					m_AutoStartPlayers = 0;
+					m_LobbyTimeLimit = 0;
 				}
 				else
 				{
 					uint32_t AutoStartPlayers = UTIL_ToUInt32( Payload );
 
-					if( AutoStartPlayers != 0 )
+					if( AutoStartPlayers > 0 )
 					{
 						SendAllChat( m_GHost->m_Language->AutoStartEnabled( UTIL_ToString( AutoStartPlayers ) ) );
 						m_AutoStartPlayers = AutoStartPlayers;
+						m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
 					}
 				}
 			}

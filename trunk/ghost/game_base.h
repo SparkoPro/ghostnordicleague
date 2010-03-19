@@ -127,6 +127,8 @@ protected:
 	vector<string> m_AdminsInGame;					// vector of admin names in this game
 	bool m_HCLCommandFromGameName;					// try to get hcl command from game name
 	bool m_HCLOverride;								// if the !hcl command is issued, override hcl from gamename
+	
+	uint32_t m_LobbyTimeLimit;				// config value: auto close the game lobby after this many minutes without any reserved players
 
 	vector<string> m_StatsPlayers;
 
