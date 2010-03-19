@@ -117,8 +117,9 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	// make lobby time limitlocal for each game, to bypass timelimit triggering and closing the game when !autostart off is issued
 	m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
 
-	// @disturbed_oc
-	// write autohost counter to file
+	/*
+		NordicLeague - @begin - Keep track of autohost #, quick and dirty way.
+	*/
 
 	ofstream out("autohost_start.cfg");
 
@@ -134,7 +135,9 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 	out.close();
 
-	// @end
+	/*
+		NordicLeague - @end - Keep track of autohost #, quick and dirty way.
+	*/
 
 
 
@@ -2018,6 +2021,16 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 		}
 	}
 
+	/*
+		NordicLeague - @begin - Check if player is Reserved
+	*/
+	
+	bool Reserved = IsReserved( joinPlayer->GetName( ) ) || AnyAdminCheck || IsOwner( joinPlayer->GetName( ) );
+	
+	/*
+		NordicLeague - @end - Check if player is Reserved
+	*/	
+
 	if( SID == 255 )
 	{
 		// no empty slot found, time to do some matchmaking!
@@ -2026,7 +2039,72 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 		if( m_GHost->m_MatchMakingMethod == 0 || m_GHost->m_MatchMakingMethod == 4 )
 		{
 			// method 0: don't do any matchmaking
-			// that was easy!
+
+			/*
+				NordicLeague - @begin - Reserved players when using matchmaking
+				- For some reason reserved is not used in matchmaking games, it is added here.
+			*/
+			
+			if( Reserved )
+			{
+				// a reserved player is trying to join the game but it's full, try to find a reserved slot
+
+				SID = GetEmptySlot( true );
+
+				if( SID != 255 )
+				{
+					CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
+
+					if( KickedPlayer )
+					{
+						KickedPlayer->SetDeleteMe( true );
+						KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
+						KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
+
+						// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
+						// we don't need to call OpenSlot here because we're about to overwrite the slot data anyway
+
+						SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
+						KickedPlayer->SetLeftMessageSent( true );
+					}
+				}
+			}
+
+			if( IsOwner( joinPlayer->GetName( ) ) )
+			{
+				// the owner player is trying to join the game but it's full and we couldn't even find a reserved slot, kick the player in the lowest numbered slot
+				// updated this to try to find a player slot so that we don't end up kicking a computer
+
+				SID = 0;
+
+				for( unsigned char i = 0; i < m_Slots.size( ); i++ )
+				{
+					if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 )
+					{
+						SID = i;
+						break;
+					}
+				}
+
+				CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
+
+				if( KickedPlayer )
+				{
+					KickedPlayer->SetDeleteMe( true );
+					KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
+					KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
+
+					// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
+					// we don't need to call OpenSlot here because we're about to overwrite the slot data anyway
+
+					SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
+					KickedPlayer->SetLeftMessageSent( true );
+				}
+			}
+			
+			/*
+				NordicLeague - @end - Reserved players when using matchmaking
+			*/
 		}
 		else if( m_GHost->m_MatchMakingMethod == 1 )
 		{
@@ -2212,7 +2290,17 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 	// we also have to be careful to not modify the m_Potentials vector since we're currently looping through it
 
 	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] joined the game" );
-	CGamePlayer *Player = new CGamePlayer( potential, GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), false );
+
+	/*
+		NordicLeague
+		
+		- Changed to reflect reserved players
+		CGamePlayer *Player = new CGamePlayer( potential, GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), false );
+	*/
+	
+	CGamePlayer *Player = new CGamePlayer( potential, GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), Reserved );
+	
+	
 	Player->SetAdmin(AnyAdminCheck);
 
 
@@ -2400,8 +2488,9 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player )
 	{
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 
-		// @disturbed_oc
-		// Remove admins from admin list if they leave a game.
+		/*
+			NordicLeague - @begin - Remove admins from the games admin list if they leave.
+		*/
 
 		if (player->IsAdmin())
 		{
@@ -2417,7 +2506,9 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player )
 				m_AdminsInGame.clear();
 		}
 
-		// @end
+		/*
+			NordicLeague - @end - Remove admins from the games admin list if they leave.
+		*/
 	}
 }
 
@@ -2950,22 +3041,28 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 	if( mapSize->GetSizeFlag( ) != 1 || mapSize->GetMapSize( ) != MapSize )
 	{
 		// the player doesn't have the map
-		// @disturbed_oc
-		// If map downloads are disabled, allow only if the player is an admin
-
+		
+		/*
+			NordicLeague - If map downloads are disabled, allow download anyway for admins
+		*/
+		
 		if( m_GHost->m_AllowDownloads != 0 || player->IsAdmin() )
 		{
 			string *MapData = m_Map->GetMapData( );
 
 			if( !MapData->empty( ) )
 			{
-				if( m_GHost->m_AllowDownloads == 1 || ( m_GHost->m_AllowDownloads == 2 && player->GetDownloadAllowed( ) ) )
+				if( player->IsAdmin() || m_GHost->m_AllowDownloads == 1 || ( m_GHost->m_AllowDownloads == 2 && player->GetDownloadAllowed( ) ) )
 				{
 					if( !player->GetDownloadStarted( ) && mapSize->GetSizeFlag( ) == 1 )
 					{
 						// inform the client that we are willing to send the map
 
-						CONSOLE_Print( "[GAME: " + m_GameName + "] map download started for player [" + player->GetName( ) + "]" );
+						if (player->IsAdmin())
+							CONSOLE_Print( "[GAME: " + m_GameName + "] map download started for admin [" + player->GetName( ) + "]" );
+						else
+							CONSOLE_Print( "[GAME: " + m_GameName + "] map download started for admin [" + player->GetName( ) + "]" );
+							
 						Send( player, m_Protocol->SEND_W3GS_STARTDOWNLOAD( GetHostPID( ) ) );
 						player->SetDownloadStarted( true );
 						player->SetStartedDownloadingTicks( GetTicks( ) );
@@ -2989,8 +3086,9 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 			player->SetLeftCode( PLAYERLEAVE_LOBBY );
 			OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
 
-			// @disturbed_oc
-			// if ghost is set to send download link, send it to the player
+			/*
+				NordicLeague - Send downloadlink to players without the map
+			*/
 
 			if ( m_Map->GetMapSendDownloadLink() )
 			{
@@ -3072,8 +3170,9 @@ void CBaseGame :: EventGameStarted( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
 
-	// @disturbed_oc
-	// Get HCL Command from gamename
+	/*
+		NordicLeague - @begin - Get HCL String from gamename
+	*/
 
 	if ( m_Map->GetMapHCLFromGameName() && !m_HCLOverride )
 	{
@@ -3093,7 +3192,9 @@ void CBaseGame :: EventGameStarted( )
 		}
 	}
 
-	// @end
+	/*
+		NordicLeague - @end - Get HCL String from gamename
+	*/
 
 
 	// encode the HCL command string in the slot handicaps
@@ -3326,8 +3427,9 @@ void CBaseGame :: EventGameLoaded( )
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		SendChat( *i, m_GHost->m_Language->YourLoadingTimeWas( UTIL_ToString( (float)( (*i)->GetFinishedLoadingTicks( ) - m_StartedLoadingTicks ) / 1000, 2 ) ) );
 
-	// @disturbed_oc
-	// display admin in game message
+	/*
+		NordicLeague - @begin - Display Admin-in-game message
+	*/
 
 	if( m_AdminsInGame.size() > 0 )
 	{
@@ -3365,6 +3467,10 @@ void CBaseGame :: EventGameLoaded( )
 			}
 		}
 	}
+	
+	/*
+		NordicLeague - @end - Display Admin-in-game message
+	*/
 
 	// read from gameloaded.txt if available
 
@@ -3662,8 +3768,13 @@ unsigned char CBaseGame :: GetEmptySlot( bool reserved )
 			for( unsigned char i = 0; i < m_Slots.size( ); i++ )
 			{
 				CGamePlayer *Player = GetPlayerFromSID( i );
+				
+				/*
+					NordicLeague - Dont let reserved players or admins kick other admins
+					if( Player && !Player->GetReserved( ) )
+				*/
 
-				if( Player && !Player->GetReserved( ) )
+				if( Player && !Player->GetReserved( ) && !Player->IsAdmin() )
 					return i;
 			}
 		}

@@ -121,18 +121,22 @@ protected:
 	bool m_MatchMaking;								// if matchmaking mode is enabled
 	bool m_LocalAdminMessages;						// if local admin messages should be relayed or not
 
-	// @disturbed_oc
+	/*
+		NordicLeague - @begin - Some added custom variables
+	*/
 
 	uint32_t m_NumAdminsInGame;						// number of admins present in this game
 	vector<string> m_AdminsInGame;					// vector of admin names in this game
 	bool m_HCLCommandFromGameName;					// try to get hcl command from game name
 	bool m_HCLOverride;								// if the !hcl command is issued, override hcl from gamename
 	
-	uint32_t m_LobbyTimeLimit;				// config value: auto close the game lobby after this many minutes without any reserved players
+	uint32_t m_LobbyTimeLimit;						// Each game must have it's own lobby timelimit to prevent !autostart off from closing games
 
 	vector<string> m_StatsPlayers;
 
-	// @end
+	/*
+		NordicLeague - @end - Some added custom variables
+	*/
 
 public:
 	CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHostPort, unsigned char nGameState, string nGameName, string nOwnerName, string nCreatorName, string nCreatorServer );
