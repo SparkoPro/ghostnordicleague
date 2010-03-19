@@ -113,6 +113,9 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_LocalAdminMessages = true;
 	m_NumAdminsInGame = 0;
 	m_HCLOverride = false;
+	
+	// make lobby time limitlocal for each game, to bypass timelimit triggering and closing the game when !autostart off is issued
+	m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
 
 	// @disturbed_oc
 	// write autohost counter to file
@@ -674,7 +677,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	// check if the lobby is "abandoned" and needs to be closed since it will never start
 
-	if( !m_GameLoading && !m_GameLoaded && m_AutoStartPlayers == 0 && m_GHost->m_LobbyTimeLimit > 0 )
+	if( !m_GameLoading && !m_GameLoaded && m_AutoStartPlayers == 0 && m_LobbyTimeLimit > 0 )
 	{
 		// check if there's a player with reserved status in the game
 
