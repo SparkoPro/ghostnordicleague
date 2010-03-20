@@ -4442,7 +4442,7 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 		// if no problems found start the game
 		
-		if (m_GHost->m_EnforceBalance)
+		//if (m_GHost->m_EnforceBalance)
 
 		if( StillDownloading.empty( ) && NotSpoofChecked.empty( ) && NotPinged.empty( ) )
 		{
