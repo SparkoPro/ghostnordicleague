@@ -2139,14 +2139,46 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					}
 				}
 				
+				//
+				// !AUTOBALANCE
+				//
+				
 				if( Command == "autobalance")
 				{
-					if (Payload.empty())
+					// toggle autobalance
+					if (m_GHost->m_EnforceBalance)
 					{
-						// toggle autobalance
-						m_GHost->m_EnforceBalance = !m_GHost->m_EnforceBalance;
-						QueueChatCommand( "Autobalance: " + m_GHost->m_EnforceBalance ? "On" : "Off", User, Whisper );
+						m_GHost->m_EnforceBalance = false;
+						QueueChatCommand( "Autobalance: Off", User, Whisper );
 					}
+					else
+					{
+						m_GHost->m_EnforceBalance = true;
+						QueueChatCommand( "Autobalance: On", User, Whisper );
+					}
+						
+					CONSOLE_Print( "[BNET: " + m_ServerAlias + "] Autobalance set to [" + UTIL_ToString(m_GHost->m_EnforceBalance ? 1 : 0) + "]" );
+						
+				}
+				
+				//
+				// !reserveadmins
+				//
+				
+				if( Command == "reserveadmins")
+				{
+						// toggle reserve admins
+						if (m_GHost->m_AdminCanAlwaysJoin)
+						{
+							m_GHost->m_AdminCanAlwaysJoin = false;
+							QueueChatCommand( "Reserve admins: Off", User, Whisper );
+						}
+						else
+						{
+							m_GHost->m_AdminCanAlwaysJoin = true;
+							QueueChatCommand( "Reserve admins: On", User, Whisper );
+						}	
+						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] Reserve admins set to [" + UTIL_ToString(m_GHost->m_AdminCanAlwaysJoin ? 1 : 0) + "]" );
 				}
 
 				//
