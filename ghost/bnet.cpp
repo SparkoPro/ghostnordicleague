@@ -2138,6 +2138,16 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						m_GHost->m_CurrentGame->SetAutoStartPlayers( 10 );
 					}
 				}
+				
+				if( Command == "autobalance")
+				{
+					if (Payload.empty())
+					{
+						// toggle autobalance
+						m_GHost->m_EnforceBalance = !m_GHost->m_EnforceBalance;
+						QueueChatCommand( "Autobalance: " + m_GHost->m_EnforceBalance ? "On" : "Off", User, Whisper );
+					}
+				}
 
 				//
 				// !PUB (host public game)

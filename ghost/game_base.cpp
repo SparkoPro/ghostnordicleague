@@ -1319,7 +1319,6 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 	if( m_GameLoaded )
 	{
 		player->SetLeft( true );
-		CONSOLE_Print( "[ANTIFARM] Stopping kill-counter on [" + player->GetName() + "]" );
 		SendAllChat( player->GetName( ) + " " + player->GetLeftReason( ) + "." );
 	}
 
@@ -2022,76 +2021,39 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 	}
 
 	/*
-		NordicLeague - @begin - Check if player is Reserved
+		NordicLeague - @begin - Check if the player is Reserved
 	*/
 	
-	bool Reserved = IsReserved( joinPlayer->GetName( ) ) || AnyAdminCheck || IsOwner( joinPlayer->GetName( ) );
+	bool Reserved = IsReserved( joinPlayer->GetName( ) ) || (m_GHost->m_AdminCanAlwaysJoin && AnyAdminCheck) || IsOwner( joinPlayer->GetName( ) );
 	
 	/*
-		NordicLeague - @end - Check if player is Reserved
+		NordicLeague - @end - Check if the player is Reserved
 	*/	
 
 	if( SID == 255 )
 	{
 		// no empty slot found, time to do some matchmaking!
 		// note: the database code uses a score of -100000 to denote "no score"
-
-		if( m_GHost->m_MatchMakingMethod == 0 || m_GHost->m_MatchMakingMethod == 4 )
+		
+		/*
+			NordicLeague - @begin - Reserved players when using matchmaking
+			- For some reason reserved is not used in matchmaking games, it is added here.
+		*/
+		
+		if( Reserved )
 		{
-			// method 0: don't do any matchmaking
+			// a reserved player is trying to join the game but it's full, try to find a reserved slot
 
-			/*
-				NordicLeague - @begin - Reserved players when using matchmaking
-				- For some reason reserved is not used in matchmaking games, it is added here.
-			*/
-			
-			if( Reserved )
+			SID = GetEmptySlot( true );
+
+			if( SID != 255 )
 			{
-				// a reserved player is trying to join the game but it's full, try to find a reserved slot
-
-				SID = GetEmptySlot( true );
-
-				if( SID != 255 )
-				{
-					CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
-
-					if( KickedPlayer )
-					{
-						KickedPlayer->SetDeleteMe( true );
-						KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
-						KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
-
-						// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
-						// we don't need to call OpenSlot here because we're about to overwrite the slot data anyway
-
-						SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
-						KickedPlayer->SetLeftMessageSent( true );
-					}
-				}
-			}
-
-			if( IsOwner( joinPlayer->GetName( ) ) )
-			{
-				// the owner player is trying to join the game but it's full and we couldn't even find a reserved slot, kick the player in the lowest numbered slot
-				// updated this to try to find a player slot so that we don't end up kicking a computer
-
-				SID = 0;
-
-				for( unsigned char i = 0; i < m_Slots.size( ); i++ )
-				{
-					if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 )
-					{
-						SID = i;
-						break;
-					}
-				}
-
 				CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
 
 				if( KickedPlayer )
 				{
 					KickedPlayer->SetDeleteMe( true );
-					KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
+					KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForReservedPlayer( joinPlayer->GetName( ) ) );
 					KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
 
 					// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
@@ -2101,10 +2063,48 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 					KickedPlayer->SetLeftMessageSent( true );
 				}
 			}
+		}
+
+		if( IsOwner( joinPlayer->GetName( ) ) )
+		{
+			// the owner player is trying to join the game but it's full and we couldn't even find a reserved slot, kick the player in the lowest numbered slot
+			// updated this to try to find a player slot so that we don't end up kicking a computer
+
+			SID = 0;
+
+			for( unsigned char i = 0; i < m_Slots.size( ); i++ )
+			{
+				if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 )
+				{
+					SID = i;
+					break;
+				}
+			}
+
+			CGamePlayer *KickedPlayer = GetPlayerFromSID( SID );
+
+			if( KickedPlayer )
+			{
+				KickedPlayer->SetDeleteMe( true );
+				KickedPlayer->SetLeftReason( m_GHost->m_Language->WasKickedForOwnerPlayer( joinPlayer->GetName( ) ) );
+				KickedPlayer->SetLeftCode( PLAYERLEAVE_LOBBY );
+
+				// send a playerleave message immediately since it won't normally get sent until the player is deleted which is after we send a playerjoin message
+				// we don't need to call OpenSlot here because we're about to overwrite the slot data anyway
+
+				SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( KickedPlayer->GetPID( ), KickedPlayer->GetLeftCode( ) ) );
+				KickedPlayer->SetLeftMessageSent( true );
+			}
+		}
 			
-			/*
-				NordicLeague - @end - Reserved players when using matchmaking
-			*/
+		/*
+			NordicLeague - @end - Reserved players when using matchmaking
+		*/
+
+		if( m_GHost->m_MatchMakingMethod == 0 || m_GHost->m_MatchMakingMethod == 4 )
+		{
+			// method 0: don't do any matchmaking
+
 		}
 		else if( m_GHost->m_MatchMakingMethod == 1 )
 		{
@@ -2295,6 +2295,7 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 		NordicLeague
 		
 		- Changed to reflect reserved players
+		
 		CGamePlayer *Player = new CGamePlayer( potential, GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), false );
 	*/
 	
@@ -2469,7 +2470,7 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 
 	// balance the slots
 
-	if (m_MatchMaking == 4)
+	if (m_MatchMaking && m_GHost->m_EnforceBalance)
 	{
 		if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
 			BalanceSlots( );
@@ -2782,6 +2783,17 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			if( !ExtraFlags.empty( ) )
 			{
+				
+				/*
+					NordicLeague - @begin - Store chat logs for each game
+				*/
+				
+				// insert code to handle chat logs
+				
+				/*
+					NordicLeague - @end - Store chat logs for each game
+				*/				
+				
 				if( ExtraFlags[0] == 0 )
 				{
 					// this is an ingame [All] message, print it to the console
@@ -3061,7 +3073,7 @@ void CBaseGame :: EventPlayerMapSize( CGamePlayer *player, CIncomingMapSize *map
 						if (player->IsAdmin())
 							CONSOLE_Print( "[GAME: " + m_GameName + "] map download started for admin [" + player->GetName( ) + "]" );
 						else
-							CONSOLE_Print( "[GAME: " + m_GameName + "] map download started for admin [" + player->GetName( ) + "]" );
+							CONSOLE_Print( "[GAME: " + m_GameName + "] map download started for player [" + player->GetName( ) + "]" );
 							
 						Send( player, m_Protocol->SEND_W3GS_STARTDOWNLOAD( GetHostPID( ) ) );
 						player->SetDownloadStarted( true );
@@ -4008,164 +4020,10 @@ void CBaseGame :: CloseAllSlots( )
 }
 
 void CBaseGame :: ShuffleSlots( )
-{
-	// we only want to shuffle the player slots
-	// that means we need to prevent this function from shuffling the open/closed/computer slots too
-	// so we start by copying the player slots to a temporary vector
-
-	vector<CGameSlot> PlayerSlots;
-
-	for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
-	{
-		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 )
-			PlayerSlots.push_back( *i );
-	}
-
-	// now we shuffle PlayerSlots
-
-	if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
-	{
-		// custom game
-		// rather than rolling our own probably broken shuffle algorithm we use random_shuffle because it's guaranteed to do it properly
-		// so in order to let random_shuffle do all the work we need a vector to operate on
-		// unfortunately we can't just use PlayerSlots because the team/colour/race shouldn't be modified
-		// so make a vector we can use
-
-		vector<unsigned char> SIDs;
-
-		for( unsigned char i = 0; i < PlayerSlots.size( ); i++ )
-			SIDs.push_back( i );
-
-		random_shuffle( SIDs.begin( ), SIDs.end( ) );
-
-		// now put the PlayerSlots vector in the same order as the SIDs vector
-
-		vector<CGameSlot> Slots;
-
-		// as usual don't modify the team/colour/race
-
-		for( unsigned char i = 0; i < SIDs.size( ); i++ )
-			Slots.push_back( CGameSlot( PlayerSlots[SIDs[i]].GetPID( ), PlayerSlots[SIDs[i]].GetDownloadStatus( ), PlayerSlots[SIDs[i]].GetSlotStatus( ), PlayerSlots[SIDs[i]].GetComputer( ), PlayerSlots[i].GetTeam( ), PlayerSlots[i].GetColour( ), PlayerSlots[i].GetRace( ) ) );
-
-		PlayerSlots = Slots;
-	}
-	else
-	{
-		// regular game
-		// it's easy when we're allowed to swap the team/colour/race!
-
-		random_shuffle( PlayerSlots.begin( ), PlayerSlots.end( ) );
-	}
-
-	// now we put m_Slots back together again
-
-	vector<CGameSlot> :: iterator CurrentPlayer = PlayerSlots.begin( );
-	vector<CGameSlot> Slots;
-
-	for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
-	{
-		if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 )
-		{
-			Slots.push_back( *CurrentPlayer );
-			CurrentPlayer++;
-		}
-		else
-			Slots.push_back( *i );
-	}
-
-	m_Slots = Slots;
-
-	// and finally tell everyone about the new slot configuration
-
-	SendAllSlotInfo( );
-}
+{ /* we only want to shuffle the player slots*/ /* that means we need to prevent this function from shuffling the open/closed/computer slots too*/ /* so we start by copying the player slots to a temporary vector*/  vector<CGameSlot> PlayerSlots;  for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ ) { if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 ) PlayerSlots.push_back( *i ); }  /* now we shuffle PlayerSlots*/  if( m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM ) { /* custom game*/ /* rather than rolling our own probably broken shuffle algorithm we use random_shuffle because it's guaranteed to do it properly*/ /* so in order to let random_shuffle do all the work we need a vector to operate on*/ /* unfortunately we can't just use PlayerSlots because the team/colour/race shouldn't be modified*/ /* so make a vector we can use*/  vector<unsigned char> SIDs;  for( unsigned char i = 0; i < PlayerSlots.size( ); i++ ) SIDs.push_back( i );  random_shuffle( SIDs.begin( ), SIDs.end( ) );  /* now put the PlayerSlots vector in the same order as the SIDs vector*/  vector<CGameSlot> Slots;  /* as usual don't modify the team/colour/race*/  for( unsigned char i = 0; i < SIDs.size( ); i++ ) Slots.push_back( CGameSlot( PlayerSlots[SIDs[i]].GetPID( ), PlayerSlots[SIDs[i]].GetDownloadStatus( ), PlayerSlots[SIDs[i]].GetSlotStatus( ), PlayerSlots[SIDs[i]].GetComputer( ), PlayerSlots[i].GetTeam( ), PlayerSlots[i].GetColour( ), PlayerSlots[i].GetRace( ) ) );  PlayerSlots = Slots; } else { /* regular game*/ /* it's easy when we're allowed to swap the team/colour/race!*/  random_shuffle( PlayerSlots.begin( ), PlayerSlots.end( ) ); }  /* now we put m_Slots back together again*/  vector<CGameSlot> :: iterator CurrentPlayer = PlayerSlots.begin( ); vector<CGameSlot> Slots;  for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ ) { if( (*i).GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && (*i).GetComputer( ) == 0 && (*i).GetTeam( ) != 12 ) { Slots.push_back( *CurrentPlayer ); CurrentPlayer++; } else Slots.push_back( *i ); }  m_Slots = Slots;  /* and finally tell everyone about the new slot configuration*/  SendAllSlotInfo( ); }
 
 vector<unsigned char> CBaseGame :: BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam )
-{
-	// take a brute force approach to finding the best balance by iterating through every possible combination of players
-	// 1.) since the number of teams is arbitrary this algorithm must be recursive
-	// 2.) on the first recursion step every possible combination of players into two "teams" is checked, where the first team is the correct size and the second team contains everyone else
-	// 3.) on the next recursion step every possible combination of the remaining players into two more "teams" is checked, continuing until all the actual teams are accounted for
-	// 4.) for every possible combination, check the largest difference in total scores between any two actual teams
-	// 5.) minimize this value by choosing the combination of players with the smallest difference
-
-	vector<unsigned char> BestOrdering = PlayerIDs;
-	double BestDifference = -1.0;
-
-	for( unsigned char i = StartTeam; i < 12; i++ )
-	{
-		if( TeamSizes[i] > 0 )
-		{
-			unsigned char Mid = TeamSizes[i];
-
-			// the base case where only one actual team worth of players was passed to this function is handled by the behaviour of next_combination
-			// in this case PlayerIDs.begin( ) + Mid will actually be equal to PlayerIDs.end( ) and next_combination will return false
-
-			while( next_combination( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ) )
-			{
-				// we're splitting the players into every possible combination of two "teams" based on the midpoint Mid
-				// the first (left) team contains the correct number of players but the second (right) "team" might or might not
-				// for example, it could contain one, two, or more actual teams worth of players
-				// so recurse using the second "team" as the full set of players to perform the balancing on
-
-				vector<unsigned char> BestSubOrdering = BalanceSlotsRecursive( vector<unsigned char>( PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ), TeamSizes, PlayerScores, i + 1 );
-
-				// BestSubOrdering now contains the best ordering of all the remaining players (the "right team") given this particular combination of players into two "teams"
-				// in order to calculate the largest difference in total scores we need to recombine the subordering with the first team
-
-				vector<unsigned char> TestOrdering = vector<unsigned char>( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid );
-				TestOrdering.insert( TestOrdering.end( ), BestSubOrdering.begin( ), BestSubOrdering.end( ) );
-
-				// now calculate the team scores for all the teams that we know about (e.g. on subsequent recursion steps this will NOT be every possible team)
-
-				vector<unsigned char> :: iterator CurrentPID = TestOrdering.begin( );
-				double TeamScores[12];
-
-				for( unsigned char j = StartTeam; j < 12; j++ )
-				{
-					TeamScores[j] = 0.0;
-
-					for( unsigned char k = 0; k < TeamSizes[j]; k++ )
-					{
-						TeamScores[j] += PlayerScores[*CurrentPID];
-						CurrentPID++;
-					}
-				}
-
-				// find the largest difference in total scores between any two teams
-
-				double LargestDifference = 0.0;
-
-				for( unsigned char j = StartTeam; j < 12; j++ )
-				{
-					if( TeamSizes[j] > 0 )
-					{
-						for( unsigned char k = j + 1; k < 12; k++ )
-						{
-							if( TeamSizes[k] > 0 )
-							{
-								double Difference = abs( TeamScores[j] - TeamScores[k] );
-
-								if( Difference > LargestDifference )
-									LargestDifference = Difference;
-							}
-						}
-					}
-				}
-
-				// and minimize it
-
-				if( BestDifference < 0.0 || LargestDifference < BestDifference )
-				{
-					BestOrdering = TestOrdering;
-					BestDifference = LargestDifference;
-				}
-			}
-		}
-	}
-
-	return BestOrdering;
-}
+{ /* take a brute force approach to finding the best balance by iterating through every possible combination of players*/ /* 1.) since the number of teams is arbitrary this algorithm must be recursive*/ /* 2.) on the first recursion step every possible combination of players into two "teams" is checked, where the first team is the correct size and the second team contains everyone else*/ /* 3.) on the next recursion step every possible combination of the remaining players into two more "teams" is checked, continuing until all the actual teams are accounted for*/ /* 4.) for every possible combination, check the largest difference in total scores between any two actual teams*/ /* 5.) minimize this value by choosing the combination of players with the smallest difference*/  vector<unsigned char> BestOrdering = PlayerIDs; double BestDifference = -1.0;  for( unsigned char i = StartTeam; i < 12; i++ ) { if( TeamSizes[i] > 0 ) { unsigned char Mid = TeamSizes[i];  /* the base case where only one actual team worth of players was passed to this function is handled by the behaviour of next_combination*/ /* in this case PlayerIDs.begin( ) + Mid will actually be equal to PlayerIDs.end( ) and next_combination will return false*/  while( next_combination( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ) ) { /* we're splitting the players into every possible combination of two "teams" based on the midpoint Mid*/ /* the first (left) team contains the correct number of players but the second (right) "team" might or might not*/ /* for example, it could contain one, two, or more actual teams worth of players*/ /* so recurse using the second "team" as the full set of players to perform the balancing on*/  vector<unsigned char> BestSubOrdering = BalanceSlotsRecursive( vector<unsigned char>( PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ), TeamSizes, PlayerScores, i + 1 );  /* BestSubOrdering now contains the best ordering of all the remaining players (the "right team") given this particular combination of players into two "teams"*/ /* in order to calculate the largest difference in total scores we need to recombine the subordering with the first team*/  vector<unsigned char> TestOrdering = vector<unsigned char>( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid ); TestOrdering.insert( TestOrdering.end( ), BestSubOrdering.begin( ), BestSubOrdering.end( ) );  /* now calculate the team scores for all the teams that we know about (e.g. on subsequent recursion steps this will NOT be every possible team)*/  vector<unsigned char> :: iterator CurrentPID = TestOrdering.begin( ); double TeamScores[12];  for( unsigned char j = StartTeam; j < 12; j++ ) { TeamScores[j] = 0.0;  for( unsigned char k = 0; k < TeamSizes[j]; k++ ) { TeamScores[j] += PlayerScores[*CurrentPID]; CurrentPID++; } }  /* find the largest difference in total scores between any two teams*/  double LargestDifference = 0.0;  for( unsigned char j = StartTeam; j < 12; j++ ) { if( TeamSizes[j] > 0 ) { for( unsigned char k = j + 1; k < 12; k++ ) { if( TeamSizes[k] > 0 ) { double Difference = abs( TeamScores[j] - TeamScores[k] );  if( Difference > LargestDifference ) LargestDifference = Difference; } } } }  /* and minimize it*/  if( BestDifference < 0.0 || LargestDifference < BestDifference ) { BestOrdering = TestOrdering; BestDifference = LargestDifference; } } } }  return BestOrdering; }
 
 void CBaseGame :: BalanceSlots( )
 {
@@ -4230,14 +4088,7 @@ void CBaseGame :: BalanceSlots( )
 	uint32_t AlgorithmCost = 0;
 	uint32_t PlayersLeft = PlayerIDs.size( );
 
-	for( unsigned char i = 0; i < 12; i++ )
-	{
-		if( TeamSizes[i] > 0 )
-		{
-			if( AlgorithmCost == 0 )
-				AlgorithmCost = nCr( PlayersLeft, TeamSizes[i] );
-			else
-				AlgorithmCost *= nCr( PlayersLeft, TeamSizes[i] );
+	for( unsigned char i = 0; i < 12; i++ ) { if( TeamSizes[i] > 0 ) { if( AlgorithmCost == 0 ) AlgorithmCost = nCr( PlayersLeft, TeamSizes[i] ); else AlgorithmCost *= nCr( PlayersLeft, TeamSizes[i] );
 
 			PlayersLeft -= TeamSizes[i];
 		}
@@ -4590,6 +4441,8 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 		}
 
 		// if no problems found start the game
+		
+		if (m_GHost->m_EnforceBalance)
 
 		if( StillDownloading.empty( ) && NotSpoofChecked.empty( ) && NotPinged.empty( ) )
 		{

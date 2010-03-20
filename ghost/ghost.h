@@ -129,15 +129,21 @@ public:
 	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
 	bool m_UseNormalCountDown;				// config value: use normal wc3 countdown
 
-	// @disturbed_oc
-	// Add some custom variables
+	/*
+		NordicLeague - @begin - define our config variables
+	*/
+	
 	bool m_DisplayAdminInGameMessage;		// config value: Display a message that admins are present in the game when game is loaded.
 	string m_DisplayAdminInGameFile;		// config value: adminingame.txt
 	bool m_SendDownloadLink;				// config value: send a download link if map downloads are disabled
 	string m_MapDownloadLink;				// config value: the download link to send
 	string m_RegisterEmailRegEx;
+	bool	m_AdminCanAlwaysJoin;			// config value: should we kick a non-reserved player to make room for admins?
+	bool	m_EnforceBalance;				// config value: force balance before gamestart?
 
-	// @end
+	/*
+		NordicLeague - @end - define our config variables
+	*/
 
 	CGHost( CConfig *CFG );
 	~CGHost( );

@@ -1129,6 +1129,10 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_UseNormalCountDown = CFG->GetInt( "bot_usenormalcountdown",0) == 0 ? false : true;
 	m_RelayCommands = CFG->GetInt( "bot_relaycommands", 1 ) == 0 ? false : true;
 	m_ApprovedCountries = CFG->GetString( "approvedcountries", string( ));
+	
+	/*
+		NordicLeague - @begin - read our config variables
+	*/
 
 	m_DisplayAdminInGameMessage = CFG->GetInt( "bot_displayadminingame",0) == 0 ? false : true;
 	CONSOLE_Print( "[ADMIN] bot_displayadminingame loaded. Value " + UTIL_ToString( m_DisplayAdminInGameMessage ? 1 : 0 ) );
@@ -1137,6 +1141,13 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_MapDownloadLink = CFG->GetString( "map_downloadlink", "Map downloads are disabled, please download the latest DotA map at http://www.getdota.com!" );
 
 	m_RegisterEmailRegEx = CFG->GetString( "register_email_regex", "^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$");
+	
+	m_AdminCanAlwaysJoin = CFG->GetInt( "bot_admincanalwaysjoin", 0 ) == 0 ? false : true;
+	m_EnforceBalance = CFG->GetInt( "bot_enforcebalance", 0 ) == 0 ? false : true;
+	
+	/*
+		NordicLeague - @end - read our config variables
+	*/
 }
 
 void CGHost :: ExtractScripts( )
