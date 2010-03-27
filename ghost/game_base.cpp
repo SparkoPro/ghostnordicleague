@@ -878,6 +878,22 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		m_KickVotePlayer.clear( );
 		m_StartedKickVoteTime = 0;
 	}
+	
+	/*
+		NordicLeague - @begin - Expire the voteend
+	*/
+	
+	if( m_VoteEndInProgress && GetTime( ) >= m_StartedVoteEndTime + 60 )
+	{
+		CONSOLE_Print( "[GAME: " + m_GameName + "] voteend expired" );
+		SendAllChat( m_GHost->m_Language->VoteEndExpired( ) );
+		m_VoteEndInProgress = false;
+		m_StartedVoteEndTime = 0;
+	}
+	
+	/*
+		NordicLeague - @end - Expire the voteend
+	*/
 
 	// start the gameover timer if there's only one player left
 
@@ -889,7 +905,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	// finish the gameover timer
 
-	if( m_GameOverTime != 0 && GetTime( ) >= m_GameOverTime + 60 )
+	if( m_GameOverTime != 0 && GetTime( ) >= m_GameOverTime + 40 )
 	{
 		bool AlreadyStopped = true;
 

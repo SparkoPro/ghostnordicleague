@@ -101,6 +101,11 @@ protected:
 	uint32_t m_LastLagScreenTime;					// GetTime when the last lag screen was active (continuously updated)
 	uint32_t m_LastReservedSeen;					// GetTime when the last reserved player was seen in the lobby
 	uint32_t m_StartedKickVoteTime;					// GetTime when the kick vote was started
+	
+	// NordicLeague
+	uint32_t m_StartedVoteEndTime;					// GetTime when the end vote was started
+	bool	m_VoteEndInProgress;
+	
 	uint32_t m_GameOverTime;						// GetTime when the game was over
 	uint32_t m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
 	double m_MinimumScore;							// the minimum allowed score for matchmaking mode

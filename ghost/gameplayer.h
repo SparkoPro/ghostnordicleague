@@ -113,6 +113,11 @@ private:
 	bool m_Lagging;								// if the player is lagging or not (on the lag screen)
 	bool m_DropVote;							// if the player voted to drop the laggers or not (on the lag screen)
 	bool m_KickVote;							// if the player voted to kick a player or not
+	
+	// NordicLeague
+	bool m_EndVote;							// if the player voted to end
+	bool m_FFVote;							// if the player voted to Forfeit
+
 	bool m_Muted;								// if the player is muted or not
 	bool m_LeftMessageSent;						// if the playerleave message has been sent or not
 	bool m_Admin;								// if the player is admin or not;
@@ -163,6 +168,8 @@ public:
 	bool GetLagging( )						{ return m_Lagging; }
 	bool GetDropVote( )						{ return m_DropVote; }
 	bool GetKickVote( )						{ return m_KickVote; }
+	bool GetEndVote( )						{ return m_EndVote; }
+	bool GetFFVote( )						{ return m_FFVote; }
 	bool GetMuted( )						{ return m_Muted; }
 	bool GetLeftMessageSent( )				{ return m_LeftMessageSent; }
 	bool IsAdmin( )							{ return m_Admin; }
@@ -197,6 +204,9 @@ public:
 	void SetAdmin( bool nAdmin )											{ m_Admin = nAdmin; }
 	void SetModerator( bool nModerator )									{ m_Moderator = nModerator; }
 	void SetLeft( bool nLeft )												{ m_HasLeft = nLeft; }
+	
+	void SetEndVote( bool nVote )										{ m_EndVote = nVote; }
+	void SetFFVote( bool nVote )										{ m_FFVote = nVote; }
 
 	string GetNameTerminated( );
 	uint32_t GetPing( bool LCPing );

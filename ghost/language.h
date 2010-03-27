@@ -197,6 +197,21 @@ public:
 	string VoteKickAcceptedNeedMoreVotes( string victim, string user, string votes );
 	string VoteKickCancelled( string victim );
 	string VoteKickExpired( string victim );
+
+/*
+	NordicLeague - @begin - Custom language functions for VoteEnd
+*/
+	string StartedVoteEnd( string user, string votesneeded );
+	string VoteEndAcceptedNeedMoreVotes( string user, string votes );
+	string VoteEndExpired( );
+	string VoteEndPassed( );
+	string UnableToVoteEndNotEnoughPlayers( );
+	string UnableToVoteEndAlreadyInProgress( );
+	
+/*
+	NordicLeague - @end- Custom language functions for VoteEnd
+*/
+
 	string WasKickedByVote( );
 	string TypeYesToVote( string commandtrigger );
 	string PlayersNotYetPingedAutoStart( string notpinged );

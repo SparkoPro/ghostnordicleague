@@ -1948,6 +1948,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
 				m_KickVotePlayer.clear( );
 				m_StartedKickVoteTime = 0;
+				m_StartedVoteEndTime = 0;
+				m_VoteEndInProgress = false;
 			}
 
 			//
@@ -2263,52 +2265,123 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				SendChat( player, m_GHost->m_Language->UnableToVoteKickFoundMoreThanOneMatch( Payload ) );
 		}
 	}
+	
+	//
+	// !VOTEEND
+	//
+
+	if( Command == "voteend" && m_GHost->m_VoteEndAllowed )
+	{
+		m_MessageWasCommand = true;
+		if( !m_KickVotePlayer.empty( ) )
+			SendChat( player, "Unable to start end-vote, a kick-vote is in progress." );
+		else if( m_VoteEndInProgress )
+			SendChat( player, m_GHost->m_Language->UnableToVoteEndAlreadyInProgress( ) );
+		else if( m_Players.size( ) == 2 )
+			SendChat( player, m_GHost->m_Language->UnableToVoteEndNotEnoughPlayers( ) );
+		else
+		{
+			m_VoteEndInProgress = true;
+			m_StartedVoteEndTime = GetTime( );
+
+			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+				(*i)->SetEndVote( false );
+
+			player->SetEndVote( true );
+			CONSOLE_Print( "[GAME: " + m_GameName + "] voteend started by player [" + User + "]" );
+			SendAllChat( m_GHost->m_Language->StartedVoteEnd( User, UTIL_ToString( (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteEndPercentage / 100 ) - 1 ) ) );
+			SendAllChat( m_GHost->m_Language->TypeYesToVote( string( 1, m_GHost->m_CommandTrigger ) ) );
+		}
+
+	}
 
 	//
 	// !YES
 	//
 
-	if( Command == "yes" && !m_KickVotePlayer.empty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
+	if( Command == "yes" ) 
 	{
-		m_MessageWasCommand = true;
-		player->SetKickVote( true );
-		uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
-		uint32_t Votes = 0;
-
-		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+		
+		/*
+			NordicLeague - @begin - We got a vote going on.
+		*/
+		
+		if (!m_KickVotePlayer.empty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
 		{
-			if( (*i)->GetKickVote( ) )
-				Votes++;
-		}
 
-		if( Votes >= VotesNeeded )
-		{
-			CGamePlayer *Victim = GetPlayerFromName( m_KickVotePlayer, true );
+			// so we got a kickvote going.
+			
+			m_MessageWasCommand = true;
+			player->SetKickVote( true );
+			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
+			uint32_t Votes = 0;
 
-			if( Victim )
+			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
-				Victim->SetDeleteMe( true );
-				Victim->SetLeftReason( m_GHost->m_Language->WasKickedByVote( ) );
+				if( (*i)->GetKickVote( ) )
+					Votes++;
+			}
 
-				if( !m_GameLoading && !m_GameLoaded )
-					Victim->SetLeftCode( PLAYERLEAVE_LOBBY );
+			if( Votes >= VotesNeeded )
+			{
+				CGamePlayer *Victim = GetPlayerFromName( m_KickVotePlayer, true );
+
+				if( Victim )
+				{
+					Victim->SetDeleteMe( true );
+					Victim->SetLeftReason( m_GHost->m_Language->WasKickedByVote( ) );
+
+					if( !m_GameLoading && !m_GameLoaded )
+						Victim->SetLeftCode( PLAYERLEAVE_LOBBY );
+					else
+						Victim->SetLeftCode( PLAYERLEAVE_LOST );
+
+					if( !m_GameLoading && !m_GameLoaded )
+						OpenSlot( GetSIDFromPID( Victim->GetPID( ) ), false );
+
+					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
+					SendAllChat( m_GHost->m_Language->VoteKickPassed( m_KickVotePlayer ) );
+				}
 				else
-					Victim->SetLeftCode( PLAYERLEAVE_LOST );
+					SendAllChat( m_GHost->m_Language->ErrorVoteKickingPlayer( m_KickVotePlayer ) );
 
-				if( !m_GameLoading && !m_GameLoaded )
-					OpenSlot( GetSIDFromPID( Victim->GetPID( ) ), false );
-
-				CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
-				SendAllChat( m_GHost->m_Language->VoteKickPassed( m_KickVotePlayer ) );
+				m_KickVotePlayer.clear( );
+				m_StartedKickVoteTime = 0;
 			}
 			else
-				SendAllChat( m_GHost->m_Language->ErrorVoteKickingPlayer( m_KickVotePlayer ) );
-
-			m_KickVotePlayer.clear( );
-			m_StartedKickVoteTime = 0;
+				SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );
 		}
-		else
-			SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );
+		else if (m_VoteEndInProgress)
+		{
+			
+			// so we got a endvote going
+			
+			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
+			uint32_t Votes = 0;
+			
+			player->SetEndVote( true );
+
+			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			{
+				if( (*i)->GetEndVote( ) )
+					Votes++;
+			}
+
+
+			if( Votes >= VotesNeeded )
+			{
+				CONSOLE_Print( "[GAME: " + m_GameName + "] voteend passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
+				SendAllChat( m_GHost->m_Language->VoteEndPassed( )  );
+				
+				m_VoteEndInProgress = false;
+				m_StartedVoteEndTime = 0;
+				
+				StopPlayers( "was disconnected (voteend succeeded)" );
+				
+			}
+			else
+				SendAllChat( m_GHost->m_Language->VoteEndAcceptedNeedMoreVotes( User, UTIL_ToString( VotesNeeded - Votes ) ) );
+		}
 	}
 
 	return HideCommand;
