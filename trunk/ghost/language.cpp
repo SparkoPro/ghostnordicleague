@@ -1172,6 +1172,54 @@ string CLanguage :: VoteKickExpired( string victim )
 	return Out;
 }
 
+/*
+	NordicLeague - @begin - Custom language functions for VoteKick
+*/
+
+
+string CLanguage :: StartedVoteEnd( string user, string votesneeded )
+{
+	string Out = m_CFG->GetString( "lang_0300", "lang_0300" );
+	UTIL_Replace( Out, "$USER$", user );
+	UTIL_Replace( Out, "$VOTESNEEDED$", votesneeded );
+	return Out;
+}
+
+string CLanguage :: VoteEndAcceptedNeedMoreVotes( string user, string votes )
+{
+	string Out = m_CFG->GetString( "lang_0301", "lang_0301" );
+	UTIL_Replace( Out, "$USER$", user );
+	UTIL_Replace( Out, "$VOTES$", votes );
+	return Out;
+}
+
+string CLanguage :: VoteEndExpired( )
+{
+	string Out = m_CFG->GetString( "lang_0302", "lang_0302" );
+	return Out;
+}
+
+string CLanguage :: VoteEndPassed( )
+{
+	string Out = m_CFG->GetString( "lang_0303", "lang_0303" );
+	return Out;
+}
+
+string CLanguage :: UnableToVoteEndAlreadyInProgress( )
+{
+	return m_CFG->GetString( "lang_0304", "lang_0304" );
+}
+
+string CLanguage :: UnableToVoteEndNotEnoughPlayers( )
+{
+	return m_CFG->GetString( "lang_0305", "lang_0305" );
+}
+
+/*
+	NordicLeague - @end - Custom language functions for VoteKick
+*/
+
+
 string CLanguage :: WasKickedByVote( )
 {
 	return m_CFG->GetString( "lang_0164", "lang_0164" );

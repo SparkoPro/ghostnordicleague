@@ -140,6 +140,8 @@ public:
 	string m_RegisterEmailRegEx;
 	bool	m_AdminCanAlwaysJoin;			// config value: should we kick a non-reserved player to make room for admins?
 	bool	m_EnforceBalance;				// config value: force balance before gamestart?
+	bool	m_VoteEndAllowed;				// config value: do we allow !voteend ?
+	uint32_t m_VoteEndPercentage;			// config value: percentage of players required to vote yes for a voteend to pass
 
 	/*
 		NordicLeague - @end - define our config variables
