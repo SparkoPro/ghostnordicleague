@@ -182,7 +182,7 @@ public:
 	CDBBan *IsBannedName( string name );
 	CDBBan *IsBannedIP( string ip );
 	void AddAdmin( string name );
-	void AddBan( string name, string ip, string gamename, string admin, string reason );
+	void AddBan( string name, string ip, string gamename, string admin, string reason, bool ipban );
 	void RemoveAdmin( string name );
 	void RemoveBan( string name );
 	void HoldFriends( CBaseGame *game );

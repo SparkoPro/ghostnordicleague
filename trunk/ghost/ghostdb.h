@@ -83,7 +83,7 @@ public:
 	virtual vector<string> AdminList( string server );
 	virtual uint32_t BanCount( string server );
 	virtual CDBBan *BanCheck( string server, string user, string ip );
-	virtual bool BanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0 );
+	virtual bool BanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0, uint32_t ipban = 0 );
 	virtual bool BanRemove( string server, string user );
 	virtual bool BanRemove( string user );
 	virtual vector<CDBBan *> BanList( string server );
@@ -115,7 +115,7 @@ public:
 	virtual CCallableAdminList *ThreadedAdminList( string server );
 	virtual CCallableBanCount *ThreadedBanCount( string server );
 	virtual CCallableBanCheck *ThreadedBanCheck( string server, string user, string ip );
-	virtual CCallableBanAdd *ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0 );
+	virtual CCallableBanAdd *ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0, uint32_t ipban = 0 );
 	virtual CCallableBanRemove *ThreadedBanRemove( string server, string user );
 	virtual CCallableBanRemove *ThreadedBanRemove( string user );
 	virtual CCallableBanList *ThreadedBanList( string server );
@@ -305,10 +305,11 @@ protected:
 	string m_Admin;
 	string m_Reason;
 	uint32_t m_BanTime;
+	uint32_t m_IPBan;
 	bool m_Result;
 
 public:
-	CCallableBanAdd( string nServer, string nUser, string nIP, string nGameName, string nAdmin, string nReason, uint32_t nBanTime ) : CBaseCallable( ), m_Server( nServer ), m_User( nUser ), m_IP( nIP ), m_GameName( nGameName ), m_Admin( nAdmin ), m_Reason( nReason ), m_BanTime( nBanTime), m_Result( false ) { }
+	CCallableBanAdd( string nServer, string nUser, string nIP, string nGameName, string nAdmin, string nReason, uint32_t nBanTime, uint32_t nIPBan ) : CBaseCallable( ), m_Server( nServer ), m_User( nUser ), m_IP( nIP ), m_GameName( nGameName ), m_Admin( nAdmin ), m_Reason( nReason ), m_BanTime( nBanTime), m_IPBan( nIPBan ), m_Result( false ) { }
 	virtual ~CCallableBanAdd( );
 
 	virtual string GetServer( )				{ return m_Server; }
@@ -318,6 +319,7 @@ public:
 	virtual string GetAdmin( )				{ return m_Admin; }
 	virtual string GetReason( )				{ return m_Reason; }
 	virtual uint32_t GetBanTime( )			{ return m_BanTime; }
+	virtual uint32_t GetIPBan( )			{ return m_IPBan; }
 	virtual bool GetResult( )				{ return m_Result; }
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
@@ -621,9 +623,11 @@ private:
 	string m_GameName;
 	string m_Admin;
 	string m_Reason;
+	bool m_IPBan;
 
 public:
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason );
+	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan );
 	~CDBBan( );
 
 	string GetServer( )		{ return m_Server; }
@@ -633,6 +637,7 @@ public:
 	string GetGameName( )	{ return m_GameName; }
 	string GetAdmin( )		{ return m_Admin; }
 	string GetReason( )		{ return m_Reason; }
+	bool GetIPBan( )		{ return m_IPBan; }
 };
 
 //

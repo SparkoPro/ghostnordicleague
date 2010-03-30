@@ -756,7 +756,7 @@ CDBBan *CGHostDBSQLite :: BanCheck( string server, string user, string ip )
 	return Ban;
 }
 
-bool CGHostDBSQLite :: BanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0 )
+bool CGHostDBSQLite :: BanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0, uint32_t ipban = 0 )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	bool Success = false;
@@ -1529,10 +1529,10 @@ CCallableBanCheck *CGHostDBSQLite :: ThreadedBanCheck( string server, string use
 	return Callable;
 }
 
-CCallableBanAdd *CGHostDBSQLite :: ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime )
+CCallableBanAdd *CGHostDBSQLite :: ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban )
 {
-	CCallableBanAdd *Callable = new CCallableBanAdd( server, user, ip, gamename, admin, reason, bantime );
-	Callable->SetResult( BanAdd( server, user, ip, gamename, admin, reason, bantime ) );
+	CCallableBanAdd *Callable = new CCallableBanAdd( server, user, ip, gamename, admin, reason, bantime, ipban );
+	Callable->SetResult( BanAdd( server, user, ip, gamename, admin, reason, bantime, ipban ) );
 	Callable->SetReady( true );
 	return Callable;
 }
