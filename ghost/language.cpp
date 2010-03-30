@@ -91,11 +91,21 @@ string CLanguage :: BannedUser( string server, string victim )
 	return Out;
 }
 
-string CLanguage :: ErrorBanningUser( string server, string victim )
+string CLanguage :: IPBannedUser( string server, string victim, string ip )
+{
+	string Out = m_CFG->GetString( "lang_0007_2", "lang_0007_2" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$IP$", ip );
+	return Out;
+}
+
+string CLanguage :: ErrorBanningUser( string server, string victim, bool ipban )
 {
 	string Out = m_CFG->GetString( "lang_0008", "lang_0008" );
 	UTIL_Replace( Out, "$SERVER$", server );
 	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$IPERROR$", ipban ? "Could not find any suitable IP's for that user." : "");
 	return Out;
 }
 
@@ -123,6 +133,18 @@ string CLanguage :: UserWasBannedOnByBecause( string server, string victim, stri
 	UTIL_Replace( Out, "$DATE$", date );
 	UTIL_Replace( Out, "$ADMIN$", admin );
 	UTIL_Replace( Out, "$REASON$", reason );
+	return Out;
+}
+
+string CLanguage :: UserWasIPBannedOnByBecause( string server, string victim, string date, string admin, string reason, string ip )
+{
+	string Out = m_CFG->GetString( "lang_0011_2", "lang_0011_2" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$DATE$", date );
+	UTIL_Replace( Out, "$ADMIN$", admin );
+	UTIL_Replace( Out, "$REASON$", reason );
+	UTIL_Replace( Out, "$IP$", ip );
 	return Out;
 }
 

@@ -41,7 +41,12 @@ public:
 	string YouDontHaveAccessToThatCommand( );
 	string UserIsAlreadyBanned( string server, string victim );
 	string BannedUser( string server, string victim );
-	string ErrorBanningUser( string server, string victim );
+	
+	// NordicLeague
+	string IPBannedUser( string server, string victim, string ip );
+	string UserWasIPBannedOnByBecause( string server, string victim, string date, string admin, string reason, string ip );
+	string ErrorBanningUser( string server, string victim, bool ipban );
+	
 	string UserIsAnAdmin( string server, string user );
 	string UserIsNotAnAdmin( string server, string user );
 	string UserWasBannedOnByBecause( string server, string victim, string date, string admin, string reason );

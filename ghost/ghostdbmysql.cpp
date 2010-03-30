@@ -240,14 +240,14 @@ CCallableBanCheck *CGHostDBMySQL :: ThreadedBanCheck( string server, string user
 	return Callable;
 }
 
-CCallableBanAdd *CGHostDBMySQL :: ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime )
+CCallableBanAdd *CGHostDBMySQL :: ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableBanAdd *Callable = new CMySQLCallableBanAdd( server, user, ip, gamename, admin, reason, bantime, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableBanAdd *Callable = new CMySQLCallableBanAdd( server, user, ip, gamename, admin, reason, bantime, ipban, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -690,9 +690,9 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 	string Query;
 
 	if( ip.empty( ) )
-		Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
+		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
 	else
-		Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE (server='" + EscServer + "' AND name='" + EscUser + "') OR ip='" + EscIP + "'";
+		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban FROM bans WHERE (server='" + EscServer + "' AND name='" + EscUser + "') OR ip='" + EscIP + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -704,8 +704,8 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			if( Row.size( ) == 6 )
-				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5] );
+			if( Row.size( ) == 7 )
+				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]) );
 			/* else
 				*error = "error checking ban [" + server + " : " + user + "] - row doesn't have 6 columns"; */
 
@@ -718,22 +718,65 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 	return Ban;
 }
 
-bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime )
+bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban )
 {
 	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
 	string EscServer = MySQLEscapeString( conn, server );
 	string EscUser = MySQLEscapeString( conn, user );
-	string EscIP = MySQLEscapeString( conn, ip );
 	string EscGameName = MySQLEscapeString( conn, gamename );
 	string EscAdmin = MySQLEscapeString( conn, admin );
 	string EscReason = MySQLEscapeString( conn, reason );
 	bool Success = false;
 	string Query;
+
+	/*
+		NordicLeague - @begin - hack to enable both regular bans and ip-bans side-by-side
+	*/
+
+	if (ipban != 0 && ip.empty())
+	{
+		// we need to find the last used ip to fill in since we dont know the users current ip
+
+		string QFindIp = "SELECT ip FROM gameplayers WHERE name LIKE '" + user + "' ORDER BY id DESC LIMIT 1";
+
+		if( mysql_real_query( (MYSQL *)conn, QFindIp.c_str( ), QFindIp.size( ) ) != 0 )
+			*error = mysql_error( (MYSQL *)conn );
+		else
+		{
+                	MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
+
+        	        if( Result )
+	                {
+                        	vector<string> Row = MySQLFetchRow( Result );
+
+                	        if( Row.size( ) == 1 )
+        	                        ip = Row[0];
+	                        else
+							{
+                                	*error = "error finding any suitable ip for [" + user + "]";
+									mysql_free_result( Result );
+									return false;
+							}
+
+                        	mysql_free_result( Result );
+
+                	}
+        	        else
+	                        *error = mysql_error( (MYSQL *)conn );
+	
+		}
+	}
+
+	string EscIP = MySQLEscapeString( conn, ip );
+
+	/*
+		NordicLeague - @end - hack to enable both regular bans and ip-bans side-by-side
+	*/
 	
 	if (bantime > 0)
-		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, expires ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', CURDATE( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', UNIX_TIMESTAMP() + " + UTIL_ToString(bantime) + " )";
+		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, expires, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', UNIX_TIMESTAMP() + " + UTIL_ToString(bantime) + ", " + UTIL_ToString(ipban) + " )";
 	else
-		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', CURDATE( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "' )";
+		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', " + UTIL_ToString(ipban) + " )";
 	
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -778,7 +821,7 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 {
 	string EscServer = MySQLEscapeString( conn, server );
 	vector<CDBBan *> BanList;
-	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason FROM bans WHERE server='" + EscServer + "'";
+	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -790,9 +833,9 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			while( Row.size( ) == 6 )
+			while( Row.size( ) == 7 )
 			{
-				BanList.push_back( new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5] ) );
+				BanList.push_back( new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]) ) );
 				Row = MySQLFetchRow( Result );
 			}
 
@@ -1023,7 +1066,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					string Query4 = "SELECT score FROM dota_elo_scores WHERE name='" + EscName + "'";
 					
-					CONSOLE_Print( "[MYSQL] statsdota: " + Query4 );
+					//CONSOLE_Print( "[MYSQL] statsdota: " + Query4 );
 
 					if( mysql_real_query( (MYSQL *)conn, Query4.c_str( ), Query4.size( ) ) != 0 )
 						*error = mysql_error( (MYSQL *)conn );
@@ -1050,7 +1093,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					string Query5 = "select COUNT(score) from dota_elo_scores where score >= " + UTIL_ToString(Score, 2);
 
-					CONSOLE_Print( "[MYSQL] statsdota: " + Query5 );
+					//CONSOLE_Print( "[MYSQL] statsdota: " + Query5 );
 
                                         if( mysql_real_query( (MYSQL *)conn, Query5.c_str( ), Query5.size( ) ) != 0 )
        	                                        *error = mysql_error( (MYSQL *)conn );
@@ -1349,7 +1392,7 @@ void CMySQLCallableBanAdd :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLBanAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User, m_IP, m_GameName, m_Admin, m_Reason, m_BanTime );
+		m_Result = MySQLBanAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_User, m_IP, m_GameName, m_Admin, m_Reason, m_BanTime, m_IPBan );
 
 	Close( );
 }

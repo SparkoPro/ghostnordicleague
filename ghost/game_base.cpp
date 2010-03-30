@@ -1573,7 +1573,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 
 		if( Ban )
 		{
-			if( m_GHost->m_BanMethod == 2 || m_GHost->m_BanMethod == 3 )
+			if( m_GHost->m_BanMethod == 2 || m_GHost->m_BanMethod == 3 || Ban->GetIPBan() )
 			{
 				CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but is banned by IP address" );
 

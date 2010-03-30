@@ -303,11 +303,15 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		{
 			if( i->second->GetResult( ) )
 			{
-				AddBan( i->second->GetUser( ), i->second->GetIP( ), i->second->GetGameName( ), i->second->GetAdmin( ), i->second->GetReason( ) );
-				QueueChatCommand( m_GHost->m_Language->BannedUser( i->second->GetServer( ), i->second->GetUser( ) ), i->first, !i->first.empty( ) );
+				AddBan( i->second->GetUser( ), i->second->GetIP( ), i->second->GetGameName( ), i->second->GetAdmin( ), i->second->GetReason( ), i->second->GetIPBan() );
+				
+				if (i->second->GetIPBan() == 0)
+					QueueChatCommand( m_GHost->m_Language->BannedUser( i->second->GetServer( ), i->second->GetUser( ) ), i->first, !i->first.empty( ) );
+				else
+					QueueChatCommand( m_GHost->m_Language->IPBannedUser( i->second->GetServer( ), i->second->GetUser( ), i->second->GetIP( ) ), i->first, !i->first.empty( ) );
 			}
 			else
-				QueueChatCommand( m_GHost->m_Language->ErrorBanningUser( i->second->GetServer( ), i->second->GetUser( ) ), i->first, !i->first.empty( ) );
+				QueueChatCommand( m_GHost->m_Language->ErrorBanningUser( i->second->GetServer( ), i->second->GetUser( ), i->second->GetIPBan() ), i->first, !i->first.empty( ) );
 
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
@@ -1054,13 +1058,15 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				//
 				// !ADDBAN
 				// !BAN
+				// !ipban
 				//
 
-				if( ( Command == "addban" || Command == "ban" ) && !Payload.empty( ) )
+				if( ( Command == "addban" || Command == "ban" || Command == "ipban" ) && !Payload.empty( ) )
 				{
 					// extract the victim and the reason
 					// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
 
+					bool IPBan = (Command == "ipban") ? true : false;
 					string Victim;
 					string Reason;
 					stringstream SS;
@@ -1077,9 +1083,15 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					}
 
 					if( IsBannedName( Victim ) )
+					{
+						if (IPBan)
+						{
+							// We need to upgrade the regular ban to a ip-ban
+						}
 						QueueChatCommand( m_GHost->m_Language->UserIsAlreadyBanned( m_Server, Victim ), User, Whisper );
+					}
 					else
-						m_PairedBanAdds.push_back( PairedBanAdd( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanAdd( m_Server, Victim, string( ), string( ), User, Reason ) ) );
+						m_PairedBanAdds.push_back( PairedBanAdd( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanAdd( m_Server, Victim, string( ), string( ), User, Reason, 0, IPBan ? 1 : 0 ) ) );
 				}
 				
 				//
@@ -1155,7 +1167,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 								
 								if (ValidSuffix)
 								{
-								
 									if (!SS.eof())
 									{
 										getline( SS, Reason );
@@ -1170,7 +1181,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 									if( IsBannedName( Victim ) )
 										QueueChatCommand( m_GHost->m_Language->UserIsAlreadyBanned( m_Server, Victim ), User, Whisper );
 									else
-										m_PairedBanAdds.push_back( PairedBanAdd( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanAdd( m_Server, Victim, string( ), string( ), User, Reason, BanTime ) ) );
+										m_PairedBanAdds.push_back( PairedBanAdd( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanAdd( m_Server, Victim, string( ), string( ), User, Reason, BanTime, 0 ) ) );
 								}
 								else
 								{
@@ -1444,7 +1455,13 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					CDBBan *Ban = IsBannedName( Payload );
 
 					if( Ban )
-						QueueChatCommand( m_GHost->m_Language->UserWasBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ) ), User, Whisper );
+					{
+						if ( Ban->GetIPBan() )
+							QueueChatCommand( m_GHost->m_Language->UserWasIPBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ), Ban->GetIP() ), User, Whisper );
+						else
+							QueueChatCommand( m_GHost->m_Language->UserWasBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ) ), User, Whisper );
+
+					}
 					else
 						QueueChatCommand( m_GHost->m_Language->UserIsNotBanned( m_Server, Payload ), User, Whisper );
 				}
@@ -3301,10 +3318,10 @@ void CBNET :: AddAdmin( string name )
 	m_Admins.push_back( name );
 }
 
-void CBNET :: AddBan( string name, string ip, string gamename, string admin, string reason )
+void CBNET :: AddBan( string name, string ip, string gamename, string admin, string reason, bool ipban )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
-	m_Bans.push_back( new CDBBan( m_Server, name, ip, "N/A", gamename, admin, reason ) );
+	m_Bans.push_back( new CDBBan( m_Server, name, ip, "N/A", gamename, admin, reason, ipban ? 1 : 0 ) );
 }
 
 void CBNET :: RemoveAdmin( string name )
