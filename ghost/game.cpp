@@ -79,6 +79,7 @@ CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHost
 		m_Stats = NULL;
 
 	m_CallableGameAdd = NULL;
+	m_VoteEndInProgress = false;
 }
 
 CGame :: ~CGame( )
@@ -2062,6 +2063,18 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					SendAllChat("Error! Country-codes is 2 characters each, u have given an uneven length string.");
 			}
 			
+			if ( Command == "checkvotes" && m_GameLoaded)
+			{
+				uint32_t Votes = 0;
+				
+				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+				{
+					if( (*i)->GetEndVote( ) )
+						Votes++;
+				}
+				SendAllChat("Current registered end-votes: " + UTIL_ToString(Votes));
+			}
+			
 		}
 		else
 		{
@@ -2252,6 +2265,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				{
 					m_KickVotePlayer = LastMatch->GetName( );
 					m_StartedKickVoteTime = GetTime( );
+					m_VoteEndInProgress = false;
 
 					for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 						(*i)->SetKickVote( false );
@@ -2271,7 +2285,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !VOTEEND
 	//
 
-	if( Command == "voteend" && m_GHost->m_VoteEndAllowed )
+	if( Command == "voteend" && m_GHost->m_VoteEndAllowed && m_GameLoaded )
 	{
 		m_MessageWasCommand = true;
 		if( !m_KickVotePlayer.empty( ) )
@@ -2296,6 +2310,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	}
 
+	
 	//
 	// !YES
 	//
@@ -2352,12 +2367,12 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			else
 				SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );
 		}
-		else if (m_VoteEndInProgress)
+		else if (m_GameLoaded && m_VoteEndInProgress && m_KickVotePlayer.empty( ) && m_GHost->m_VoteEndAllowed)
 		{
 			
 			// so we got a endvote going
 			
-			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
+			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteEndPercentage / 100 );
 			uint32_t Votes = 0;
 			
 			player->SetEndVote( true );

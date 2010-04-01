@@ -1144,7 +1144,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	
 	m_AdminCanAlwaysJoin = CFG->GetInt( "bot_admincanalwaysjoin", 0 ) == 0 ? false : true;
 	m_EnforceBalance = CFG->GetInt( "bot_enforcebalance", 0 ) == 0 ? false : true;
-	m_VoteEndAllowed = CFG->GetInt( "bot_voteendallowed", 1 ) == 0 ? false : true;
+	m_VoteEndAllowed = CFG->GetInt( "bot_voteendallowed", 0 ) == 0 ? false : true;
 	m_VoteEndPercentage = CFG->GetInt( "bot_voteendpercentage", 70 );
 	
 	/*
