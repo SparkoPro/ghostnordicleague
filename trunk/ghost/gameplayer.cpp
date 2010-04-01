@@ -274,6 +274,10 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, str
 		m_MessageTimes[i] = 0;
 
 	m_Admin = false;
+	m_HasLeft = false;
+	
+	m_EndVote = false;
+	m_FFVote = false;
 }
 
 CGamePlayer :: ~CGamePlayer( )
