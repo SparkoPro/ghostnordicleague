@@ -591,7 +591,7 @@ string CLanguage :: YourLoadingTimeWas( string loadingtime )
 	return Out;
 }
 
-string CLanguage :: HasPlayedDotAGamesWithThisBot( string user, string totalgames, string totalwins, string totallosses, string totalkills, string totaldeaths, string totalcreepkills, string totalcreepdenies, string totalassists, string totalneutralkills, string totaltowerkills, string totalraxkills, string totalcourierkills, string avgkills, string avgdeaths, string avgcreepkills, string avgcreepdenies, string avgassists, string avgneutralkills, string avgtowerkills, string avgraxkills, string avgcourierkills )
+string CLanguage :: HasPlayedDotAGamesWithThisBot( string user, string totalgames, string totalwins, string totallosses, string totalkills, string totaldeaths, string totalcreepkills, string totalcreepdenies, string totalassists, string totalneutralkills, string totaltowerkills, string totalraxkills, string totalcourierkills, string avgkills, string avgdeaths, string avgcreepkills, string avgcreepdenies, string avgassists, string avgneutralkills, string avgtowerkills, string avgraxkills, string avgcourierkills, uint32_t rank, double score, uint32_t streak )
 {
 	string Out = m_CFG->GetString( "lang_0074", "lang_0074" );
 	UTIL_Replace( Out, "$USER$", user );
@@ -616,6 +616,26 @@ string CLanguage :: HasPlayedDotAGamesWithThisBot( string user, string totalgame
 	UTIL_Replace( Out, "$AVGTOWERKILLS$", avgtowerkills );
 	UTIL_Replace( Out, "$AVGRAXKILLS$", avgraxkills );
 	UTIL_Replace( Out, "$AVGCOURIERKILLS$", avgcourierkills );
+	
+	
+	
+	if (rank > 0)
+	{
+		string AppendScore = m_CFG->GetString( "lang_0074_1", "lang_0074_1" );
+		
+		UTIL_Replace( AppendScore, "$RANK$", UTIL_ToString(rank));
+		UTIL_Replace( AppendScore, "$SCORE$", UTIL_ToString(score, 2));
+		
+		if (streak > 1)
+			UTIL_Replace( AppendScore, "$STREAK$", " Win streak: " + UTIL_ToString(streak));
+		else
+			UTIL_Replace( AppendScore, "$STREAK$", "");
+		
+		UTIL_Replace( Out, "$RANK$", AppendScore);
+	}		
+	else
+		UTIL_Replace( Out, "$RANK$", "Unranked.");
+
 	return Out;
 }
 
@@ -1194,54 +1214,6 @@ string CLanguage :: VoteKickExpired( string victim )
 	return Out;
 }
 
-/*
-	NordicLeague - @begin - Custom language functions for VoteKick
-*/
-
-
-string CLanguage :: StartedVoteEnd( string user, string votesneeded )
-{
-	string Out = m_CFG->GetString( "lang_0300", "lang_0300" );
-	UTIL_Replace( Out, "$USER$", user );
-	UTIL_Replace( Out, "$VOTESNEEDED$", votesneeded );
-	return Out;
-}
-
-string CLanguage :: VoteEndAcceptedNeedMoreVotes( string user, string votes )
-{
-	string Out = m_CFG->GetString( "lang_0301", "lang_0301" );
-	UTIL_Replace( Out, "$USER$", user );
-	UTIL_Replace( Out, "$VOTES$", votes );
-	return Out;
-}
-
-string CLanguage :: VoteEndExpired( )
-{
-	string Out = m_CFG->GetString( "lang_0302", "lang_0302" );
-	return Out;
-}
-
-string CLanguage :: VoteEndPassed( )
-{
-	string Out = m_CFG->GetString( "lang_0303", "lang_0303" );
-	return Out;
-}
-
-string CLanguage :: UnableToVoteEndAlreadyInProgress( )
-{
-	return m_CFG->GetString( "lang_0304", "lang_0304" );
-}
-
-string CLanguage :: UnableToVoteEndNotEnoughPlayers( )
-{
-	return m_CFG->GetString( "lang_0305", "lang_0305" );
-}
-
-/*
-	NordicLeague - @end - Custom language functions for VoteKick
-*/
-
-
 string CLanguage :: WasKickedByVote( )
 {
 	return m_CFG->GetString( "lang_0164", "lang_0164" );
@@ -1539,3 +1511,56 @@ string CLanguage :: UnableToLoadReplayDoesntExist( string file )
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
+
+/*
+	NordicLeague - @begin - Custom language functions for VoteEnd
+*/
+
+
+string CLanguage :: StartedVoteEnd( string user, string votesneeded )
+{
+	string Out = m_CFG->GetString( "lang_0300", "lang_0300" );
+	UTIL_Replace( Out, "$USER$", user );
+	UTIL_Replace( Out, "$VOTESNEEDED$", votesneeded );
+	return Out;
+}
+
+string CLanguage :: VoteEndAcceptedNeedMoreVotes( string user, string votes )
+{
+	string Out = m_CFG->GetString( "lang_0301", "lang_0301" );
+	UTIL_Replace( Out, "$USER$", user );
+	UTIL_Replace( Out, "$VOTES$", votes );
+	return Out;
+}
+
+string CLanguage :: VoteEndExpired( )
+{
+	string Out = m_CFG->GetString( "lang_0302", "lang_0302" );
+	return Out;
+}
+
+string CLanguage :: VoteEndPassed( )
+{
+	string Out = m_CFG->GetString( "lang_0303", "lang_0303" );
+	return Out;
+}
+
+string CLanguage :: UnableToVoteEndAlreadyInProgress( )
+{
+	return m_CFG->GetString( "lang_0304", "lang_0304" );
+}
+
+string CLanguage :: UnableToVoteEndNotEnoughPlayers( )
+{
+	return m_CFG->GetString( "lang_0305", "lang_0305" );
+}
+
+string CLanguage :: VoteEndCancelled( )
+{
+	string Out = m_CFG->GetString( "lang_0306", "lang_0306" );
+	return Out;
+}
+
+/*
+	NordicLeague - @end - Custom language functions for VoteKick
+*/
