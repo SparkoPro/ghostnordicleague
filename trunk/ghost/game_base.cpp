@@ -1652,7 +1652,8 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		}
 	}
 
-//	if( m_MatchMaking && m_AutoStartPlayers != 0 && !m_Map->GetMapMatchMakingCategory( ).empty( ) && m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
+	// NordicLeauge - autostart bug with score checks, fixed
+
 	if( m_MatchMaking && !m_Map->GetMapMatchMakingCategory( ).empty( ) && m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
 	{
 		// matchmaking is enabled
@@ -2389,6 +2390,8 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 
 	SendWelcomeMessage( Player );
 
+	m_StatsPlayers.push_back( Player->GetName( ) );
+
 	// if spoof checks are required and we won't automatically spoof check this player then tell them how to spoof check
 	// e.g. if automatic spoof checks are disabled, or if automatic spoof checks are done on admins only and this player isn't an admin
 
@@ -2407,6 +2410,11 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 				SendChat( Player, m_GHost->m_Language->SpoofCheckByWhispering( string( UniqueName.begin( ), UniqueName.end( ) )  ) );
 		}
 	}
+
+	if( score < -99999.0 )
+		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), "N/A" ) );
+	else
+		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) );
 
 	uint32_t PlayersScored = 0;
 	uint32_t PlayersNotScored = 0;
@@ -2438,15 +2446,7 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 	}
 
 	double Spread = MaxScore - MinScore;
-	
-	string PlayerHasScore;
-	
-	if( score < -99999.0 )
-		PlayerHasScore = m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), "N/A" );
-	else
-		PlayerHasScore = m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) );
-		
-	SendAllChat( PlayerHasScore + " " + m_GHost->m_Language->RatedPlayersSpread( UTIL_ToString( PlayersScored ), UTIL_ToString( PlayersScored + PlayersNotScored ), UTIL_ToString( (uint32_t)Spread ) ) );
+	SendAllChat( m_GHost->m_Language->RatedPlayersSpread( UTIL_ToString( PlayersScored ), UTIL_ToString( PlayersScored + PlayersNotScored ), UTIL_ToString( (uint32_t)Spread ) ) );
 
 	// check for multiple IP usage
 
