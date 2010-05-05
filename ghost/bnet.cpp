@@ -413,12 +413,9 @@ bool CBNET :: Update( void *fd, void *send_fd )
 																						UTIL_ToString( DotAPlayerSummary->GetAvgNeutralKills( ), 2 ),
 																						UTIL_ToString( DotAPlayerSummary->GetAvgTowerKills( ), 2 ),
 																						UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
-																						UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ),
-																						DotAPlayerSummary->GetRank( ),
-																						DotAPlayerSummary->GetScore(),
-																						DotAPlayerSummary->GetStreak());
+																						UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
 
-                                /*uint32_t rank = DotAPlayerSummary->GetRank( );
+                                uint32_t rank = DotAPlayerSummary->GetRank( );
                                 if (rank > 0)
                                         Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore(), 2) + " points.";
                                 else
@@ -427,9 +424,7 @@ bool CBNET :: Update( void *fd, void *send_fd )
 				uint32_t streak = DotAPlayerSummary->GetStreak();
 
 				if (streak > 1)
-					Summary += " Win streak: " + UTIL_ToString(streak); */
-					
-
+					Summary += " Win streak: " + UTIL_ToString(streak);
 
 				QueueChatCommand( Summary, i->first, !i->first.empty( ) );
 

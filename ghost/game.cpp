@@ -288,12 +288,8 @@ bool CGame :: Update( void *fd, void *send_fd )
 													UTIL_ToString( DotAPlayerSummary->GetAvgNeutralKills( ), 2 ),
 													UTIL_ToString( DotAPlayerSummary->GetAvgTowerKills( ), 2 ),
 													UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ),
-													DotAPlayerSummary->GetRank( ),
-													DotAPlayerSummary->GetScore(),
-													DotAPlayerSummary->GetStreak( ) );
+													UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
 
-/*
 				uint32_t rank = DotAPlayerSummary->GetRank( );
 				if (rank > 0)
 					Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore(), 2) + " points.";
@@ -302,7 +298,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 
 				uint32_t streak = DotAPlayerSummary->GetStreak( );
 				if (streak > 1)
-					Summary += " Win streak: " + UTIL_ToString(streak); */
+					Summary += " Win streak: " + UTIL_ToString(streak);
 
 				if( i->first.empty( ) )
 					SendAllChat( Summary );
@@ -437,6 +433,76 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			/*****************
 			* ADMIN COMMANDS *
 			******************/
+
+			//
+			// SLAP COMMAND
+			//
+				if ( Command == "slap" && !Payload.empty( ) )
+			{
+				m_MessageWasCommand = true;
+				string Victim;
+				string Object;
+				stringstream SS;
+				SS << Payload;
+				SS >> Victim;
+					if( !SS.eof( ) )
+				{
+					getline( SS, Object );
+					string :: size_type Start = Object.find_first_not_of( " " );
+						if( Start != string :: npos )
+						Object = Object.substr( Start );
+				}					
+					int RandomNumber = 5;
+				srand((unsigned)time(0));
+				RandomNumber = (rand()%8);					
+					if ( Victim != User )
+				{
+					  if ( RandomNumber == 0 )
+				    SendAllChat( User + " slaps " + Victim + " with a large trout." );
+				  else if ( RandomNumber == 1 )
+					SendAllChat( User + " slaps " + Victim + " with a pink Macintosh." );
+				  else if ( RandomNumber == 2 )
+					SendAllChat( User + " throws a Playstation 3 at " + Victim + "." );
+				  else if ( RandomNumber == 3 )
+					SendAllChat( User + " drives a car over " + Victim + "." );
+				  else if ( RandomNumber == 4 )
+					SendAllChat( User + " steals " + Victim + "'s cookies. mwahahah!" );
+				  else if ( RandomNumber == 5 )	
+				  {
+					SendAllChat( User + " washes " + Victim + "'s car.  Oh, the irony!" );
+				  }
+				  else if ( RandomNumber == 6 )
+					SendAllChat( User + " burns " + Victim + "'s house." );
+				  else if ( RandomNumber == 7 )
+					SendAllChat( User + " finds " + Victim + "'s picture on uglypeople.com." );
+				}
+				else
+				{
+				  if ( RandomNumber == 0 )
+				         SendAllChat( User + " slaps himself with a large trout." );
+				  else if ( RandomNumber == 1 )
+					SendAllChat( User + " slaps himself with a pink Macintosh." );
+				  else if ( RandomNumber == 2 )
+					SendAllChat( User + " throws a Playstation 3 at himself." );
+				  else if ( RandomNumber == 3 )
+					SendAllChat( User + " drives a car over himself." );
+				  else if ( RandomNumber == 4 )
+					SendAllChat( User + " steals his cookies. mwahahah!" );
+				  else if ( RandomNumber == 5 )	
+				  {
+					int Goatsex = rand();
+					string s;
+					stringstream out;
+					out << Goatsex;
+					s = out.str();
+					SendAllChat( User + " searches yahoo.com for goatsex + " + User + ". " + s + " hits WEEE!" );
+				  }
+				  else if ( RandomNumber == 6 )
+					SendAllChat( User + " burns his house." );
+				  else if ( RandomNumber == 7 )
+					SendAllChat( User + " finds his picture on uglypeople.com." );
+				}				  
+				}
 			
 			//
 			// !STARTN
@@ -584,7 +650,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 							
 							if (Suffix == "minute" || Suffix == "minutes" || Suffix == "m")
 							{
-								BanTime = Amount * 60;
+								BanTime = Amount * 3600;
 								ValidSuffix = true;
 							}
 							else if (Suffix == "hour" || Suffix == "hours" || Suffix == "h")
@@ -753,8 +819,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				else
 				{
 					uint32_t AutoStartPlayers = UTIL_ToUInt32( Payload );
-					if (Payload == "on")
-						AutoStartPlayers = 10;
 
 					if( AutoStartPlayers > 0 )
 					{
@@ -850,6 +914,16 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				m_MessageWasCommand = true;
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 					m_PairedBanChecks.push_back( PairedBanCheck( User, m_GHost->m_DB->ThreadedBanCheck( (*i)->GetServer( ), Payload, string( ) ) ) );
+			}
+			
+			//
+			// !SMURF
+			//
+
+			if( Command == "smurf" && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
+			{
+				m_MessageWasCommand = true;
+				//m_PairedSmurfChecks.push_back( PairedSmurfCheck( User, m_GHost->m_DB->ThreadedSmurfCheck( Payload, string( ) ) ) );
 			}
 
 			//
@@ -1870,22 +1944,14 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			// !VOTECANCEL
 			//
 
-			if( Command == "votecancel" )
+			if( Command == "votecancel" && !m_KickVotePlayer.empty( ) )
 			{
-				if (!m_KickVotePlayer.empty( ))
-				{
-					m_MessageWasCommand = true;
-					SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
-					m_KickVotePlayer.clear( );
-					m_StartedKickVoteTime = 0;
-				}
-				else if (m_VoteEndInProgress)
-				{
-					m_MessageWasCommand = true;
-					SendAllChat( m_GHost->m_Language->VoteEndCancelled( ) );
-					m_StartedVoteEndTime = 0;
-					m_VoteEndInProgress = false;
-				}
+				m_MessageWasCommand = true;
+				SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
+				m_KickVotePlayer.clear( );
+				m_StartedKickVoteTime = 0;
+				m_StartedVoteEndTime = 0;
+				m_VoteEndInProgress = false;
 			}
 
 			//
@@ -2067,7 +2133,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
 			{
-				m_MessageWasCommand = true;
+
 			        for( unsigned char i = 0; i < 12; i++ )
 			        {
 			                bool TeamHasPlayers = false;
@@ -2106,20 +2172,19 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).empty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
 	}
 
-	//
-	// !REPORT
-	//
+                                //
+                                // !REPORT
+                                //
+                                if( Command == "report" )
+                                {
+                                        if( !Payload.empty( ) )
+                                        {
+                                                SendChat( player, "Your report has been submitted. An administrator will view it soon.");
+                                                CONSOLE_ReportPrint( Payload, User );
+                                                CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Payload + "]. It was added to report.log." );
+                                        }
+                                }
 
-	if( Command == "report" )
-	{
-		if( !Payload.empty( ) )
-		{
-			m_MessageWasCommand = true;
-			SendChat( player, "Your report has been submitted. An administrator will view it soon.");
-			CONSOLE_ReportPrint( Payload, User );
-			CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Payload + "]. It was added to report.log." );
-		}
-	}
 
 	//
 	// !STATS
@@ -2304,7 +2369,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		}
 		else if (m_GameLoaded && m_VoteEndInProgress && m_KickVotePlayer.empty( ) && m_GHost->m_VoteEndAllowed)
 		{
-			m_MessageWasCommand = true;
+			
 			// so we got a endvote going
 			
 			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteEndPercentage / 100 );
