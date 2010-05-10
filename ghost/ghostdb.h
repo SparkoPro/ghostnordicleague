@@ -552,14 +552,18 @@ protected:
 	string m_Name;
 	string m_Server;
 	double m_Result;
+	CDBGamePlayerSummary *m_GamePlayer;
+	
 
 public:
-	CCallableScoreCheck( string nCategory, string nName, string nServer ) : CBaseCallable( ), m_Category( nCategory ), m_Name( nName ), m_Server( nServer ), m_Result( 0.0 ) { }
+	CCallableScoreCheck( string nCategory, string nName, string nServer ) : CBaseCallable( ), m_Category( nCategory ), m_Name( nName ), m_Server( nServer ), m_Result( 0.0 ), m_GamePlayer( NULL ) { }
 	virtual ~CCallableScoreCheck( );
 
 	virtual string GetName( )					{ return m_Name; }
 	virtual double GetResult( )					{ return m_Result; }
+	virtual CDBGamePlayerSummary *GetPlayerSummary( )				{ return m_GamePlayer; }
 	virtual void SetResult( double nResult )	{ m_Result = nResult; }
+	virtual void SetPlayerSummary( CDBGamePlayerSummary *nSummary )				{ m_GamePlayer = nSummary; }
 };
 
 class CCallableW3MMDPlayerAdd : virtual public CBaseCallable

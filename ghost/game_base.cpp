@@ -243,9 +243,9 @@ CBaseGame :: ~CBaseGame( )
 		m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
 
 		if( m_SaveGame )
-			m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( "Partial GHost++ " + string( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
+			m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + "_partial.w3g" ) );
 		else
-			m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( "GHost++ " + string( Time ) + " " + m_GameName + " (" + MinString + "m" + SecString + "s).w3g" ) );
+			m_Replay->Save( m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
 	}
 
 	delete m_Socket;
@@ -261,6 +261,12 @@ CBaseGame :: ~CBaseGame( )
 
 	for( vector<CCallableScoreCheck *> :: iterator i = m_ScoreChecks.begin( ); i != m_ScoreChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( *i );
+		
+	/*for( vector<PairedGPSCheck> :: iterator i = m_PairedSafeGameChecks.begin( ); i != m_PairedSafeGameChecks.end( ); i++ )
+		m_GHost->m_Callables.push_back( i->second ); */
+		
+	for( vector<PairedGPSCheck> :: iterator i = m_PairedReliabilityChecks.begin( ); i != m_PairedReliabilityChecks.end( ); i++ )
+		m_GHost->m_Callables.push_back( i->second );
 
 	while( !m_Actions.empty( ) )
 	{
@@ -377,11 +383,21 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		if( (*i)->GetReady( ) )
 		{
 			double Score = (*i)->GetResult( );
+			CDBGamePlayerSummary *GamePlayerSummary = (*i)->GetPlayerSummary( );
 
 			for( vector<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
 			{
 				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
-					EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score );
+				{
+					/*
+					if (m_GHost->m_SafeGames)
+						m_PairedSafeGameChecks.push_back( PairedGPSCheck( UTIL_ToString(Score, 2), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( (*i)->GetName( ) ) ) );
+					else */
+					if (GamePlayerSummary)
+						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, GamePlayerSummary->GetTotalGames( ), GamePlayerSummary->GetAvgLeftPercent( ));
+					else
+						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, 0, 0);
+				}
 			}
 
 			m_GHost->m_DB->RecoverCallable( *i );
@@ -391,6 +407,40 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		else
 			i++;
 	}
+	
+	/*for( vector<PairedGPSCheck> :: iterator i = m_PairedSafeGameChecks.begin( ); i != m_PairedSafeGameChecks.end( ); )
+	{
+		if( i->second->GetReady( ) )
+		{
+			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
+			
+			double Score = UTIL_ToDouble(i->first);
+			uint32_t Games = 0;
+			uint32_t Stay = 0;
+			
+			if (GamePlayerSummary)
+			{
+				Games = GamePlayerSummary->GetTotalGames( );
+				Stay = GamePlayerSummary->GetAvgLeftPercent( );
+			}
+			
+			//CONSOLE_Print( "[SAFEGAME: " + m_GameName + "] Player " + ()->GetName( ) );
+			
+			for( vector<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
+			{
+				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == i->second->GetName( ) )
+				{
+						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, Games, Stay);
+				}
+			}
+
+			m_GHost->m_DB->RecoverCallable( i->second );
+			delete i->second;
+			i = m_PairedSafeGameChecks.erase( i );
+		}
+		else
+			i++;
+	} */
 
 	// update players
 
@@ -1529,8 +1579,6 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		}
 	}
 
-	// check if the new player's name is banned
-
 	for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 	{
 		if( (*i)->GetServer( ) == JoinedRealm )
@@ -1910,7 +1958,8 @@ else if( UTIL_IsLanIP( Player->GetExternalIP() ) )
 
 	SendWelcomeMessage( Player );
 
-	m_StatsPlayers.push_back( Player->GetName( ) );
+	/*if (!m_GHost->m_SafeGames)
+		m_PairedReliabilityChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( Player->GetName() ) ) ); */
 
 	// if spoof checks are required and we won't automatically spoof check this player then tell them how to spoof check
 	// e.g. if automatic spoof checks are disabled, or if automatic spoof checks are done on admins only and this player isn't an admin
@@ -1972,7 +2021,7 @@ else if( UTIL_IsLanIP( Player->GetExternalIP() ) )
 	}
 }
 
-void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score )
+void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games, uint32_t staypercent )
 {
 	if ( m_GHost->m_UseNormalCountDown && m_CountDownStarted )
 	{
@@ -2013,12 +2062,33 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	if (m_GHost->m_MatchMakingMethod != 4 && (score < m_MinimumScore || score > m_MaximumScore))
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + 
-potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
+		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
 		potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 		potential->SetDeleteMe( true );
 		return;
 	}
+	
+	if (m_GHost->m_SafeGames)
+	{
+		
+		if (games < m_GHost->m_GamesReq && (score < m_MinimumScore || score > m_MaximumScore))
+		{
+			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
+			potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
+			potential->SetDeleteMe( true );
+			return;
+		}
+		
+		if (staypercent < m_GHost->m_StayReq)
+		{
+			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has too low stay ratio [" + UTIL_ToString( staypercent ) + "]" );
+			potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
+			potential->SetDeleteMe( true );
+			return;
+		}
+	}
+		
+
 
 	// try to find an empty slot
 
@@ -2389,9 +2459,10 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 	// send a welcome message
 
 	SendWelcomeMessage( Player );
-
-	m_StatsPlayers.push_back( Player->GetName( ) );
-
+	
+/*	if (!m_GHost->m_SafeGames)
+		m_PairedReliabilityChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( Player->GetName() ) ) );
+*/
 	// if spoof checks are required and we won't automatically spoof check this player then tell them how to spoof check
 	// e.g. if automatic spoof checks are disabled, or if automatic spoof checks are done on admins only and this player isn't an admin
 
@@ -2414,7 +2485,7 @@ potential->GetExternalIPString( ) + "] is trying to join the game but has a rati
 	if( score < -99999.0 )
 		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), "N/A" ) );
 	else
-		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) );
+		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) + " Games: " + UTIL_ToString(games) + " (" + UTIL_ToString(staypercent) + "% stay)");
 
 	uint32_t PlayersScored = 0;
 	uint32_t PlayersNotScored = 0;
@@ -4176,6 +4247,8 @@ void CBaseGame :: BalanceSlots( )
 	{
 		bool TeamHasPlayers = false;
 		double TeamScore = 0.0;
+		uint32_t TeamUnratedPlayers = 0;
+		uint32_t TeamPlayers = 0;
 
 		for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
 		{
@@ -4183,18 +4256,22 @@ void CBaseGame :: BalanceSlots( )
 
 			if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
 			{
+				TeamPlayers++;
 				TeamHasPlayers = true;
 				double Score = (*j)->GetScore( );
 
 				if( Score < -99999.0 )
+				{
 					Score = m_Map->GetMapDefaultPlayerScore( );
+					TeamUnratedPlayers++;
+				}
 
 				TeamScore += Score;
 			}
 		}
 
 		if( TeamHasPlayers )
-			SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ) ) );
+			SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString(TeamPlayers), UTIL_ToString(TeamUnratedPlayers) ) );
 	}
 }
 

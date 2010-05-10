@@ -1452,11 +1452,13 @@ string CLanguage :: ValidServers( string servers )
 	return Out;
 }
 
-string CLanguage :: TeamCombinedScore( string team, string score )
+string CLanguage :: TeamCombinedScore( string team, string score, string players, string unratedplayers )
 {
 	string Out = m_CFG->GetString( "lang_0197", "lang_0197" );
 	UTIL_Replace( Out, "$TEAM$", team );
 	UTIL_Replace( Out, "$SCORE$", score );
+	UTIL_Replace( Out, "$PLAYERS$", players );
+	UTIL_Replace( Out, "$UNRATED$", unratedplayers );
 	return Out;
 }
 

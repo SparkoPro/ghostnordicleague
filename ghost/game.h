@@ -38,7 +38,6 @@ class CCallableDotAPlayerSummaryCheck;
 typedef pair<string,CCallableBanCheck *> PairedBanCheck;
 // typedef pair<string,CCallableSmurfCheck *> PairedSmurfCheck;
 typedef pair<string,CCallableBanAdd *> PairedBanAdd;
-typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<string,CCallableDotAPlayerSummaryCheck *> PairedDPSCheck;
 
 
@@ -55,7 +54,7 @@ protected:
 	//vector<PairedSmurfCheck> m_PairedSmurfChecks;	// vector of paired threaded database ban checks in progress
 	vector<PairedBanAdd> m_PairedBanAdds;		// vector of paired threaded database ban adds in progress
 	vector<PairedGPSCheck> m_PairedGPSChecks;	// vector of paired threaded database game player summary checks in progress
-	vector<PairedGPSCheck> m_PairedReliabilityChecks;	// vector of paired threaded database game player summary checks in progress
+	//vector<PairedGPSCheck> m_PairedReliabilityChecks;	// vector of paired threaded database game player summary checks in progress
 	vector<PairedDPSCheck> m_PairedDPSChecks;	// vector of paired threaded database DotA player summary checks in progress
 
 public:

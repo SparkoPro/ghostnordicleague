@@ -116,14 +116,14 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							
 								if( Killer && Victim )
 								{
-									
 									if (!m_Players[ValueInt])
-												m_Players[ValueInt] = new CDBDotAPlayer( );
+										m_Players[ValueInt] = new CDBDotAPlayer( );
 
-									m_Players[ValueInt]->SetKills( m_Players[ValueInt]->GetKills() + 1 );
+									if (Killer->GetName() != Victim->GetName())
+										m_Players[ValueInt]->SetKills( m_Players[ValueInt]->GetKills() + 1 );
 									
 									if (!m_Players[VictimColour])
-												m_Players[VictimColour] = new CDBDotAPlayer( );
+										m_Players[VictimColour] = new CDBDotAPlayer( );
 												
 									m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
 									

@@ -142,6 +142,10 @@ public:
 	bool	m_EnforceBalance;				// config value: force balance before gamestart?
 	bool	m_VoteEndAllowed;				// config value: do we allow !voteend ?
 	uint32_t m_VoteEndPercentage;			// config value: percentage of players required to vote yes for a voteend to pass
+	
+	bool m_SafeGames;						// are we hosting safe games?
+	uint32_t m_GamesReq;					// minimum amount of games required to be able to join safe games
+	uint32_t m_StayReq;						// minimum amount of stay % to be able to join
 
 	/*
 		NordicLeague - @end - define our config variables
