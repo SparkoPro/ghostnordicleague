@@ -240,7 +240,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 			{
 				if( i->first.empty( ) )
 				{
-					if (GamePlayerSummary->GetTotalGames( ) >= 2 && GamePlayerSummary->GetAvgLeftPercent( ) < 85)
+					if (GamePlayerSummary->GetTotalGames( ) >= 2 && GamePlayerSummary->GetAvgLeftPercent( ) < 90)
 					{
 						SendAllChat( "Warning! Potential leaver: " + i->second->GetName( ) + "! Games: " + UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ) + " Avg. Stay: " +  UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) + "%");
 					}
@@ -331,13 +331,6 @@ bool CGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	if( !m_StatsPlayers.empty( ) )
-	{
-		for( vector<string> :: iterator i = m_StatsPlayers.begin( ); i != m_StatsPlayers.end( ); i++ )
-			m_PairedReliabilityChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( *i ) ) );
-
-		m_StatsPlayers.clear( );
-	}
 
 	return CBaseGame :: Update( fd, send_fd );
 }
@@ -2046,6 +2039,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			
 			if ( Command == "allow" && !m_GameLoaded && !Payload.empty())
 			{
+				m_MessageWasCommand = true;
 				transform( Payload.begin( ), Payload.end( ), Payload.begin( ), (int(*)(int))toupper );
 				
 				if ( Payload == "ALL")
@@ -2061,6 +2055,36 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				}
 				else
 					SendAllChat("Error! Country-codes is 2 characters each, u have given an uneven length string.");
+			}
+			
+			//
+			// !scorelimit
+			//
+
+			if( Command == "minscore" && !m_CountDownStarted && !m_GameLoaded )
+			{
+				m_MessageWasCommand = true;
+				if( !Payload.empty( ) )
+				{
+					uint32_t score = UTIL_ToUInt32(Payload);
+					m_MinimumScore = score;
+					SendAllChat( "Minimum required score set to: " + Payload );
+				}
+				else
+					SendAllChat( "Minimum required score: " + UTIL_ToString(m_MinimumScore, 0) );
+			}
+			
+			if( Command == "maxscore" && !m_CountDownStarted && !m_GameLoaded )
+			{
+				m_MessageWasCommand = true;
+				if( !Payload.empty( ) )
+				{
+					uint32_t score = UTIL_ToUInt32(Payload);
+					m_MaximumScore = score;
+					SendAllChat( "Maximum required score set to: " + Payload );
+				}
+				else
+					SendAllChat( "Maximum required score: " + UTIL_ToString(m_MaximumScore, 0) );
 			}
 			
 			if ( Command == "checkvotes" && m_GameLoaded)
@@ -2127,38 +2151,43 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		}
 	}
 
-			//
-			// !CHECKBALANCE / !CB
-			//
+	//
+	// !CHECKBALANCE / !CB
+	//
 
-			if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
-			{
+	if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
+	{
 
-			        for( unsigned char i = 0; i < 12; i++ )
-			        {
-			                bool TeamHasPlayers = false;
-			                double TeamScore = 0.0;
+        for( unsigned char i = 0; i < 12; i++ )
+        {
+            bool TeamHasPlayers = false;
+			double TeamScore = 0.0;
+			uint32_t TeamUnratedPlayers = 0;
+			uint32_t TeamPlayers = 0;
+			
+      	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+              	{
+                      unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
 
-		        	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
-		                	{
-		                        	unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
+                       if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
+                       {
+      	                    TeamHasPlayers = true;
+							TeamPlayers++;
+                            double Score = (*j)->GetScore( );
 
-			                        if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
-			                        {
-		        	                        TeamHasPlayers = true;
-			                                double Score = (*j)->GetScore( );
+							if( Score < -99999.0 )
+							{
+								Score = m_Map->GetMapDefaultPlayerScore( );
+								TeamUnratedPlayers++;
+							}
 
-		                	                if( Score < -99999.0 )
-		                        	                Score = m_Map->GetMapDefaultPlayerScore( );
+							TeamScore += Score;
+                       }
+               }
 
-		                              		TeamScore += Score;
-			                        }
-			                }
-
-			                if( TeamHasPlayers )
-		        	                SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ) ) );
-				}
-
+               if( TeamHasPlayers )
+      	                SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
+		}
 	}
 
 

@@ -39,6 +39,9 @@ class CIncomingAction;
 class CIncomingChatPlayer;
 class CIncomingMapSize;
 class CCallableScoreCheck;
+class CCallableGamePlayerSummaryCheck;
+
+typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 
 class CBaseGame
 {
@@ -138,6 +141,8 @@ protected:
 	uint32_t m_LobbyTimeLimit;						// Each game must have it's own lobby timelimit to prevent !autostart off from closing games
 
 	vector<string> m_StatsPlayers;
+	vector<PairedGPSCheck> m_PairedSafeGameChecks;	// vector of paired threaded database game player summary checks in progress for safegames
+	vector<PairedGPSCheck> m_PairedReliabilityChecks;	// vector of paired threaded database game player summary checks in progress
 
 	/*
 		NordicLeague - @end - Some added custom variables
@@ -223,7 +228,7 @@ public:
 	virtual void EventPlayerDisconnectSocketError( CGamePlayer *player );
 	virtual void EventPlayerDisconnectConnectionClosed( CGamePlayer *player );
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );
-	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score );
+	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games = 0, uint32_t staypercent = 0);
 	virtual void EventPlayerLeft( CGamePlayer *player );
 	virtual void EventPlayerLoaded( CGamePlayer *player );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );

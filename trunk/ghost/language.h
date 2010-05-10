@@ -250,7 +250,7 @@ public:
 	string HasBannedIP( string victim, string ip, string bannedname );
 	string PlayersInGameState( string number, string players );
 	string ValidServers( string servers );
-	string TeamCombinedScore( string team, string score );
+	string TeamCombinedScore( string team, string score, string players, string unratedplayers );
 	string BalancingSlotsCompleted( );
 	string PlayerWasKickedForFurthestScore( string name, string score, string average );
 	string LocalAdminMessagesEnabled( );

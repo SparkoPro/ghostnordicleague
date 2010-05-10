@@ -1147,6 +1147,10 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_VoteEndAllowed = CFG->GetInt( "bot_voteendallowed", 0 ) == 0 ? false : true;
 	m_VoteEndPercentage = CFG->GetInt( "bot_voteendpercentage", 70 );
 	
+	m_SafeGames = CFG->GetInt( "bot_safegames", 0 ) == 0 ? false : true;
+	m_GamesReq = CFG->GetInt( "safe_gamesreq", 10 );				// minimum amount of games required to be able to join safe games
+	m_StayReq = CFG->GetInt( "safe_stayreq", 90 );				// minimum amount of games required to be able to join safe games
+	
 	/*
 		NordicLeague - @end - read our config variables
 	*/
