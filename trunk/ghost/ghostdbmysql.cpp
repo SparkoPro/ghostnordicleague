@@ -1592,7 +1592,7 @@ void CMySQLCallableScoreCheck :: operator( )( )
 
 	if( m_Error.empty( ) )
 	{
-		m_GamePlayer = MySQLReducedGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
+		m_GamePlayer = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
 		m_Result = MySQLScoreCheck( m_Connection, &m_Error, m_SQLBotID, m_Category, m_Name, m_Server );
 	}
 	Close( );
