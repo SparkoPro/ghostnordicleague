@@ -595,6 +595,8 @@ CGHost :: CGHost( CConfig *CFG )
 #else
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
+
+	m_Callables.push_back( m_DB->ThreadedUpdateGameInfo( string(), 255, false) );
 }
 
 CGHost :: ~CGHost( )

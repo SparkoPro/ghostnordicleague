@@ -1329,15 +1329,14 @@ bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gamei
 
 bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic )
 {
-	
-	if (name.empty())
-		return false;
 		
 	string Query;
 	string EscName = MySQLEscapeString( conn, name );
 	uint32_t IsPublic = ispublic ? 1 : 0;
-	
-	if ( players == 255 )
+
+	if ( name.empty() && players == 255 )
+		Query = "DELETE FROM gameinfo WHERE botid = " + UTIL_ToString( botid );	
+	else if ( players == 255 )
 		Query = "DELETE FROM gameinfo WHERE name = '" + EscName + "' AND botid = " + UTIL_ToString( botid );
 	else
 		Query = "INSERT INTO gameinfo (name, players, botid, public) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ") ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ";";
