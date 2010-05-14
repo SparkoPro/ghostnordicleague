@@ -278,6 +278,7 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, str
 	
 	m_EndVote = false;
 	m_FFVote = false;
+	m_Team = 0;
 }
 
 CGamePlayer :: ~CGamePlayer( )

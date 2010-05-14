@@ -106,8 +106,12 @@ protected:
 	uint32_t m_StartedKickVoteTime;					// GetTime when the kick vote was started
 	
 	// NordicLeague
-	uint32_t m_StartedVoteEndTime;					// GetTime when the end vote was started
-	bool	m_VoteEndInProgress;
+	uint32_t 	m_StartedVoteEndTime;					// GetTime when the end vote was started
+	bool		m_VoteEndInProgress;
+	uint32_t 	m_LastGameInfoUpdateTime;
+	uint32_t 	m_LastGameInfoPlayers;
+	string 		m_LastGameInfoName;
+	vector<string> m_BypassEnforcer;
 	
 	uint32_t m_GameOverTime;						// GetTime when the game was over
 	uint32_t m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game
@@ -137,6 +141,11 @@ protected:
 	vector<string> m_AdminsInGame;					// vector of admin names in this game
 	bool m_HCLCommandFromGameName;					// try to get hcl command from game name
 	bool m_HCLOverride;								// if the !hcl command is issued, override hcl from gamename
+	uint32_t m_FFTeam;
+	uint32_t m_FFVotesNeeded;
+	uint32_t m_FFStartedTime;
+	bool	m_FFSucceeded;
+	uint32_t m_ForfeitDelayTime;
 	
 	uint32_t m_LobbyTimeLimit;						// Each game must have it's own lobby timelimit to prevent !autostart off from closing games
 

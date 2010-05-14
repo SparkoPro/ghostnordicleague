@@ -474,6 +474,19 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map
 	return Callable;
 }
 
+CCallableUpdateGameInfo *CGHostDBMySQL :: ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic )
+{
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableUpdateGameInfo *Callable = new CMySQLCallableUpdateGameInfo( name, players, ispublic, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CreateThread( Callable );
+	m_OutstandingCallables++;
+	return Callable;
+}
+
 void *CGHostDBMySQL :: GetIdleConnection( )
 {
 	void *Connection = NULL;
@@ -930,7 +943,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	string EscName = MySQLEscapeString( conn, name );
 	CDBGamePlayerSummary *GamePlayerSummary = NULL;
-	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE LOWER(name)='" + EscName + "'";
+	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -957,6 +970,42 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 				uint32_t AvgDuration = UTIL_ToUInt32( Row[10] );
 				uint32_t MaxDuration = UTIL_ToUInt32( Row[11] );
 				GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
+			}
+			else
+				*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
+
+			mysql_free_result( Result );
+		}
+		else
+			*error = mysql_error( (MYSQL *)conn );
+	}
+
+	return GamePlayerSummary;
+}
+
+CDBGamePlayerSummary *MySQLReducedGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name )
+{
+	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+	string EscName = MySQLEscapeString( conn, name );
+	CDBGamePlayerSummary *GamePlayerSummary = NULL;
+//	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
+	string Query = "SELECT COUNT(*), AVG(`left`/duration)*100 FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
+
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+		*error = mysql_error( (MYSQL *)conn );
+	else
+	{
+		MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
+
+		if( Result )
+		{
+			vector<string> Row = MySQLFetchRow( Result );
+
+			if( Row.size( ) == 2 )
+			{
+				uint32_t TotalGames = UTIL_ToUInt32( Row[0] );
+				uint32_t AvgLeftPercent = UTIL_ToUInt32( Row[7] );
+				GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string( ), string( ), TotalGames, 0, 0, 0, 0, AvgLeftPercent, 0, 0, 0, 0 );
 			}
 			else
 				*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
@@ -1278,6 +1327,31 @@ bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gamei
 	return Success;
 }
 
+bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic )
+{
+	
+	if (name.empty())
+		return false;
+		
+	string Query;
+	string EscName = MySQLEscapeString( conn, name );
+	uint32_t IsPublic = ispublic ? 1 : 0;
+	
+	if ( players == 255 )
+		Query = "DELETE FROM gameinfo WHERE name = '" + EscName + "' AND botid = " + UTIL_ToString( botid );
+	else
+		Query = "INSERT INTO gameinfo (name, players, botid, public) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ") ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ";";
+
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+	{
+		*error = mysql_error( (MYSQL *)conn );
+		return false;
+	}
+
+	return true;
+}
+
+
 //
 // MySQL Callables
 //
@@ -1519,7 +1593,7 @@ void CMySQLCallableScoreCheck :: operator( )( )
 
 	if( m_Error.empty( ) )
 	{
-		m_GamePlayer = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
+		m_GamePlayer = MySQLReducedGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
 		m_Result = MySQLScoreCheck( m_Connection, &m_Error, m_SQLBotID, m_Category, m_Name, m_Server );
 	}
 	Close( );
@@ -1548,6 +1622,16 @@ void CMySQLCallableW3MMDVarAdd :: operator( )( )
 		else
 			m_Result = MySQLW3MMDVarAdd( m_Connection, &m_Error, m_SQLBotID, m_GameID, m_VarStrings );
 	}
+
+	Close( );
+}
+
+void CMySQLCallableUpdateGameInfo :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLUpdateGameInfo( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Players, m_Public );
 
 	Close( );
 }

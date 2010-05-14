@@ -80,6 +80,7 @@ CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHost
 
 	m_CallableGameAdd = NULL;
 	m_VoteEndInProgress = false;
+	
 }
 
 CGame :: ~CGame( )
@@ -2099,6 +2100,12 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				SendAllChat("Current registered end-votes: " + UTIL_ToString(Votes));
 			}
 			
+			if ( Command == "checkteams" && m_GameLoaded)
+			{
+				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+					SendChat(player, (*i)->GetName() + " : team " + UTIL_ToString((*i)->GetTeam()));		
+			}
+			
 		}
 		else
 		{
@@ -2339,6 +2346,116 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	}
 
+	//
+	// !ff
+	//
+
+	if ( Command == "ff" && m_GameLoaded )
+	{
+		/*
+			NordicLeague - @begin - We got a forfeit request going on.
+		*/
+		m_MessageWasCommand = true;
+		
+		if (m_ForfeitDelayTime > GetTime())
+		{
+			
+			uint32_t min, sec;
+			sec = m_ForfeitDelayTime;
+			while(sec >= 60)
+			{
+				min++;
+				sec -= 60;
+			}
+			
+			SendAllChat("You can not forfeit the first 25 minutes of the game! Time left: " + UTIL_ToString(min) + ":" + UTIL_ToString(sec));
+		}
+		else
+		{
+			if (m_FFTeam)
+			{
+				if (player->GetTeam() == m_FFTeam)
+				{
+					player->SetFFVote(true);
+				
+					uint32_t Votes = 0;
+					for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+					{
+						if ((*i)->GetTeam() == m_FFTeam && (*i)->GetFFVote())
+							Votes++;
+					}
+				
+					SendAllChat(player->GetName() + " has voted to forfeit the game. " + UTIL_ToString(Votes) + "/" + UTIL_ToString(m_FFVotesNeeded));
+
+					if (Votes >= m_FFVotesNeeded && m_FFTeam > 0)
+					{
+						if (m_FFTeam == 1)
+						{
+							SendAllChat("Sentinel has forfeited the game.");
+							SendAllChat("The game will end in 30 seconds!");
+							m_Stats->SetWinner(2);
+							m_GameOverTime = GetTime( );
+							m_FFSucceeded = true;
+						}
+						else
+						{
+							SendAllChat("Scourge has forfeited the game!");
+							SendAllChat("The game will end in 30 seconds!");
+							m_Stats->SetWinner(1);
+							m_GameOverTime = GetTime( );
+							m_FFSucceeded = true;
+						}	
+						// We got a successfull ff vote, set the other team to winner, end the game.
+					}
+
+				}
+				else
+				{
+					// you cant vote for ff, wrong team
+					//SendAllChat("You can't vote " + player->GetName() + " your on the wrong team.");
+				}
+			}
+			else
+			{
+				// start a ff vote for the players team.
+
+				m_FFTeam = player->GetTeam();
+				m_FFStartedTime = GetTime();
+				m_FFVotesNeeded = 0;
+
+				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+				{
+					(*i)->SetFFVote( false );
+					if ((*i)->GetTeam() == m_FFTeam)
+						m_FFVotesNeeded++;
+				}
+			
+				if (m_FFVotesNeeded == 1)
+				{
+					if (m_FFTeam == 1)
+					{
+						SendAllChat("Sentinel has forfeited the game.");
+						SendAllChat("The game will end in 60 seconds!");
+						m_Stats->SetWinner(2);
+					}
+					else
+					{
+						SendAllChat("Scourge has forfeited the game!");
+						SendAllChat("The game will end in 60 seconds!");
+						m_Stats->SetWinner(1);
+					}
+				}
+
+				player->SetFFVote(true);
+
+				if (m_FFTeam == 1)
+					SendAllChat("Forfeit vote started for the Sentinel, type !ff to accept forfeit.");
+				else if (m_FFTeam == 2)
+					SendAllChat("Forfeit Vote started for the Scourge, type !ff to accept forfeit.");
+			}
+		}
+
+	}
 	
 	//
 	// !YES

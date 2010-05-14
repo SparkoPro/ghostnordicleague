@@ -174,6 +174,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							{
 								string AssistString = KeyString.substr( 6 );
 								uint32_t Assist = UTIL_ToUInt32(AssistString);
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( ValueInt );
+								
+								if (Player)
+								{
+									m_Players[ValueInt]->SetAssists( m_Players[ValueInt]->GetAssists() + 1 );
+								}
+								
 								//CGamePlayer *Player = m_Game->GetPlayerFromColour( PlayerColour );
 								//m_Game->SendAllChat("[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected. Value: " + UTIL_ToString(ValueInt) + " Assist ( " + AssistString + " - " + UTIL_ToString(Assist) + " )");
 								//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected. Value: " + UTIL_ToString(ValueInt) + " Assist ( " + AssistString + " - " + UTIL_ToString(Assist) + " )" );
@@ -404,6 +411,16 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								}
 								
 								m_Players[ID]->SetColour( ID );
+								
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
+								
+								if (Player)
+								{
+									if ( ID >= 1 && ID <= 5 )
+										Player->SetTeam(1);
+									else
+										Player->SetTeam(2);
+								}
 
 								// Key "1"		-> Kills
 								// Key "2"		-> Deaths
@@ -449,7 +466,10 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 										m_Players[ID]->SetCreepDenies( ValueInt );
 								}
 								else if( KeyString == "5" )
-									m_Players[ID]->SetAssists( ValueInt );
+								{
+									if (ValueInt != m_Players[ID]->GetAssists() )
+										m_Players[ID]->SetAssists( ValueInt );
+								}
 								else if( KeyString == "6" )
 									m_Players[ID]->SetGold( ValueInt );
 								else if( KeyString == "7" )

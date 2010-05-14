@@ -40,6 +40,11 @@ bool CStats :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHo
 	return false;
 }
 
+void CStats :: SetWinner(uint32_t winner)
+{
+	
+}
+
 void CStats :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID )
 {
 

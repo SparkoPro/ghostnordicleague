@@ -46,6 +46,7 @@ public:
 	CStats( CBaseGame *nGame );
 	virtual ~CStats( );
 	virtual CDBDotAPlayer *GetPlayerStats(uint32_t id);
+	virtual void SetWinner(uint32_t winner);
 
     virtual bool ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost);
 	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );

@@ -113,6 +113,7 @@ private:
 	bool m_Lagging;								// if the player is lagging or not (on the lag screen)
 	bool m_DropVote;							// if the player voted to drop the laggers or not (on the lag screen)
 	bool m_KickVote;							// if the player voted to kick a player or not
+	uint32_t m_Team;					// players team, 1 for sentinel, 2 for scourge.
 	
 	// NordicLeague
 	bool m_EndVote;							// if the player voted to end
@@ -123,6 +124,7 @@ private:
 	bool m_Admin;								// if the player is admin or not;
 	bool m_Moderator;
 	bool m_HasLeft;
+	
 	
 	#define MTNUM 6
 	uint32_t m_MessageTimes[MTNUM];				// ticks of the last MTNUM messages sent by the user
@@ -207,7 +209,10 @@ public:
 	
 	void SetEndVote( bool nVote )										{ m_EndVote = nVote; }
 	void SetFFVote( bool nVote )										{ m_FFVote = nVote; }
-
+	
+	uint32_t GetTeam( )											{ return m_Team; }
+	void SetTeam( uint32_t nTeam )											{ m_Team = nTeam; }
+	
 	string GetNameTerminated( );
 	uint32_t GetPing( bool LCPing );
 

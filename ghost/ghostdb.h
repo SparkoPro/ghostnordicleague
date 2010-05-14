@@ -41,7 +41,6 @@ class CCallableGamePlayerAdd;
 class CCallableGamePlayerSummaryCheck;
 class CCallableRegisterPlayerAdd;
 class CCallableDotAGameAdd;
-class CCallableDotAEventAdd;
 class CCallableDotAPlayerAdd;
 class CCallableDotAPlayerSummaryCheck;
 class CCallableDownloadAdd;
@@ -53,6 +52,9 @@ class CDBGame;
 class CDBGamePlayer;
 class CDBGamePlayerSummary;
 class CDBDotAPlayerSummary;
+
+class CCallableDotAEventAdd;
+class CCallableUpdateGameInfo;
 
 typedef pair<uint32_t,string> VarP;
 
@@ -93,7 +95,6 @@ public:
 	virtual uint32_t GamePlayerCount( string name );
 	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( string name );
 	virtual uint32_t DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual uint32_t DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
 	virtual uint32_t DotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
 	virtual uint32_t DotAPlayerCount( string name );
 	virtual CDBDotAPlayerSummary *DotAPlayerSummaryCheck( string name );
@@ -104,6 +105,23 @@ public:
 	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
 	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
 	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
+	
+	/*
+		NordicLeague - @begin - custom db action
+	*/
+	
+	// keep track of in-game events for live feedback on website
+	
+	virtual uint32_t DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
+	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
+	
+	// Keep track of current games in database for channel/website info
+		
+	virtual bool UpdateGameInfo( string name, uint32_t players, bool ispublic);
+	virtual CCallableUpdateGameInfo *ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
+	/*
+		NordicLeague - @begin - custom db action
+	*/
 
 	// threaded database functions
 
@@ -124,7 +142,6 @@ public:
 	virtual CCallableRegisterPlayerAdd *ThreadedRegisterPlayerAdd( string name, string email, string ip );
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
@@ -133,6 +150,7 @@ public:
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
+	
 };
 
 //
@@ -611,6 +629,26 @@ public:
 
 	virtual bool GetResult( )				{ return m_Result; }
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
+};
+
+
+class CCallableUpdateGameInfo : virtual public CBaseCallable
+{
+protected:
+	string m_Name;
+	uint32_t m_Players;
+	bool m_Public;
+	bool m_Result;
+
+public:
+	CCallableUpdateGameInfo( string name, uint32_t players, bool ispublic ) : CBaseCallable( ), m_Name( name ), m_Players( players ), m_Public( ispublic ), m_Result( false ) { }
+	virtual ~CCallableUpdateGameInfo( );
+
+	virtual bool GetResult( )				{ return m_Result; }
+	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
+	virtual void SetName( string name ) { m_Name = name; }
+	virtual void SetPlayers( uint32_t players ) { m_Players = players; }
+	virtual void SetPublic( bool ispublic ) { m_Public = ispublic; }
 };
 
 //
