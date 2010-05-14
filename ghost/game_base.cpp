@@ -1675,18 +1675,12 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		int num;
 		vector<string> ApprovedLocations;
 		string PlayerLocation;
-		bool playerIsApproved=false;
+		bool playerIsApproved;
 
 		string NameLower = joinPlayer->GetName();
 		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
 		
-		for(int x = 0; x < m_BypassEnforcer.size() - 1; x++)
-		{
-			if(NameLower == m_BypassEnforcer[x])
-				playerIsApproved = true;
-		}
-		
-		if (!playerIsApproved)
+		if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips" && NameLower != "egc.devastated" && NameLower != "devas-")
 		{
 		
 			if(m_GHost->m_ApprovedCountries.length() == 2)
