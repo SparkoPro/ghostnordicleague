@@ -50,6 +50,7 @@ public:
 	virtual ~CStatsW3MMD( );
 	
 	virtual CDBDotAPlayer *GetPlayerStats(uint32_t id);
+	virtual void SetWinner(uint32_t winner) {}
 
 	virtual bool ProcessAction( CIncomingAction *Action );
 	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );

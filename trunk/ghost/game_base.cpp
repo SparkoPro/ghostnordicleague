@@ -113,6 +113,22 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_LocalAdminMessages = true;
 	m_NumAdminsInGame = 0;
 	m_HCLOverride = false;
+	m_FFTeam = 0;
+	m_FFVotesNeeded = 0;
+	m_FFStartedTime = 0;
+	m_FFSucceeded = false;
+	
+	m_BypassEnforcer.push_back("aggressivezone");
+	m_BypassEnforcer.push_back("highwaytohell");
+	m_BypassEnforcer.push_back("suddenattack");
+	m_BypassEnforcer.push_back("mr.chips");
+	m_BypassEnforcer.push_back("egc.devastated");
+	m_BypassEnforcer.push_back("devas-");
+	
+	m_LastGameInfoUpdateTime = 0;
+	m_LastGameInfoPlayers = 0;
+	m_LastGameInfoName = nGameName;
+	
 	
 	// make lobby time limitlocal for each game, to bypass timelimit triggering and closing the game when !autostart off is issued
 	m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
@@ -389,10 +405,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 			{
 				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
 				{
-					/*
-					if (m_GHost->m_SafeGames)
-						m_PairedSafeGameChecks.push_back( PairedGPSCheck( UTIL_ToString(Score, 2), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( (*i)->GetName( ) ) ) );
-					else */
 					if (GamePlayerSummary)
 						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, GamePlayerSummary->GetTotalGames( ), GamePlayerSummary->GetAvgLeftPercent( ));
 					else
@@ -407,40 +419,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		else
 			i++;
 	}
-	
-	/*for( vector<PairedGPSCheck> :: iterator i = m_PairedSafeGameChecks.begin( ); i != m_PairedSafeGameChecks.end( ); )
-	{
-		if( i->second->GetReady( ) )
-		{
-			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
-			
-			double Score = UTIL_ToDouble(i->first);
-			uint32_t Games = 0;
-			uint32_t Stay = 0;
-			
-			if (GamePlayerSummary)
-			{
-				Games = GamePlayerSummary->GetTotalGames( );
-				Stay = GamePlayerSummary->GetAvgLeftPercent( );
-			}
-			
-			//CONSOLE_Print( "[SAFEGAME: " + m_GameName + "] Player " + ()->GetName( ) );
-			
-			for( vector<CPotentialPlayer *> :: iterator j = m_Potentials.begin( ); j != m_Potentials.end( ); j++ )
-			{
-				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == i->second->GetName( ) )
-				{
-						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, Games, Stay);
-				}
-			}
-
-			m_GHost->m_DB->RecoverCallable( i->second );
-			delete i->second;
-			i = m_PairedSafeGameChecks.erase( i );
-		}
-		else
-			i++;
-	} */
 
 	// update players
 
@@ -662,6 +640,28 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	{
 		SendAllChat( m_AnnounceMessage );
 		m_LastAnnounceTime = GetTime( );
+	}
+	
+	if( !m_CountDownStarted && !m_GameLoading && !m_GameLoaded && GetTime( ) >= m_LastGameInfoUpdateTime + 5)
+	{		
+		if (m_LastGameInfoPlayers != m_Players.size() || m_LastGameInfoUpdateTime == 0 || m_LastGameInfoName != m_GameName)
+		{
+			m_LastGameInfoPlayers = m_Players.size();
+			
+			if (m_GameState == GAME_PUBLIC)
+				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, true) );
+			else
+				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, false) );
+			
+			if (m_LastGameInfoName != m_GameName)
+			{
+				// trash the old one
+				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_LastGameInfoName, 255, false) );
+				m_LastGameInfoName = m_GameName;
+			}
+		}
+		
+		m_LastGameInfoUpdateTime = GetTime( );
 	}
 
 	// kick players who don't spoof check within 20 seconds when spoof checks are required and the game is autohosted
@@ -929,6 +929,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		m_StartedKickVoteTime = 0;
 	}
 	
+	
 	/*
 		NordicLeague - @begin - Expire the voteend
 	*/
@@ -939,6 +940,14 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		SendAllChat( m_GHost->m_Language->VoteEndExpired( ) );
 		m_VoteEndInProgress = false;
 		m_StartedVoteEndTime = 0;
+	}
+	
+	// expire the FF
+	if( m_FFTeam > 0 && GetTime( ) >= m_FFStartedTime + 60 )
+	{
+		SendAllChat( "FF vote expired." );
+		m_FFTeam = 0;
+		m_FFStartedTime = 0;
 	}
 	
 	/*
@@ -955,7 +964,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	// finish the gameover timer
 
-	if( m_GameOverTime != 0 && GetTime( ) >= m_GameOverTime + 40 )
+	if( m_GameOverTime != 0 && GetTime( ) >= m_GameOverTime + 30 )
 	{
 		bool AlreadyStopped = true;
 
@@ -970,8 +979,16 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 		if( !AlreadyStopped )
 		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
-			StopPlayers( "was disconnected (gameover timer finished)" );
+			if (m_FFSucceeded)
+			{
+				CONSOLE_Print( "[GAME: " + m_GameName + "] is over (Team " + UTIL_ToString(m_FFTeam) + " forfeited the game.)" );
+				StopPlayers( "was disconnected (Team " + UTIL_ToString(m_FFTeam) + " forfeited the game.)" );
+			}
+			else
+			{
+				CONSOLE_Print( "[GAME: " + m_GameName + "] is over (gameover timer finished)" );
+				StopPlayers( "was disconnected (gameover timer finished)" );
+			}
 		}
 	}
 
@@ -1658,14 +1675,20 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		int num;
 		vector<string> ApprovedLocations;
 		string PlayerLocation;
-		bool playerIsApproved;
+		bool playerIsApproved=false;
 
-                string NameLower = joinPlayer->GetName();
-                transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
-
-
-		if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips" && NameLower != "egc.devastated")
+		string NameLower = joinPlayer->GetName();
+		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
+		
+		for(int x = 0; x < m_BypassEnforcer.size(); x++)
 		{
+			if(NameLower == m_BypassEnforcer[x])
+				playerIsApproved = true;
+		}
+		
+		if (!playerIsApproved)
+		{
+		
 			if(m_GHost->m_ApprovedCountries.length() == 2)
 				num = 1;
 			else
@@ -3272,6 +3295,22 @@ void CBaseGame :: EventGameRefreshed( string server )
 void CBaseGame :: EventGameStarted( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
+	
+	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, 255, false) );
+	
+	for( unsigned char i = 0; i < 12; i++ )
+    {
+		for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+		{
+			unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
+
+			if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
+			{
+				(*j)->SetTeam(i + 1);
+				CONSOLE_Print( "[GAME: " + m_GameName + "] Setting " + (*j)->GetName() + "'s team to: " + UTIL_ToString(i + 1));
+			}
+		}
+	}
 
 	/*
 		NordicLeague - @begin - Get HCL String from gamename
@@ -3603,6 +3642,8 @@ void CBaseGame :: EventGameLoaded( )
 
 		in.close( );
 	}
+	
+	m_ForfeitDelayTime = GetTime() + 1500;
 }
 
 unsigned char CBaseGame :: GetSIDFromPID( unsigned char PID )
@@ -4547,6 +4588,8 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 			m_CountDownCounter = 10;
 			if ( m_GHost->m_UseNormalCountDown )
 				SendAll( m_Protocol->SEND_W3GS_COUNTDOWN_START( ) );
+				
+			
 		}
 	}
 }

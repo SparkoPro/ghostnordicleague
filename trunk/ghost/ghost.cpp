@@ -769,6 +769,7 @@ bool CGHost :: Update( long usecBlock )
 		if( m_CurrentGame->Update( &fd, &send_fd ) )
 		{
 			CONSOLE_Print( "[GHOST] deleting current game [" + m_CurrentGame->GetGameName( ) + "]" );
+			m_Callables.push_back( m_DB->ThreadedUpdateGameInfo(m_CurrentGame->GetGameName( ), 255, false) );
 			delete m_CurrentGame;
 			m_CurrentGame = NULL;
 

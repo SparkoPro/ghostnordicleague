@@ -199,6 +199,11 @@ void CGHostDB :: CreateThread( CBaseCallable *callable )
 	callable->SetReady( true );
 }
 
+bool CGHostDB :: UpdateGameInfo( string name, uint32_t players, bool ispublic )
+{
+	return false;
+}
+
 CCallableAdminCount *CGHostDB :: ThreadedAdminCount( string server )
 {
 	return NULL;
@@ -322,6 +327,11 @@ CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP
 }
 
 CCallableW3MMDVarAdd *CGHostDB :: ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings )
+{
+	return NULL;
+}
+
+CCallableUpdateGameInfo *CGHostDB :: ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic)
 {
 	return NULL;
 }
@@ -450,6 +460,11 @@ CCallableW3MMDPlayerAdd :: ~CCallableW3MMDPlayerAdd( )
 CCallableW3MMDVarAdd :: ~CCallableW3MMDVarAdd( )
 {
 
+}
+
+CCallableUpdateGameInfo :: ~CCallableUpdateGameInfo( )
+{
+	
 }
 
 //
