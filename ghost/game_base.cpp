@@ -1680,7 +1680,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		string NameLower = joinPlayer->GetName();
 		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
 		
-		for(int x = 0; x < m_BypassEnforcer.size(); x++)
+		for(int x = 0; x < m_BypassEnforcer.size() - 1; x++)
 		{
 			if(NameLower == m_BypassEnforcer[x])
 				playerIsApproved = true;
