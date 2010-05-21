@@ -97,7 +97,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 						string KeyString = string( Key.begin( ), Key.end( ) );
 						uint32_t ValueInt = UTIL_ByteArrayToUInt32( Value, false );
 
-						//CONSOLE_PrintStats( "[DEBUG-STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
+						CONSOLE_PrintStats( "[DEBUG-STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
 
 						if( DataString == "Data" )
 						{

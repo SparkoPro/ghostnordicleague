@@ -479,11 +479,13 @@ void CGamePlayer :: ProcessPackets( )
 						}
 						else if (m_Muted && m_WarnTime != 0 && !m_Game->GetGameLoaded())
 						{
+							/*
 							m_Game->SendAllChat(GetName() + " has been kicked for spamming!");
 							SetDeleteMe(true);
 							SetLeftReason("spam");
 							SetLeftCode( PLAYERLEAVE_LOBBY );
 							m_Game->OpenSlot( m_Game->GetSIDFromPID( GetPID( ) ), false );
+							*/
 						}						
 					}
 				}

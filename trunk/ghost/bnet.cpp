@@ -1035,7 +1035,15 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				* ADMIN COMMANDS *
 				******************/
 
-
+				if ( Command == "disableff" )
+				{
+					m_GHost->m_EnableFF == false;
+				}
+				
+				if ( Command == "enableff" )
+				{
+					m_GHost->m_EnableFF == true;
+				}
 
 
 				//

@@ -40,6 +40,7 @@ class CIncomingChatPlayer;
 class CIncomingMapSize;
 class CCallableScoreCheck;
 class CCallableGamePlayerSummaryCheck;
+class CStats;
 
 typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 
@@ -64,6 +65,7 @@ protected:
 	CMap *m_Map;									// map data
 	CSaveGame *m_SaveGame;							// savegame data (this is a pointer to global data)
 	CReplay *m_Replay;								// replay
+	CStats *m_Stats;
 	bool m_Exiting;									// set to true and this class will be deleted next update
 	bool m_Saving;									// if we're currently saving game data to the database
 	uint16_t m_HostPort;							// the port to host games on
@@ -146,6 +148,7 @@ protected:
 	uint32_t m_FFStartedTime;
 	bool	m_FFSucceeded;
 	uint32_t m_ForfeitDelayTime;
+	uint32_t m_FFKickTime;
 	
 	uint32_t m_LobbyTimeLimit;						// Each game must have it's own lobby timelimit to prevent !autostart off from closing games
 
