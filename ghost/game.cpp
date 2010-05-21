@@ -99,7 +99,12 @@ CGame :: ~CGame( )
 			// store the stats in the database
 
 			if( m_Stats )
+			{
+				if (m_FFSucceeded && m_FFTeam)
+					m_Stats->SetWinner(m_FFTeam);
+					
 				m_Stats->Save( m_GHost, m_DBGamePlayers, m_GHost->m_DB, m_CallableGameAdd->GetResult( ) );
+			}
 		}
 		else
 			CONSOLE_Print( "[GAME: " + m_GameName + "] unable to save player/stats data to database" );
@@ -2105,6 +2110,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 					SendChat(player, (*i)->GetName() + " : team " + UTIL_ToString((*i)->GetTeam()));		
 			}
+			if ( Command == "allowff" && m_GameLoaded)
+			{
+				m_ForfeitDelayTime = GetTime();
+			}
 			
 		}
 		else
@@ -2350,7 +2359,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !ff
 	//
 
-	if ( Command == "ff" && m_GameLoaded )
+	if ( Command == "ff" && m_GameLoaded && !m_FFSucceeded && m_GHost->m_EnableFF)
 	{
 		/*
 			NordicLeague - @begin - We got a forfeit request going on.
@@ -2361,7 +2370,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		{
 			
 			uint32_t min, sec;
-			sec = m_ForfeitDelayTime;
+			sec = m_ForfeitDelayTime - GetTime();
 			while(sec >= 60)
 			{
 				min++;
@@ -2374,7 +2383,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		{
 			if (m_FFTeam)
 			{
-				if (player->GetTeam() == m_FFTeam)
+				if (player->GetTeam() == m_FFTeam && !player->GetFFVote())
 				{
 					player->SetFFVote(true);
 				
@@ -2393,18 +2402,20 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							SendAllChat("Sentinel has forfeited the game.");
 							SendAllChat("The game will end in 30 seconds!");
-							m_Stats->SetWinner(2);
-							m_GameOverTime = GetTime( );
+							//m_Stats->SetWinner(2);
+							//m_GameOverTime = GetTime( );
 							m_FFSucceeded = true;
 						}
 						else
 						{
 							SendAllChat("Scourge has forfeited the game!");
 							SendAllChat("The game will end in 30 seconds!");
-							m_Stats->SetWinner(1);
-							m_GameOverTime = GetTime( );
+							//m_Stats->SetWinner(1);
+							//m_GameOverTime = GetTime( );
 							m_FFSucceeded = true;
-						}	
+						}
+						m_FFKickTime = GetTime();
+	
 						// We got a successfull ff vote, set the other team to winner, end the game.
 					}
 
@@ -2419,9 +2430,15 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			{
 				// start a ff vote for the players team.
 
+
 				m_FFTeam = player->GetTeam();
 				m_FFStartedTime = GetTime();
 				m_FFVotesNeeded = 0;
+				
+				if (m_FFTeam == 1)
+					SendAllChat("Forfeit vote started for the Sentinel, type !ff to accept forfeit.");
+				else if (m_FFTeam == 2)
+					SendAllChat("Forfeit vote started for the Scourge, type !ff to accept forfeit.");
 
 				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 				{
@@ -2429,29 +2446,28 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					if ((*i)->GetTeam() == m_FFTeam)
 						m_FFVotesNeeded++;
 				}
+				
+				player->SetFFVote(true);
 			
 				if (m_FFVotesNeeded == 1)
 				{
 					if (m_FFTeam == 1)
 					{
 						SendAllChat("Sentinel has forfeited the game.");
-						SendAllChat("The game will end in 60 seconds!");
-						m_Stats->SetWinner(2);
+						SendAllChat("The game will end in 30 seconds!");
+						//m_Stats->SetWinner(2);
 					}
 					else
 					{
 						SendAllChat("Scourge has forfeited the game!");
-						SendAllChat("The game will end in 60 seconds!");
-						m_Stats->SetWinner(1);
+						SendAllChat("The game will end in 30 seconds!");
+						//m_Stats->SetWinner(1);
 					}
+					
+					m_FFSucceeded = true;
+					m_FFKickTime = GetTime();
 				}
 
-				player->SetFFVote(true);
-
-				if (m_FFTeam == 1)
-					SendAllChat("Forfeit vote started for the Sentinel, type !ff to accept forfeit.");
-				else if (m_FFTeam == 2)
-					SendAllChat("Forfeit Vote started for the Scourge, type !ff to accept forfeit.");
 			}
 		}
 

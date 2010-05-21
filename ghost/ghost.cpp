@@ -442,6 +442,7 @@ CGHost :: CGHost( CConfig *CFG )
 	m_ReplayWar3Version = CFG->GetInt( "replay_war3version", 24 );
 	m_ReplayBuildNumber = CFG->GetInt( "replay_buildnumber", 6059 );
 	SetConfigs( CFG );
+	m_EnableFF = true;
 
 	// load the battle.net connections
 	// we're just loading the config data and creating the CBNET classes here, the connections are established later (in the Update function)

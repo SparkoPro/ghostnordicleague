@@ -32,6 +32,10 @@
 #include "gameplayer.h"
 #include "gameprotocol.h"
 #include "game_base.h"
+#include "stats.h"
+#include "statsdota.h"
+#include "statsw3mmd.h"
+
 
 #include <cmath>
 #include <string.h>
@@ -943,11 +947,43 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	}
 	
 	// expire the FF
-	if( m_FFTeam > 0 && GetTime( ) >= m_FFStartedTime + 60 )
+	if( m_FFSucceeded == false && m_FFTeam > 0 && GetTime( ) >= m_FFStartedTime + 60 )
 	{
 		SendAllChat( "FF vote expired." );
 		m_FFTeam = 0;
 		m_FFStartedTime = 0;
+	}
+	
+	if (m_FFSucceeded == true && m_FFTeam > 0 && GetTime( ) >= m_FFKickTime + 5)
+	{
+		if (m_Players.size( ) > 1 && m_GameOverTime == 0)
+		{
+			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			{
+				if( !(*i)->GetDeleteMe( ) )
+				{
+					if ((*i)->GetTeam() == m_FFTeam)
+						SendChat(*i, "You have forfeited the game, you are now beeing disconnected.");
+					else
+						SendChat(*i, "You have won the game by forfeited, you are now beeing disconnected.");
+
+					(*i)->SetDeleteMe( true );
+					(*i)->SetLeftReason( "Team " + UTIL_ToString(m_FFTeam) + " forfeited the game." );
+					
+					if ((*i)->GetTeam() == m_FFTeam)
+						(*i)->SetLeftCode( PLAYERLEAVE_LOST );
+					else
+						(*i)->SetLeftCode( PLAYERLEAVE_WON );
+
+					m_FFKickTime = GetTime();
+					break;
+				}
+			}		
+		}
+		else
+		{
+			m_GameOverTime = GetTime( ) - 25;
+		}
 	}
 	
 	/*
@@ -979,10 +1015,11 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 		if( !AlreadyStopped )
 		{
-			if (m_FFSucceeded)
+			if (m_FFSucceeded && m_FFTeam)
 			{
 				CONSOLE_Print( "[GAME: " + m_GameName + "] is over (Team " + UTIL_ToString(m_FFTeam) + " forfeited the game.)" );
-				StopPlayers( "was disconnected (Team " + UTIL_ToString(m_FFTeam) + " forfeited the game.)" );
+				StopPlayers( "Team " + UTIL_ToString(m_FFTeam) + " forfeited the game." );
+				//m_Stats->SetWinner(m_FFTeam);
 			}
 			else
 			{
