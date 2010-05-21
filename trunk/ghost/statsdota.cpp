@@ -127,7 +127,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 												
 									m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
 									
-									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
+									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player on team " + UTIL_ToString(Killer->GetTeam()) + " [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
 									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
 								}
 								else if ( Killer && !Victim)
@@ -174,16 +174,11 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							{
 								string AssistString = KeyString.substr( 6 );
 								uint32_t Assist = UTIL_ToUInt32(AssistString);
-								CGamePlayer *Player = m_Game->GetPlayerFromColour( ValueInt );
+								m_Players[Assist]->SetAssists( m_Players[Assist]->GetAssists() + 1 );
 								
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( Assist );
 								if (Player)
-								{
-									m_Players[ValueInt]->SetAssists( m_Players[ValueInt]->GetAssists() + 1 );
-								}
-								
-								//CGamePlayer *Player = m_Game->GetPlayerFromColour( PlayerColour );
-								//m_Game->SendAllChat("[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected. Value: " + UTIL_ToString(ValueInt) + " Assist ( " + AssistString + " - " + UTIL_ToString(Assist) + " )");
-								//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected. Value: " + UTIL_ToString(ValueInt) + " Assist ( " + AssistString + " - " + UTIL_ToString(Assist) + " )" );
+									CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected on team " + UTIL_ToString(Player->GetTeam()) + " by: " + Player->GetName() );
 								
 								//if (Player)
 								//{
@@ -198,9 +193,6 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 
 								if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
 								{
-									if( !m_Players[ValueInt] )
-										m_Players[ValueInt] = new CDBDotAPlayer( );
-
 									m_Players[ValueInt]->SetCourierKills( m_Players[ValueInt]->GetCourierKills( ) + 1 );
 								}
 
@@ -225,8 +217,6 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 
 								if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
 								{
-									if( !m_Players[ValueInt] )
-										m_Players[ValueInt] = new CDBDotAPlayer( );
 
 									m_Players[ValueInt]->SetTowerKills( m_Players[ValueInt]->GetTowerKills( ) + 1 );
 								}
@@ -270,9 +260,6 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 
 								if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
 								{
-									if( !m_Players[ValueInt] )
-										m_Players[ValueInt] = new CDBDotAPlayer( );
-
 									m_Players[ValueInt]->SetRaxKills( m_Players[ValueInt]->GetRaxKills( ) + 1 );
 								}
 
@@ -338,32 +325,30 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								// creep kill value recieved (aprox every 3 - 4)
 								string PlayerID = KeyString.substr( 3 );
 								uint32_t ID = UTIL_ToUInt32( PlayerID );
-								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
-								
-								if (Player)
-								{
-									if (!m_Players[ID])
-												m_Players[ID] = new CDBDotAPlayer( );
 												
-									m_Players[ID]->SetCreepKills(ValueInt);
+								m_Players[ID]->SetCreepKills(ValueInt);
 									//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetCreepKills()) + " ] CreepKills" ); 
-								}
 							}
-							else if( KeyString.size( ) >= 4 && KeyString.substr( 0, 2 ) == "CSD" )
+							else if( KeyString.size( ) >= 3 && KeyString.substr( 0, 3 ) == "CSD" )
 							{
 								// creep denie value recieved (aprox every 3 - 4)
 								string PlayerID = KeyString.substr( 3 );
 								uint32_t ID = UTIL_ToUInt32( PlayerID );
-								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
-								
-								if (Player)
-								{
-									if (!m_Players[ID])
-												m_Players[ID] = new CDBDotAPlayer( );
-												
-									m_Players[ID]->SetCreepDenies(ValueInt);
+				
+								m_Players[ID]->SetCreepDenies(ValueInt);
 									//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetCreepKills()) + " ] CreepKills" ); 
-								}
+							}
+							
+							else if( KeyString.size( ) >= 2 && KeyString.substr( 0, 2 ) == "NK" )
+							{
+								// creep denie value recieved (aprox every 3 - 4)
+								string PlayerID = KeyString.substr( 2 );
+								uint32_t ID = UTIL_ToUInt32( PlayerID );
+								
+								m_Players[ID]->SetNeutralKills(ValueInt);
+								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
+								if (Player)
+									CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetNeutralKills()) + " ] NeutralKills" ); 
 							}
 							else if( KeyString.size( ) >= 9 && KeyString.substr( 0, 9 ) == "GameStart" )
 							{
@@ -467,7 +452,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								}
 								else if( KeyString == "5" )
 								{
-									if (ValueInt != m_Players[ID]->GetAssists() )
+									if (ValueInt > m_Players[ID]->GetAssists() )
 										m_Players[ID]->SetAssists( ValueInt );
 								}
 								else if( KeyString == "6" )
