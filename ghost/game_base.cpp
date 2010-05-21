@@ -980,7 +980,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				}
 			}		
 		}
-		else
+		else if (m_GameOverTime == 0)
 		{
 			m_GameOverTime = GetTime( ) - 25;
 		}
