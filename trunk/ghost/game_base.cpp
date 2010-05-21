@@ -956,7 +956,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	
 	if (m_FFSucceeded == true && m_FFTeam > 0 && GetTime( ) >= m_FFKickTime + 5)
 	{
-		if (m_Players.size( ) > 1 && m_GameOverTime == 0)
+		if (m_Players.size( ) > 0)
 		{
 			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 			{
@@ -979,10 +979,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 					break;
 				}
 			}		
-		}
-		else if (m_GameOverTime == 0)
-		{
-			m_GameOverTime = GetTime( ) - 25;
 		}
 	}
 	
