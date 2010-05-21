@@ -101,8 +101,12 @@ CGame :: ~CGame( )
 			if( m_Stats )
 			{
 				if (m_FFSucceeded && m_FFTeam)
-					m_Stats->SetWinner(m_FFTeam);
-					
+				{
+					if (m_FFTeam == 1)
+						m_Stats->SetWinner(2);
+					else
+						m_Stats->SetWinner(1);
+				}	
 				m_Stats->Save( m_GHost, m_DBGamePlayers, m_GHost->m_DB, m_CallableGameAdd->GetResult( ) );
 			}
 		}
