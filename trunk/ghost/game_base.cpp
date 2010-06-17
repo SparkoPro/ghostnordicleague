@@ -122,12 +122,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_FFStartedTime = 0;
 	m_FFSucceeded = false;
 	
-	m_BypassEnforcer.push_back("aggressivezone");
-	m_BypassEnforcer.push_back("highwaytohell");
-	m_BypassEnforcer.push_back("suddenattack");
-	m_BypassEnforcer.push_back("mr.chips");
-	m_BypassEnforcer.push_back("egc.devastated");
-	m_BypassEnforcer.push_back("devas-");
+
 	
 	m_LastGameInfoUpdateTime = 0;
 	m_LastGameInfoPlayers = 0;
@@ -1711,9 +1706,10 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		bool playerIsApproved;
 
 		string NameLower = joinPlayer->GetName();
-		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );
+		transform( NameLower.begin( ), NameLower.end( ), NameLower.begin( ), (int(*)(int))tolower );	
 		
-		if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips" && NameLower != "egc.devastated" && NameLower != "devas-")
+		//if (NameLower != "aggressivezone" && NameLower != "highwaytohell" && NameLower != "suddenattack" && NameLower != "mr.chips" && NameLower != "egc.devastated" && NameLower != "devas-")
+		if ( m_GHost->m_BypassEnforcer.find( NameLower ) == m_GHost->m_BypassEnforcer.end( ) )
 		{
 		
 			if(m_GHost->m_ApprovedCountries.length() == 2)
@@ -1746,6 +1742,10 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 				SendAllChat("[" + joinPlayer->GetName() + "] tried to join the game but is not from an approved location (" + PlayerLocation + ")");
 				potential->SetDeleteMe(true);
 				return;
+			}
+			else if (PlayerLocation != "??")
+			{
+				SendAllChat("[" + joinPlayer->GetName() + "] comes from a unknown location (" + PlayerLocation + ")");
 			}
 		}
 	}
@@ -2110,7 +2110,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] trying to join with score [" + UTIL_ToString( score, 2 ) + "]" );
 
-	if (m_GHost->m_MatchMakingMethod != 4 && (score < m_MinimumScore || score > m_MaximumScore))
+	if (m_GHost->m_MatchMakingMethod && (score < m_MinimumScore || score > m_MaximumScore))
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
 		potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
@@ -2121,9 +2121,9 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	if (m_GHost->m_SafeGames)
 	{
 		
-		if (games < m_GHost->m_GamesReq && (score < m_MinimumScore || score > m_MaximumScore))
+		if (games < m_GHost->m_GamesReq)
 		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
+			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has too few games [" + UTIL_ToString( games ) + "] required [" + UTIL_ToString( m_GHost->m_GamesReq ) + "]" );
 			potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 			potential->SetDeleteMe( true );
 			return;

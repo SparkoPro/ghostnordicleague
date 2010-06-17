@@ -841,7 +841,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				m_MessageWasCommand = true;
 				if (!m_GameLoading && !m_GameLoaded)
 				{
-					if (m_GHost->m_MatchMakingMethod == 4)
+					if (m_GHost->m_MatchMakingMethod)
 					{
 						SendAllChat( "Trying to balance teams..." );
 						BalanceSlots();
@@ -2259,20 +2259,31 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !STATSDOTA
 	//
 
-	if( Command == "statsdota" && GetTime( ) >= player->GetStatsDotASentTime( ) + 5 )
+	if( (Command == "statsdota" || Command == "sd" ) && GetTime( ) >= player->GetStatsDotASentTime( ) + 5 )
 	{
 		m_MessageWasCommand = true;
 		string StatsUser = User;
 
 		if( !Payload.empty( ) )
 			StatsUser = Payload;
+			
+		CGamePlayer *LastMatch = NULL;
+		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
 
-		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
+		if( Matches == 0 )
+			SendAllChat( m_GHost->m_Language->UnableToStatsNoMatchesFound( StatsUser ) );
+		else if( Matches == 1 )
+		{
+			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+				m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( LastMatch->GetName() ) ) );
+			else
+				m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( LastMatch->GetName() ) ) );
+				
+			player->SetStatsDotASentTime( GetTime( ) );
+		}
 		else
-			m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
-
-		player->SetStatsDotASentTime( GetTime( ) );
+			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
+		
 	}
 
 	//
