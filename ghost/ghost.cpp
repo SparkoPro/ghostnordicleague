@@ -1155,9 +1155,47 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_GamesReq = CFG->GetInt( "safe_gamesreq", 10 );				// minimum amount of games required to be able to join safe games
 	m_StayReq = CFG->GetInt( "safe_stayreq", 90 );				// minimum amount of games required to be able to join safe games
 	
+	LoadEnforcerSkiplist();
+	
 	/*
 		NordicLeague - @end - read our config variables
 	*/
+}
+
+void CGHost :: LoadEnforcerSkiplist()
+{
+		ifstream in;
+		in.open( "skiplist.txt" );
+
+		if( in.fail( ) )
+			CONSOLE_Print( "[GHOST] error loading Skiplist file [skiplist.txt]" );
+		else
+		{
+			CONSOLE_Print( "[GHOST] loading Skiplist file [skiplist.txt]" );
+			string Line;
+
+			while( !in.eof( ) )
+			{
+				getline( in, Line );
+
+				// ignore blank lines and comments
+
+				if( Line.empty( ) || Line[0] == '#' )
+					continue;
+
+				// remove newlines and partial newlines to help fix issues with Windows formatted files on Linux systems
+
+				Line.erase( remove( Line.begin( ), Line.end( ), ' ' ), Line.end( ) );
+				Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
+				Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
+
+				m_BypassEnforcer.insert( Line );
+			}
+
+			in.close( );
+
+			CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from skiplist" );
+		}
 }
 
 void CGHost :: ExtractScripts( )

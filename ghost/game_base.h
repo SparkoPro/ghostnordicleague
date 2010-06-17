@@ -113,7 +113,7 @@ protected:
 	uint32_t 	m_LastGameInfoUpdateTime;
 	uint32_t 	m_LastGameInfoPlayers;
 	string 		m_LastGameInfoName;
-	vector<string> m_BypassEnforcer;
+	
 	
 	uint32_t m_GameOverTime;						// GetTime when the game was over
 	uint32_t m_LastPlayerLeaveTicks;				// GetTicks when the most recent player left the game

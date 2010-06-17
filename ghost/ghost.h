@@ -147,6 +147,9 @@ public:
 	uint32_t m_GamesReq;					// minimum amount of games required to be able to join safe games
 	uint32_t m_StayReq;						// minimum amount of stay % to be able to join
 	bool m_EnableFF;
+	set<string> m_BypassEnforcer;
+	
+	void LoadEnforcerSkiplist();
 
 	/*
 		NordicLeague - @end - define our config variables

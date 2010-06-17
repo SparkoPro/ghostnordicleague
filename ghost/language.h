@@ -95,6 +95,10 @@ public:
 	string AddedPlayerToTheHoldList( string user );
 	string UnableToKickNoMatchesFound( string victim );
 	string UnableToKickFoundMoreThanOneMatch( string victim );
+	
+	string UnableToStatsNoMatchesFound( string victim );
+	string UnableToStatsMoreThanOneMatch( string victim );
+	
 	string SettingLatencyToMinimum( string min );
 	string SettingLatencyToMaximum( string max );
 	string SettingLatencyTo( string latency );

@@ -1541,3 +1541,17 @@ string CLanguage :: UnableToLoadReplayDoesntExist( string file )
 	UTIL_Replace( Out, "$FILE$", file );
 	return Out;
 }
+
+string CLanguage :: UnableToStatsMoreThanOneMatch( string victim )
+{
+	string Out = m_CFG->GetString( "lang_0300", "lang_0300" );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	return Out;
+}
+
+string CLanguage :: UnableToStatsNoMatchesFound( string victim )
+{
+	string Out = m_CFG->GetString( "lang_0301", "lang_0301" );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	return Out;
+}
