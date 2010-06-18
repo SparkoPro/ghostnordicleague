@@ -1743,7 +1743,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 				potential->SetDeleteMe(true);
 				return;
 			}
-			else if (PlayerLocation != "??")
+			else if (PlayerLocation == "??")
 			{
 				SendAllChat("[" + joinPlayer->GetName() + "] comes from a unknown location (" + PlayerLocation + ")");
 			}
