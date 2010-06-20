@@ -2274,10 +2274,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
 		else
 		{
+			if (LastMatch)
+				StatsUser = LastMatch->GetName();
+
 			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-				m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( LastMatch->GetName() ) ) );
+				m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
 			else
-				m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( LastMatch->GetName() ) ) );
+				m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
 				
 			player->SetStatsDotASentTime( GetTime( ) );
 		}	
