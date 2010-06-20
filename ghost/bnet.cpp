@@ -2923,7 +2923,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				// !STATSDOTA
 				//
 
-				if( Command == "statsdota" || Command == "sd" )
+				if( Command == "statsdota" || Command == "sd" )
 				{
 					string StatsUser = User;
 
