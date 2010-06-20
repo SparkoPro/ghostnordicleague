@@ -2270,9 +2270,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		CGamePlayer *LastMatch = NULL;
 		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
 
-		if( Matches == 0 )
-			SendAllChat( m_GHost->m_Language->UnableToStatsNoMatchesFound( StatsUser ) );
-		else if( Matches == 1 )
+		if( Matches > 1 )
+			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
+		else
 		{
 			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
 				m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( LastMatch->GetName() ) ) );
@@ -2280,10 +2280,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( LastMatch->GetName() ) ) );
 				
 			player->SetStatsDotASentTime( GetTime( ) );
-		}
-		else
-			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
-		
+		}	
 	}
 
 	//
