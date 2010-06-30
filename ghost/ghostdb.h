@@ -666,10 +666,13 @@ private:
 	string m_Admin;
 	string m_Reason;
 	bool m_IPBan;
+	string m_Expires;
 
 public:
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason );
+	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, string nExpires );
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan );
+	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan, string nExpires );
 	~CDBBan( );
 
 	string GetServer( )		{ return m_Server; }
@@ -680,6 +683,8 @@ public:
 	string GetAdmin( )		{ return m_Admin; }
 	string GetReason( )		{ return m_Reason; }
 	bool GetIPBan( )		{ return m_IPBan; }
+	bool IsTemporary()		{ return m_Expires.empty() ? false : true; }
+	string GetExpires()		{ return m_Expires; }
 };
 
 //

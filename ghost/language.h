@@ -45,11 +45,13 @@ public:
 	// NordicLeague
 	string IPBannedUser( string server, string victim, string ip );
 	string UserWasIPBannedOnByBecause( string server, string victim, string date, string admin, string reason, string ip );
+	string UserWasIPBannedOnByBecauseTemp( string server, string victim, string date, string admin, string reason, string ip, string expires );
 	string ErrorBanningUser( string server, string victim, bool ipban );
 	
 	string UserIsAnAdmin( string server, string user );
 	string UserIsNotAnAdmin( string server, string user );
 	string UserWasBannedOnByBecause( string server, string victim, string date, string admin, string reason );
+	string UserWasBannedOnByBecauseTemp( string server, string victim, string date, string admin, string reason, string expires );
 	string UserIsNotBanned( string server, string victim );
 	string ThereAreNoAdmins( string server );
 	string ThereIsAdmin( string server );

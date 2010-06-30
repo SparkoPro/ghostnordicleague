@@ -483,6 +483,19 @@ CDBBan :: CDBBan( string nServer, string nName, string nIP, string nDate, string
 	m_IPBan = false;
 }
 
+CDBBan :: CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, string nExpires )
+{
+	m_Server = nServer;
+	m_Name = nName;
+	m_IP = nIP;
+	m_Date = nDate;
+	m_GameName = nGameName;
+	m_Admin = nAdmin;
+	m_Reason = nReason;
+	m_IPBan = false;
+	m_Expires = nExpires;
+}
+
 CDBBan :: CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan )
 {
 	m_Server = nServer;
@@ -497,6 +510,24 @@ CDBBan :: CDBBan( string nServer, string nName, string nIP, string nDate, string
 		m_IPBan = false;
 	else
 		m_IPBan = true;
+}
+
+CDBBan :: CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan, string nExpires )
+{
+	m_Server = nServer;
+	m_Name = nName;
+	m_IP = nIP;
+	m_Date = nDate;
+	m_GameName = nGameName;
+	m_Admin = nAdmin;
+	m_Reason = nReason;
+
+	if (nIPBan == 0)
+		m_IPBan = false;
+	else
+		m_IPBan = true;
+
+	m_Expires = nExpires;
 }
 
 CDBBan :: ~CDBBan( )

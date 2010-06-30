@@ -1595,6 +1595,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		return;
 	}
 
+/*
 	// check if the new player's name is already taken
 
 	if( GetPlayerFromName( joinPlayer->GetName( ), false ) )
@@ -1604,8 +1605,8 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
 		potential->SetDeleteMe( true );
 		return;
-	}
-
+	} 
+*/
 	// identify their joined realm
 	// this is only possible because when we send a game refresh via LAN or battle.net we encode an ID value in the 4 most significant bits of the host counter
 	// the client sends the host counter when it joins so we can extract the ID value here
@@ -2074,6 +2075,7 @@ else if( UTIL_IsLanIP( Player->GetExternalIP() ) )
 
 void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games, uint32_t staypercent )
 {
+	
 	if ( m_GHost->m_UseNormalCountDown && m_CountDownStarted )
 	{
 		potential->GetSocket( )->PutBytes( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
@@ -2096,7 +2098,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		return;
 	}
 
-	// check if the new player's name is already taken
+/*	// check if the new player's name is already taken
 
 	if( GetPlayerFromName( joinPlayer->GetName( ), false ) )
 	{
@@ -2106,6 +2108,8 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		potential->SetDeleteMe( true );
 		return;
 	}
+	
+*/
 
 	// check if the new player's score is within the limits
 

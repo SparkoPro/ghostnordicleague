@@ -2177,7 +2177,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
 	{
-
+		m_MessageWasCommand = true;
         for( unsigned char i = 0; i < 12; i++ )
         {
             bool TeamHasPlayers = false;
@@ -2185,28 +2185,28 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			uint32_t TeamUnratedPlayers = 0;
 			uint32_t TeamPlayers = 0;
 			
-      	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
-              	{
-                      unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
+   	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+           	{
+				unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
 
-                       if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
-                       {
-      	                    TeamHasPlayers = true;
-							TeamPlayers++;
-                            double Score = (*j)->GetScore( );
+				if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
+				{
+					TeamHasPlayers = true;
+					TeamPlayers++;
+					double Score = (*j)->GetScore( );
 
-							if( Score < -99999.0 )
-							{
-								Score = m_Map->GetMapDefaultPlayerScore( );
-								TeamUnratedPlayers++;
-							}
+					if( Score < -99999.0 )
+					{
+						Score = m_Map->GetMapDefaultPlayerScore( );
+						TeamUnratedPlayers++;
+					}
 
-							TeamScore += Score;
-                       }
-               }
+					TeamScore += Score;
+				}
+            }
 
-               if( TeamHasPlayers )
-      	                SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
+            if( TeamHasPlayers )
+				SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
 		}
 	}
 
@@ -2221,38 +2221,102 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).empty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
 	}
 
-                                //
-                                // !REPORT
-                                //
-                                if( Command == "report" )
-                                {
-                                        if( !Payload.empty( ) )
-                                        {
-                                                SendChat( player, "Your report has been submitted. An administrator will view it soon.");
-                                                CONSOLE_ReportPrint( Payload, User );
-                                                CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Payload + "]. It was added to report.log." );
-                                        }
-                                }
+    //
+    // !REPORT
+    //
+/*
+    if( Command == "report" )
+    {
+		m_MessageWasCommand = true;
+            if( !Payload.empty( ) )
+            {
+                    SendChat( player, "Your report has been submitted. An administrator will view it soon.");
+                    CONSOLE_ReportPrint( Payload, User );
+                    CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Payload + "]. It was added to report.log." );
+            }
+    } */
+
+	if( Command == "report" && !Payload.empty( ) )
+	{
+		m_MessageWasCommand = true;
+		string Victim;
+		string Reason;
+		
+		stringstream SS;
+		SS << Payload;
+		SS >> Victim;
+
+		if( SS.fail( ) || Victim.empty() )
+			SendChat( player, "Error, no player specified to report. Usage: !report Player Reason for report" );
+		else
+		{
+			
+			CGamePlayer *LastMatch = NULL;
+			uint32_t Matches = GetPlayerFromNamePartial( Victim, &LastMatch );
+
+			if( Matches == 0 )
+				SendChat( player, "Error no match for player [" + Victim + "]" );
+			else if( Matches == 1 )
+			{
+				if (!SS.eof())
+				{
+					// we got a reason, submit the report
+
+					getline( SS, Reason );
+					string :: size_type Start = Reason.find_first_not_of( " " );
+
+					if( Start != string :: npos )
+						Reason = Reason.substr( Start );
+						
+					SendAllChat( "[REPORT] user [" + User + "] reported [" + Victim + "] with reason [" + Reason + "]" );
+						
+					CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Victim + "]. It was added to report.log." );
+					
+					// ThreadedReportAdd or use DotaEventAdd(NL_REPORT, reporter, victim, reportercolor, victimcolour) or whatever
+
+
+				}
+				else
+				{
+					// no reason specified, cannot submit a report without a reason
+					SendChat( player, "Error, no reason specified. Usage: !report Player Reason for report" );
+				}
+			}
+			else
+				SendChat( player, "Error found more than one match for player [" + Victim + "]" );
+		}
+	}
 
 
 	//
 	// !STATS
 	//
 
-	if( Command == "stats" && GetTime( ) >= player->GetStatsSentTime( ) + 5 )
+	if( (Command == "stats" || Command == "s") && GetTime( ) >= player->GetStatsSentTime( ) + 5 )
 	{
 		m_MessageWasCommand = true;
 		string StatsUser = User;
 
 		if( !Payload.empty( ) )
 			StatsUser = Payload;
+			
+		CGamePlayer *LastMatch = NULL;
+		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
 
-		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			m_PairedGPSChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+		if( Matches > 1 )
+			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
 		else
-			m_PairedGPSChecks.push_back( PairedGPSCheck( User, m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+		{
+			if (LastMatch)
+				StatsUser = LastMatch->GetName();
 
-		player->SetStatsSentTime( GetTime( ) );
+			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+				m_PairedGPSChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+			else
+				m_PairedGPSChecks.push_back( PairedGPSCheck( User, m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+				
+			player->SetStatsSentTime( GetTime( ) );
+		}
 	}
 
 	//
@@ -2378,6 +2442,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	{
 		/*
 			NordicLeague - @begin - We got a forfeit request going on.
+			todo: move all outputs to the language class for multilingual support
 		*/
 		m_MessageWasCommand = true;
 		
@@ -2392,7 +2457,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				sec -= 60;
 			}
 			
-			SendAllChat("You can not forfeit the first 25 minutes of the game! Time left: " + UTIL_ToString(min) + ":" + UTIL_ToString(sec));
+			SendAllChat("You can not forfeit the first 25 minutes of the game! Time left: " + UTIL_ToString(min) + "m " + UTIL_ToString(sec) + "s");
 		}
 		else
 		{
@@ -2417,23 +2482,17 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							SendAllChat("Sentinel has forfeited the game.");
 							SendAllChat("The game will end in 30 seconds!");
-							//m_Stats->SetWinner(2);
-							//m_GameOverTime = GetTime( );
-							m_FFSucceeded = true;
 						}
 						else
 						{
 							SendAllChat("Scourge has forfeited the game!");
 							SendAllChat("The game will end in 30 seconds!");
-							//m_Stats->SetWinner(1);
-							//m_GameOverTime = GetTime( );
-							m_FFSucceeded = true;
 						}
+						
+						m_FFSucceeded = true;
 						m_FFKickTime = GetTime();
-	
-						// We got a successfull ff vote, set the other team to winner, end the game.
+						// We got a successfull ff vote
 					}
-
 				}
 				else
 				{
@@ -2444,8 +2503,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			else
 			{
 				// start a ff vote for the players team.
-
-
 				m_FFTeam = player->GetTeam();
 				m_FFStartedTime = GetTime();
 				m_FFVotesNeeded = 0;
@@ -2470,22 +2527,18 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					{
 						SendAllChat("Sentinel has forfeited the game.");
 						SendAllChat("The game will end in 30 seconds!");
-						//m_Stats->SetWinner(2);
 					}
 					else
 					{
 						SendAllChat("Scourge has forfeited the game!");
 						SendAllChat("The game will end in 30 seconds!");
-						//m_Stats->SetWinner(1);
 					}
 					
 					m_FFSucceeded = true;
 					m_FFKickTime = GetTime();
 				}
-
 			}
 		}
-
 	}
 	
 	//

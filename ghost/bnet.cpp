@@ -1464,11 +1464,20 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					if( Ban )
 					{
-						if ( Ban->GetIPBan() )
-							QueueChatCommand( m_GHost->m_Language->UserWasIPBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ), Ban->GetIP() ), User, Whisper );
+						if (Ban->IsTemporary())
+						{
+							if ( Ban->GetIPBan() )
+								QueueChatCommand( m_GHost->m_Language->UserWasIPBannedOnByBecauseTemp( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ), Ban->GetIP(), Ban->GetExpires() ), User, Whisper );
+							else
+								QueueChatCommand( m_GHost->m_Language->UserWasBannedOnByBecauseTemp( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ), Ban->GetExpires() ), User, Whisper );
+						}
 						else
-							QueueChatCommand( m_GHost->m_Language->UserWasBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ) ), User, Whisper );
-
+						{
+							if ( Ban->GetIPBan() )
+								QueueChatCommand( m_GHost->m_Language->UserWasIPBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ), Ban->GetIP() ), User, Whisper );
+							else
+								QueueChatCommand( m_GHost->m_Language->UserWasBannedOnByBecause( m_Server, Payload, Ban->GetDate( ), Ban->GetAdmin( ), Ban->GetReason( ) ), User, Whisper );
+						}
 					}
 					else
 						QueueChatCommand( m_GHost->m_Language->UserIsNotBanned( m_Server, Payload ), User, Whisper );

@@ -97,7 +97,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 						string KeyString = string( Key.begin( ), Key.end( ) );
 						uint32_t ValueInt = UTIL_ByteArrayToUInt32( Value, false );
 
-						CONSOLE_PrintStats( "[DEBUG-STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
+						//CONSOLE_PrintStats( "[DEBUG-STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
 
 						if( DataString == "Data" )
 						{
@@ -346,9 +346,9 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								uint32_t ID = UTIL_ToUInt32( PlayerID );
 								
 								m_Players[ID]->SetNeutralKills(ValueInt);
-								CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
-								if (Player)
-									CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetNeutralKills()) + " ] NeutralKills" ); 
+								//CGamePlayer *Player = m_Game->GetPlayerFromColour( ID );
+								//if (Player)
+								//	CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Player [ " + Player->GetName() + " ] Got [ " + UTIL_ToString(m_Players[ID]->GetNeutralKills()) + " ] NeutralKills" ); 
 							}
 							else if( KeyString.size( ) >= 9 && KeyString.substr( 0, 9 ) == "GameStart" )
 							{

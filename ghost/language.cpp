@@ -136,6 +136,21 @@ string CLanguage :: UserWasBannedOnByBecause( string server, string victim, stri
 	return Out;
 }
 
+string CLanguage :: UserWasBannedOnByBecauseTemp( string server, string victim, string date, string admin, string reason, string expires )
+{
+	string Out = m_CFG->GetString( "lang_0011", "lang_0011" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$DATE$", date );
+	UTIL_Replace( Out, "$ADMIN$", admin );
+	UTIL_Replace( Out, "$REASON$", reason );
+
+        if (!expires.empty())
+                Out += " Temporary until: " + expires;
+
+	return Out;
+}
+
 string CLanguage :: UserWasIPBannedOnByBecause( string server, string victim, string date, string admin, string reason, string ip )
 {
 	string Out = m_CFG->GetString( "lang_0011_2", "lang_0011_2" );
@@ -145,6 +160,22 @@ string CLanguage :: UserWasIPBannedOnByBecause( string server, string victim, st
 	UTIL_Replace( Out, "$ADMIN$", admin );
 	UTIL_Replace( Out, "$REASON$", reason );
 	UTIL_Replace( Out, "$IP$", ip );
+	return Out;
+}
+
+string CLanguage :: UserWasIPBannedOnByBecauseTemp( string server, string victim, string date, string admin, string reason, string ip, string expires )
+{
+	string Out = m_CFG->GetString( "lang_0011_2", "lang_0011_2" );
+	UTIL_Replace( Out, "$SERVER$", server );
+	UTIL_Replace( Out, "$VICTIM$", victim );
+	UTIL_Replace( Out, "$DATE$", date );
+	UTIL_Replace( Out, "$ADMIN$", admin );
+	UTIL_Replace( Out, "$REASON$", reason );
+	UTIL_Replace( Out, "$IP$", ip );
+	
+	if (!expires.empty())
+		Out += " Temporary until: " + expires;
+
 	return Out;
 }
 
