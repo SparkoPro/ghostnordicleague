@@ -703,9 +703,9 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 	string Query;
 
 	if( ip.empty( ) )
-		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban FROM bans WHERE server='" + EscServer + "' AND name='" + EscUser + "'";
+		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, FROM_UNIXTIME(expires) FROM bans WHERE name LIKE '" + EscUser + "'";
 	else
-		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban FROM bans WHERE (server='" + EscServer + "' AND name='" + EscUser + "') OR ip='" + EscIP + "'";
+		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, FROM_UNIXTIME(expires) FROM bans WHERE name LIKE '" + EscUser + "' OR ip='" + EscIP + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -717,8 +717,16 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			if( Row.size( ) == 7 )
-				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]) );
+			if( Row.size( ) == 9 )
+			{
+				uint32_t temp = UTIL_ToUInt32(Row[7]);
+				string expires;
+
+				if (temp == 1)
+					expires = Row[8];
+
+				Ban = new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]), expires );
+			}
 			/* else
 				*error = "error checking ban [" + server + " : " + user + "] - row doesn't have 6 columns"; */
 
@@ -834,7 +842,7 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 {
 	string EscServer = MySQLEscapeString( conn, server );
 	vector<CDBBan *> BanList;
-	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban FROM bans WHERE server='" + EscServer + "'";
+	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, FROM_UNIXTIME(expires) FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -846,9 +854,13 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			while( Row.size( ) == 7 )
+			while( Row.size( ) == 9 )
 			{
-				BanList.push_back( new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]) ) );
+				if (UTIL_ToUInt32(Row[7]))
+					BanList.push_back( new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]), Row[8] ) );
+				else
+					BanList.push_back( new CDBBan( server, Row[0], Row[1], Row[2], Row[3], Row[4], Row[5], UTIL_ToUInt32(Row[6]), string() ) );
+					
 				Row = MySQLFetchRow( Result );
 			}
 
