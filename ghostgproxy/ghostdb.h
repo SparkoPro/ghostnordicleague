@@ -39,7 +39,6 @@ class CCallableBanList;
 class CCallableGameAdd;
 class CCallableGamePlayerAdd;
 class CCallableGamePlayerSummaryCheck;
-class CCallableRegisterPlayerAdd;
 class CCallableDotAGameAdd;
 class CCallableDotAPlayerAdd;
 class CCallableDotAPlayerSummaryCheck;
@@ -53,6 +52,9 @@ class CDBGamePlayer;
 class CDBGamePlayerSummary;
 class CDBDotAPlayerSummary;
 
+// nordicleague 
+
+class CCallableRegisterPlayerAdd;
 class CCallableDotAEventAdd;
 class CCallableUpdateGameInfo;
 
@@ -91,7 +93,6 @@ public:
 	virtual vector<CDBBan *> BanList( string server );
 	virtual uint32_t GameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 	virtual uint32_t GamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
-	virtual uint32_t RegisterPlayerAdd( string name, string email, string ip );
 	virtual uint32_t GamePlayerCount( string name );
 	virtual CDBGamePlayerSummary *GamePlayerSummaryCheck( string name );
 	virtual uint32_t DotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
@@ -106,11 +107,12 @@ public:
 	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
 	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
 	
-	/*
-		NordicLeague - @begin - custom db action
-	*/
 	
-	// keep track of in-game events for live feedback on website
+	
+	// nordicleague
+	
+	virtual uint32_t RegisterPlayerAdd( string name, string email, string ip );
+	virtual CCallableRegisterPlayerAdd *ThreadedRegisterPlayerAdd( string name, string email, string ip );
 	
 	virtual uint32_t DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
 	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
@@ -119,9 +121,8 @@ public:
 		
 	virtual bool UpdateGameInfo( string name, uint32_t players, bool ispublic);
 	virtual CCallableUpdateGameInfo *ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
-	/*
-		NordicLeague - @begin - custom db action
-	*/
+	
+	
 
 	// threaded database functions
 
@@ -139,7 +140,6 @@ public:
 	virtual CCallableBanList *ThreadedBanList( string server );
 	virtual CCallableGameAdd *ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
-	virtual CCallableRegisterPlayerAdd *ThreadedRegisterPlayerAdd( string name, string email, string ip );
 	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
@@ -150,7 +150,6 @@ public:
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
-	
 };
 
 //
@@ -418,25 +417,6 @@ public:
 	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
 };
 
-class CCallableRegisterPlayerAdd : virtual public CBaseCallable
-{
-protected:
-	string m_Name, m_Email, m_IP;
-	uint32_t m_Result;
-
-public:
-	CCallableRegisterPlayerAdd( string nName, string nEmail, string nIP) : CBaseCallable( ), m_Name( nName ), m_IP( nIP ),m_Email( nEmail ), m_Result( 0 ) { }
-	virtual ~CCallableRegisterPlayerAdd( );
-
-	virtual string GetUser() { return m_Name; }
-	virtual string GetMail() { return m_Email; }
-
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
-};
-
-
-
 class CCallableGamePlayerSummaryCheck : virtual public CBaseCallable
 {
 protected:
@@ -473,10 +453,11 @@ class CCallableDotAEventAdd : virtual public CBaseCallable
 {
 protected:
 	uint32_t m_GameID;
-	string m_Killer;
-	string m_Victim;
+	string 	 m_Killer;
+	string 	 m_Victim;
 	uint32_t m_Result;
-	uint32_t m_KillerColour, m_VictimColour;
+	uint32_t m_KillerColour;
+	uint32_t m_VictimColour;
 
 public:
 	CCallableDotAEventAdd( uint32_t nGameID, string nKiller, string nVictim, uint32_t kcolour, uint32_t vcolour ) : CBaseCallable( ), m_GameID( nGameID), m_Killer( nKiller ), m_Victim( nVictim ), m_KillerColour( kcolour ), m_VictimColour( vcolour ), m_Result( 0 ) { }
@@ -486,10 +467,10 @@ public:
 	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
 };
 
+
 class CCallableDotAPlayerAdd : virtual public CBaseCallable
 {
 protected:
-	string m_Name;
 	uint32_t m_GameID;
 	uint32_t m_Colour;
 	uint32_t m_Kills;
@@ -511,17 +492,16 @@ protected:
 	uint32_t m_RaxKills;
 	uint32_t m_CourierKills;
 	uint32_t m_Result;
+	
+	// nordicleague
+	
+	string 	 m_Name;
 	uint32_t m_Outcome;
 	uint32_t m_Level;
 	uint32_t m_Apm;
 
 public:
-	CCallableDotAPlayerAdd( uint32_t nGameID, string nName, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t 
-nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, 
-uint32_t nOutcome, uint32_t nLevel, uint32_t nApm ) 
-: CBaseCallable( ), m_GameID( nGameID ), m_Name( nName ), m_Colour( nColour ), m_Kills( nKills ), m_Deaths( nDeaths ), m_CreepKills( nCreepKills ), m_CreepDenies( nCreepDenies ), m_Assists( nAssists ), 
-m_Gold( nGold ), m_NeutralKills( nNeutralKills ), m_Item1( nItem1 ), m_Item2( nItem2 ), m_Item3( nItem3 ), m_Item4( nItem4 ), m_Item5( nItem5 ), m_Item6( nItem6 ), m_Hero( nHero ), m_NewColour( nNewColour ), 
-m_TowerKills( nTowerKills ), m_RaxKills( nRaxKills ), m_CourierKills( nCourierKills ), m_Outcome( nOutcome ), m_Level ( nLevel ), m_Apm ( nApm), m_Result( 0 ) { }
+	CCallableDotAPlayerAdd( uint32_t nGameID, string nName, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, uint32_t nOutcome, uint32_t nLevel, uint32_t nApm ) : CBaseCallable( ), m_GameID( nGameID ), m_Name( nName ), m_Colour( nColour ), m_Kills( nKills ), m_Deaths( nDeaths ), m_CreepKills( nCreepKills ), m_CreepDenies( nCreepDenies ), m_Assists( nAssists ), m_Gold( nGold ), m_NeutralKills( nNeutralKills ), m_Item1( nItem1 ), m_Item2( nItem2 ), m_Item3( nItem3 ), m_Item4( nItem4 ), m_Item5( nItem5 ), m_Item6( nItem6 ), m_Hero( nHero ), m_NewColour( nNewColour ), m_TowerKills( nTowerKills ), m_RaxKills( nRaxKills ), m_CourierKills( nCourierKills ), m_Outcome( nOutcome ), m_Level ( nLevel ), m_Apm ( nApm), m_Result( 0 ) { }
 	virtual ~CCallableDotAPlayerAdd( );
 
 	virtual uint32_t GetResult( )				{ return m_Result; }
@@ -570,18 +550,23 @@ protected:
 	string m_Name;
 	string m_Server;
 	double m_Result;
-	CDBGamePlayerSummary *m_GamePlayer;
 	
+	// nordicleague
+	
+	CDBGamePlayerSummary *m_GamePlayer;
 
 public:
 	CCallableScoreCheck( string nCategory, string nName, string nServer ) : CBaseCallable( ), m_Category( nCategory ), m_Name( nName ), m_Server( nServer ), m_Result( 0.0 ), m_GamePlayer( NULL ) { }
 	virtual ~CCallableScoreCheck( );
 
-	virtual string GetName( )					{ return m_Name; }
-	virtual double GetResult( )					{ return m_Result; }
+	virtual string GetName( )										{ return m_Name; }
+	virtual double GetResult( )										{ return m_Result; }
+	virtual void SetResult( double nResult )						{ m_Result = nResult; }
+	
+	// nordicleague
+	
 	virtual CDBGamePlayerSummary *GetPlayerSummary( )				{ return m_GamePlayer; }
-	virtual void SetResult( double nResult )	{ m_Result = nResult; }
-	virtual void SetPlayerSummary( CDBGamePlayerSummary *nSummary )				{ m_GamePlayer = nSummary; }
+	virtual void SetPlayerSummary( CDBGamePlayerSummary *nSummary )	{ m_GamePlayer = nSummary; }
 };
 
 class CCallableW3MMDPlayerAdd : virtual public CBaseCallable
@@ -631,6 +616,7 @@ public:
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
 
+// nordicleague
 
 class CCallableUpdateGameInfo : virtual public CBaseCallable
 {
@@ -644,11 +630,11 @@ public:
 	CCallableUpdateGameInfo( string name, uint32_t players, bool ispublic ) : CBaseCallable( ), m_Name( name ), m_Players( players ), m_Public( ispublic ), m_Result( false ) { }
 	virtual ~CCallableUpdateGameInfo( );
 
-	virtual bool GetResult( )				{ return m_Result; }
-	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
-	virtual void SetName( string name ) { m_Name = name; }
+	virtual bool GetResult( )					{ return m_Result; }
+	virtual void SetResult( bool nResult )		{ m_Result = nResult; }
+	virtual void SetName( string name ) 		{ m_Name = name; }
 	virtual void SetPlayers( uint32_t players ) { m_Players = players; }
-	virtual void SetPublic( bool ispublic ) { m_Public = ispublic; }
+	virtual void SetPublic( bool ispublic ) 	{ m_Public = ispublic; }
 };
 
 //
@@ -665,11 +651,17 @@ private:
 	string m_GameName;
 	string m_Admin;
 	string m_Reason;
+	
+	// nordicleague
+	
 	bool m_IPBan;
 	string m_Expires;
 
 public:
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason );
+	
+	// nordicleague
+	
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, string nExpires );
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan );
 	CDBBan( string nServer, string nName, string nIP, string nDate, string nGameName, string nAdmin, string nReason, uint32_t nIPBan, string nExpires );
@@ -682,8 +674,11 @@ public:
 	string GetGameName( )	{ return m_GameName; }
 	string GetAdmin( )		{ return m_Admin; }
 	string GetReason( )		{ return m_Reason; }
-	bool GetIPBan( )		{ return m_IPBan; }
-	bool IsTemporary()		{ return m_Expires.empty() ? false : true; }
+	
+	// nordicleague
+	
+	bool   GetIPBan( )		{ return m_IPBan; }
+	bool   IsTemporary()	{ return m_Expires.empty() ? false : true; }
 	string GetExpires()		{ return m_Expires; }
 };
 
@@ -757,7 +752,6 @@ public:
 	void SetLoadingTime( uint32_t nLoadingTime )	{ m_LoadingTime = nLoadingTime; }
 	void SetLeft( uint32_t nLeft )					{ m_Left = nLeft; }
 	void SetLeftReason( string nLeftReason )		{ m_LeftReason = nLeftReason; }
-
 };
 
 //
@@ -833,7 +827,6 @@ public:
 class CDBDotAPlayer
 {
 private:
-	string m_Name;
 	uint32_t m_ID;
 	uint32_t m_GameID;
 	uint32_t m_Colour;
@@ -850,6 +843,9 @@ private:
 	uint32_t m_TowerKills;
 	uint32_t m_RaxKills;
 	uint32_t m_CourierKills;
+	
+	// nordicleague
+	string 	 m_Name;
 	uint32_t m_Rank;
 	uint32_t m_Score;
 	uint32_t m_Outcome;
@@ -858,12 +854,8 @@ private:
 
 public:
 	CDBDotAPlayer( );
-	CDBDotAPlayer( uint32_t nID, string nName, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, 
-uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills,  uint32_t 
-nCourierKills, uint32_t nOutcome, uint32_t nLevel, uint32_t nApm );
-	CDBDotAPlayer( uint32_t nID, string nName, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, 
-uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills,  uint32_t 
-nCourierKills, uint32_t nRank, uint32_t nScore, uint32_t nOutcome, uint32_t nLevel, uint32_t nApm );
+	CDBDotAPlayer( uint32_t nID, string nName, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, uint32_t nOutcome, uint32_t nLevel, uint32_t nApm );
+	CDBDotAPlayer( uint32_t nID, string nName, uint32_t nGameID, uint32_t nColour, uint32_t nKills, uint32_t nDeaths, uint32_t nCreepKills, uint32_t nCreepDenies, uint32_t nAssists, uint32_t nGold, uint32_t nNeutralKills, string nItem1, string nItem2, string nItem3, string nItem4, string nItem5, string nItem6, string nHero, uint32_t nNewColour, uint32_t nTowerKills, uint32_t nRaxKills, uint32_t nCourierKills, uint32_t nRank, uint32_t nScore, uint32_t nOutcome, uint32_t nLevel, uint32_t nApm );
 	~CDBDotAPlayer( );
 
 	uint32_t GetID( )			{ return m_ID; }
@@ -882,12 +874,17 @@ nCourierKills, uint32_t nRank, uint32_t nScore, uint32_t nOutcome, uint32_t nLev
 	uint32_t GetTowerKills( )	{ return m_TowerKills; }
 	uint32_t GetRaxKills( )		{ return m_RaxKills; }
 	uint32_t GetCourierKills( )	{ return m_CourierKills; }
-	uint32_t GetRank( )		{ return m_Rank; }
+	
+	// nordicleague
+	
+	uint32_t GetRank( )			{ return m_Rank; }
 	uint32_t GetScore( )		{ return m_Score; }
 	uint32_t GetOutcome()		{ return m_Outcome; }
-	string GetName()		{ return m_Name; }
-	uint32_t GetLevel()	{ return m_Level; }
-	uint32_t GetApm() { return m_Apm; }
+	string 	 GetName()			{ return m_Name; }
+	uint32_t GetLevel()			{ return m_Level; }
+	uint32_t GetApm() 			{ return m_Apm; }
+	
+	
 
 	void SetColour( uint32_t nColour )				{ m_Colour = nColour; }
 	void SetKills( uint32_t nKills )				{ m_Kills = nKills; }
@@ -903,12 +900,15 @@ nCourierKills, uint32_t nRank, uint32_t nScore, uint32_t nOutcome, uint32_t nLev
 	void SetTowerKills( uint32_t nTowerKills )		{ m_TowerKills = nTowerKills; }
 	void SetRaxKills( uint32_t nRaxKills )			{ m_RaxKills = nRaxKills; }
 	void SetCourierKills( uint32_t nCourierKills )	{ m_CourierKills = nCourierKills; }
-	void SetRank( uint32_t nRank )			{ m_Rank = nRank; }
-	void SetScore( uint32_t nScore )	{ m_Score = nScore; }
-	void SetOutcome( uint32_t nOutcome )	{ m_Outcome = nOutcome; }
-	void SetName( string nName )		{ m_Name = nName; }
-	void SetLevel( uint32_t nLevel )	{ m_Level = nLevel; } 
-	void SetApm( uint32_t nApm )	{ m_Apm = nApm; }
+	
+	// nordicleague
+	
+	void SetRank( uint32_t nRank )					{ m_Rank = nRank; }
+	void SetScore( uint32_t nScore )				{ m_Score = nScore; }
+	void SetOutcome( uint32_t nOutcome )			{ m_Outcome = nOutcome; }
+	void SetName( string nName )					{ m_Name = nName; }
+	void SetLevel( uint32_t nLevel )				{ m_Level = nLevel; } 
+	void SetApm( uint32_t nApm )					{ m_Apm = nApm; }
 };
 
 //
@@ -932,8 +932,11 @@ private:
 	uint32_t m_TotalTowerKills;		// total number of tower kills
 	uint32_t m_TotalRaxKills;		// total number of rax kills
 	uint32_t m_TotalCourierKills;	// total number of courier kills
+	
+	// nordicleague
+	
 	uint32_t m_Rank;
-	double m_Score;
+	double 	 m_Score;
 	uint32_t m_Streak;
 
 public:
@@ -956,10 +959,12 @@ public:
 	uint32_t GetTotalTowerKills( )		{ return m_TotalTowerKills; }
 	uint32_t GetTotalRaxKills( )		{ return m_TotalRaxKills; }
 	uint32_t GetTotalCourierKills( )	{ return m_TotalCourierKills; }
-	uint32_t GetRank( )		{ return m_Rank; }
-	double GetScore( )		{ return m_Score; }
-	uint32_t GetStreak( )		{ return m_Streak; }
-
+	
+	// nordicleague
+	
+	uint32_t GetRank( )					{ return m_Rank; }
+	double 	 GetScore( )				{ return m_Score; }
+	uint32_t GetStreak( )				{ return m_Streak; }
 
 	float GetAvgKills( )				{ return m_TotalGames > 0 ? (float)m_TotalKills / m_TotalGames : 0; }
 	float GetAvgDeaths( )				{ return m_TotalGames > 0 ? (float)m_TotalDeaths / m_TotalGames : 0; }
@@ -971,6 +976,8 @@ public:
 	float GetAvgRaxKills( )				{ return m_TotalGames > 0 ? (float)m_TotalRaxKills / m_TotalGames : 0; }
 	float GetAvgCourierKills( )			{ return m_TotalGames > 0 ? (float)m_TotalCourierKills / m_TotalGames : 0; }
 };
+
+// nordicleague
 
 class CCallableRegisterPlayerAdd : virtual public CBaseCallable
 {

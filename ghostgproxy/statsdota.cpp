@@ -36,15 +36,12 @@ CStatsDOTA :: CStatsDOTA( CBaseGame *nGame ) : CStats( nGame )
 	CONSOLE_Print( "[STATSDOTA] using dota stats" );
 
 	for( unsigned int i = 0; i < 12; i++ )
-	{
-		m_Players[i] = NULL; // new CDBDotAPlayer( );
-		m_LeaverKills[i] = 0;
-	}
+		m_Players[i] = NULL;
 
 	m_Winner = 0;
 	m_Min = 0;
 	m_Sec = 0;
-	
+	m_GameStart = 0;
 }
 
 CStatsDOTA :: ~CStatsDOTA( )
@@ -56,7 +53,7 @@ CStatsDOTA :: ~CStatsDOTA( )
 	}
 }
 
-bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost)
+bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost )
 {
 	unsigned int i = 0;
 	BYTEARRAY *ActionData = Action->GetAction( );
@@ -98,7 +95,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 						string KeyString = string( Key.begin( ), Key.end( ) );
 						uint32_t ValueInt = UTIL_ByteArrayToUInt32( Value, false );
 
-						//CONSOLE_PrintStats( "[DEBUG-STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
+						// CONSOLE_Print( "[STATS] " + DataString + ", " + KeyString + ", " + UTIL_ToString( ValueInt ) );
 
 						if( DataString == "Data" )
 						{
@@ -335,6 +332,7 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							}
 							else if( KeyString.size( ) >= 9 && KeyString.substr( 0, 9 ) == "GameStart" )
 							{
+								m_Game->SetForfeitDelayTime( GetTime() + 1500 );
 								m_GameStart = GetTime();
 								CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Map sent GameStart event.");
 							}
@@ -510,6 +508,10 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 			m_Sec = GameLength;
 		}
 
+		// save the dotagame
+
+		GHost->m_Callables.push_back( DB->ThreadedDotAGameAdd( GameID, m_Winner, m_Min, m_Sec ) );
+
 		// check for invalid colours and duplicates
 		// this can only happen if DotA sends us garbage in the "id" value but we should check anyway
 
@@ -551,37 +553,23 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 					if ( m_Players[i]->GetColour( ) == (*it)->GetColour( ) )
 					{
 						std::string tName = (*it)->GetName();
-
 						m_Players[i]->SetName( tName );
-
 						break;
 					}
 				}
 
 				if ( (m_Players[i]->GetNewColour() < 6 && m_Winner == 1) || (m_Players[i]->GetNewColour() > 6 && m_Winner == 2) )
-				{
 					m_Players[i]->SetOutcome(1); // Win
-				}
 				else if (m_Winner == 0)
-				{
 					m_Players[i]->SetOutcome(0); // Draw
-				}
 				else
-				{
 					m_Players[i]->SetOutcome(2); // Loss
-				}
 
-				GHost->m_Callables.push_back( DB->ThreadedDotAPlayerAdd( GameID, m_Players[i]->GetName( ), m_Players[i]->GetColour( ), m_Players[i]->GetKills( ), m_Players[i]->GetDeaths( ), m_Players[i]->GetCreepKills( ), m_Players[i]->GetCreepDenies( ), m_Players[i]->GetAssists( ), m_Players[i]->GetGold( ), m_Players[i]->GetNeutralKills( ), m_Players[i]->GetItem( 0 
-), m_Players[i]->GetItem( 1 ), m_Players[i]->GetItem( 2 ), m_Players[i]->GetItem( 3 ), m_Players[i]->GetItem( 4 ), m_Players[i]->GetItem( 5 ), m_Players[i]->GetHero( ), m_Players[i]->GetNewColour( ), 
-m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetCourierKills( ), m_Players[i]->GetOutcome( ), m_Players[i]->GetLevel(), 0 ) );
+				GHost->m_Callables.push_back( DB->ThreadedDotAPlayerAdd( GameID, m_Players[i]->GetName( ), m_Players[i]->GetColour( ), m_Players[i]->GetKills( ), m_Players[i]->GetDeaths( ), m_Players[i]->GetCreepKills( ), m_Players[i]->GetCreepDenies( ), m_Players[i]->GetAssists( ), m_Players[i]->GetGold( ), m_Players[i]->GetNeutralKills( ), m_Players[i]->GetItem( 0 ), m_Players[i]->GetItem( 1 ), m_Players[i]->GetItem( 2 ), m_Players[i]->GetItem( 3 ), m_Players[i]->GetItem( 4 ), m_Players[i]->GetItem( 5 ), m_Players[i]->GetHero( ), m_Players[i]->GetNewColour( ), m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetCourierKills( ), m_Players[i]->GetOutcome( ), m_Players[i]->GetLevel(), 0 ) );
 
 				Players++;
 			}
 		}
-		
-		// save the dotagame
-
-		GHost->m_Callables.push_back( DB->ThreadedDotAGameAdd( GameID, m_Winner, m_Min, m_Sec ) );
 
 		if( DB->Commit( ) )
 			CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] saving " + UTIL_ToString( Players ) + " players" );
@@ -590,11 +578,4 @@ m_Players[i]->GetTowerKills( ), m_Players[i]->GetRaxKills( ), m_Players[i]->GetC
 	}
 	else
 		CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] unable to begin database transaction, data not saved" );
-}
-
-CDBDotAPlayer *CStatsDOTA :: GetPlayerStats(uint32_t id)
-{
-	if( ( id >= 1 && id <= 5 ) || ( id >= 7 && id <= 11 ) )
-		return m_Players[id];
-	return NULL;
 }

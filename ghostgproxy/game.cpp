@@ -79,8 +79,6 @@ CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHost
 		m_Stats = NULL;
 
 	m_CallableGameAdd = NULL;
-	m_VoteEndInProgress = false;
-	
 }
 
 CGame :: ~CGame( )
@@ -106,7 +104,7 @@ CGame :: ~CGame( )
 						m_Stats->SetWinner(2);
 					else
 						m_Stats->SetWinner(1);
-				}	
+				}
 				m_Stats->Save( m_GHost, m_DBGamePlayers, m_GHost->m_DB, m_CallableGameAdd->GetResult( ) );
 			}
 		}
@@ -126,7 +124,7 @@ CGame :: ~CGame( )
 
 	for( vector<PairedGPSCheck> :: iterator i = m_PairedGPSChecks.begin( ); i != m_PairedGPSChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
-
+		
 	for( vector<PairedGPSCheck> :: iterator i = m_PairedReliabilityChecks.begin( ); i != m_PairedReliabilityChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
 
@@ -240,35 +238,6 @@ bool CGame :: Update( void *fd, void *send_fd )
 			i++;
 	}
 
-	for( vector<PairedGPSCheck> :: iterator i = m_PairedReliabilityChecks.begin( ); i != m_PairedReliabilityChecks.end( ); )
-	{
-		if( i->second->GetReady( ) )
-		{
-			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
-
-			if( GamePlayerSummary )
-			{
-				if( i->first.empty( ) )
-				{
-					if (GamePlayerSummary->GetTotalGames( ) >= 2 && GamePlayerSummary->GetAvgLeftPercent( ) < 90)
-					{
-						SendAllChat( "Warning! Potential leaver: " + i->second->GetName( ) + "! Games: " + UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ) + " Avg. Stay: " +  UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) + "%");
-					}
-					
-					// SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName( ), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ),UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
-				}
-			}
-
-			m_GHost->m_DB->RecoverCallable( i->second );
-			delete i->second;
-			i = m_PairedReliabilityChecks.erase( i );
-		}
-		else
-			i++;
-	}
-
-
-
 	for( vector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
@@ -278,28 +247,27 @@ bool CGame :: Update( void *fd, void *send_fd )
 			if( DotAPlayerSummary )
 			{
 				string Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	i->second->GetName( ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalGames( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalWins( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalLosses( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalKills( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalDeaths( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalCreepKills( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalCreepDenies( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalAssists( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalNeutralKills( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalTowerKills( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalRaxKills( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetTotalCourierKills( ) ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgKills( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgDeaths( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgCreepKills( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgCreepDenies( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgAssists( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgNeutralKills( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgTowerKills( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
-													UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
-
+																						UTIL_ToString( DotAPlayerSummary->GetTotalGames( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalWins( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalLosses( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalKills( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalDeaths( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalCreepKills( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalCreepDenies( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalAssists( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalNeutralKills( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalTowerKills( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalRaxKills( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetTotalCourierKills( ) ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgKills( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgDeaths( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgCreepKills( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgCreepDenies( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgAssists( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgNeutralKills( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgTowerKills( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgRaxKills( ), 2 ),
+																						UTIL_ToString( DotAPlayerSummary->GetAvgCourierKills( ), 2 ) );
 				uint32_t rank = DotAPlayerSummary->GetRank( );
 				if (rank > 0)
 					Summary += " Rank: #" + UTIL_ToString(rank) + " with " + UTIL_ToString(DotAPlayerSummary->GetScore(), 2) + " points.";
@@ -309,7 +277,7 @@ bool CGame :: Update( void *fd, void *send_fd )
 				uint32_t streak = DotAPlayerSummary->GetStreak( );
 				if (streak > 1)
 					Summary += " Win streak: " + UTIL_ToString(streak);
-
+					
 				if( i->first.empty( ) )
 					SendAllChat( Summary );
 				else
@@ -340,7 +308,6 @@ bool CGame :: Update( void *fd, void *send_fd )
 		else
 			i++;
 	}
-
 
 	return CBaseGame :: Update( fd, send_fd );
 }
@@ -387,7 +354,7 @@ void CGame :: EventPlayerAction( CGamePlayer *player, CIncomingAction *action )
 
 	// give the stats class a chance to process the action
 
-	if( m_Stats && m_Stats->ProcessAction( action, m_GHost->m_DB, m_GHost ) && m_GameOverTime == 0 )
+	if( m_Stats && m_Stats->ProcessAction( action, m_GHost->m_DB, m_GHost  ) && m_GameOverTime == 0 )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] gameover timer started (stats class reported game over)" );
 		SendEndMessage( );
@@ -437,16 +404,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			* ADMIN COMMANDS *
 			******************/
 
-			
 			//
 			// !STARTN
 			//
 
 			if( Command == "startn" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				// skip checks and start the game right now
-
 				m_CountDownStarted = true;
 				m_CountDownCounter = 0;
 			}
@@ -460,7 +424,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( ( Command == "abort" || Command == "a" ) && m_CountDownStarted && !m_GameLoading && !m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->CountDownAborted( ) );
 				m_CountDownStarted = false;
 			}
@@ -472,7 +435,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( ( Command == "addban" || Command == "ban" || Command == "ipban" ) && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
 			{
-				m_MessageWasCommand = true;
 				// extract the victim and the reason
 				// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
 
@@ -534,8 +496,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						SendAllChat( m_GHost->m_Language->UnableToBanFoundMoreThanOneMatch( Victim ) );
 				}
 			}
-			
-			
+
 			//
 			// !TEMPBAN
 			// !TBAN
@@ -543,7 +504,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( ( Command == "tempban" || Command == "tban" ) && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
 			{
-				m_MessageWasCommand = true;
 				// extract the victim and the reason
 				// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
 
@@ -674,13 +634,83 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				}
 			}
 
+/*			if( ( Command == "addban" || Command == "ban" ) && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
+			{
+				// extract the victim and the reason
+				// e.g. "Varlock leaver after dying" -> victim: "Varlock", reason: "leaver after dying"
+
+				string Victim;
+				string Reason;
+				stringstream SS;
+				SS << Payload;
+				SS >> Victim;
+
+				if( !SS.eof( ) )
+				{
+					getline( SS, Reason );
+					string :: size_type Start = Reason.find_first_not_of( " " );
+
+					if( Start != string :: npos )
+						Reason = Reason.substr( Start );
+				}
+
+				if( m_GameLoaded )
+				{
+					string VictimLower = Victim;
+					transform( VictimLower.begin( ), VictimLower.end( ), VictimLower.begin( ), (int(*)(int))tolower );
+					uint32_t Matches = 0;
+					CDBBan *LastMatch = NULL;
+
+					// try to match each player with the passed string (e.g. "Varlock" would be matched with "lock")
+					// we use the m_DBBans vector for this in case the player already left and thus isn't in the m_Players vector anymore
+
+					for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); i++ )
+					{
+						string TestName = (*i)->GetName( );
+						transform( TestName.begin( ), TestName.end( ), TestName.begin( ), (int(*)(int))tolower );
+
+						if( TestName.find( VictimLower ) != string :: npos )
+						{
+							Matches++;
+							LastMatch = *i;
+
+							// if the name matches exactly stop any further matching
+
+							if( TestName == VictimLower )
+							{
+								Matches = 1;
+								break;
+							}
+						}
+					}
+
+					if( Matches == 0 )
+						SendAllChat( m_GHost->m_Language->UnableToBanNoMatchesFound( Victim ) );
+					else if( Matches == 1 )
+						m_PairedBanAdds.push_back( PairedBanAdd( User, m_GHost->m_DB->ThreadedBanAdd( LastMatch->GetServer( ), LastMatch->GetName( ), LastMatch->GetIP( ), m_GameName, User, Reason ) ) );
+					else
+						SendAllChat( m_GHost->m_Language->UnableToBanFoundMoreThanOneMatch( Victim ) );
+				}
+				else
+				{
+					CGamePlayer *LastMatch = NULL;
+					uint32_t Matches = GetPlayerFromNamePartial( Victim, &LastMatch );
+
+					if( Matches == 0 )
+						SendAllChat( m_GHost->m_Language->UnableToBanNoMatchesFound( Victim ) );
+					else if( Matches == 1 )
+						m_PairedBanAdds.push_back( PairedBanAdd( User, m_GHost->m_DB->ThreadedBanAdd( LastMatch->GetJoinedRealm( ), LastMatch->GetName( ), LastMatch->GetExternalIPString( ), m_GameName, User, Reason ) ) );
+					else
+						SendAllChat( m_GHost->m_Language->UnableToBanFoundMoreThanOneMatch( Victim ) );
+				}
+			} */
+
 			//
 			// !ANNOUNCE
 			//
 
 			if( Command == "announce" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				if( Payload.empty( ) || Payload == "off" )
 				{
 					SendAllChat( m_GHost->m_Language->AnnounceMessageDisabled( ) );
@@ -724,7 +754,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "autosave" )
 			{
-				m_MessageWasCommand = true;
 				if( Payload == "on" )
 				{
 					SendAllChat( m_GHost->m_Language->AutoSaveEnabled( ) );
@@ -743,8 +772,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "autostart" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
-				if( Payload.empty( ) || Payload == "0" || Payload == "off" )
+				if( Payload.empty( ) || Payload == "off" )
 				{
 					SendAllChat( m_GHost->m_Language->AutoStartDisabled( ) );
 					m_AutoStartPlayers = 0;
@@ -754,7 +782,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				{
 					uint32_t AutoStartPlayers = UTIL_ToUInt32( Payload );
 
-					if( AutoStartPlayers > 0 )
+					if( AutoStartPlayers != 0 )
 					{
 						SendAllChat( m_GHost->m_Language->AutoStartEnabled( UTIL_ToString( AutoStartPlayers ) ) );
 						m_AutoStartPlayers = AutoStartPlayers;
@@ -762,14 +790,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					}
 				}
 			}
-
+			
 			//
 			// !BALANCE
 			//
 
 			if( Command == "balance" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				if (!m_GameLoading && !m_GameLoaded)
 				{
 					if (m_GHost->m_MatchMakingMethod)
@@ -787,18 +814,14 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			//
 
 			if( Command == "banlast" && m_GameLoaded && !m_GHost->m_BNETs.empty( ) && m_DBBanLast )
-			{
 				m_PairedBanAdds.push_back( PairedBanAdd( User, m_GHost->m_DB->ThreadedBanAdd( m_DBBanLast->GetServer( ), m_DBBanLast->GetName( ), m_DBBanLast->GetIP( ), m_GameName, User, Payload ) ) );
-				m_MessageWasCommand = true;
 
-			}
 			//
 			// !CHECK
 			//
 
 			if( Command == "check" )
 			{
-				m_MessageWasCommand = true;
 				if( !Payload.empty( ) )
 				{
 					CGamePlayer *LastMatch = NULL;
@@ -845,19 +868,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "checkban" && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
 			{
-				m_MessageWasCommand = true;
 				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
 					m_PairedBanChecks.push_back( PairedBanCheck( User, m_GHost->m_DB->ThreadedBanCheck( (*i)->GetServer( ), Payload, string( ) ) ) );
-			}
-			
-			//
-			// !SMURF
-			//
-
-			if( Command == "smurf" && !Payload.empty( ) && !m_GHost->m_BNETs.empty( ) )
-			{
-				m_MessageWasCommand = true;
-				//m_PairedSmurfChecks.push_back( PairedSmurfCheck( User, m_GHost->m_DB->ThreadedSmurfCheck( Payload, string( ) ) ) );
 			}
 
 			//
@@ -866,7 +878,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "clearhcl" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				m_HCLCommandString.clear( );
 				SendAllChat( m_GHost->m_Language->ClearingHCL( ) );
 			}
@@ -877,7 +888,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "close" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				// close as many slots as specified, e.g. "5 10" closes slots 5 and 10
 
 				stringstream SS;
@@ -903,10 +913,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			//
 
 			if( Command == "closeall" && !m_GameLoading && !m_GameLoaded )
-			{
-				m_MessageWasCommand = true;
 				CloseAllSlots( );
-			}
 
 			//
 			// !COMP (computer slot)
@@ -914,7 +921,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "comp" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
 				// extract the slot and the skill
 				// e.g. "1 2" -> slot: "1", skill: "2"
 
@@ -944,7 +950,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "compcolour" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
 				// extract the slot and the colour
 				// e.g. "1 2" -> slot: "1", colour: "2"
 
@@ -970,7 +975,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							unsigned char SID = (unsigned char)( Slot - 1 );
 
-							if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && Colour < 12 && SID < m_Slots.size( ) )
+							if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && Colour < 12 && SID < m_Slots.size( ) )
 							{
 								if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 									ColourSlot( SID, Colour );
@@ -986,7 +991,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "comphandicap" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
 				// extract the slot and the handicap
 				// e.g. "1 50" -> slot: "1", handicap: "50"
 
@@ -1012,7 +1016,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							unsigned char SID = (unsigned char)( Slot - 1 );
 
-							if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && ( Handicap == 50 || Handicap == 60 || Handicap == 70 || Handicap == 80 || Handicap == 90 || Handicap == 100 ) && SID < m_Slots.size( ) )
+							if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && ( Handicap == 50 || Handicap == 60 || Handicap == 70 || Handicap == 80 || Handicap == 90 || Handicap == 100 ) && SID < m_Slots.size( ) )
 							{
 								if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 								{
@@ -1031,7 +1035,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "comprace" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
 				// extract the slot and the race
 				// e.g. "1 human" -> slot: "1", race: "human"
 
@@ -1058,33 +1061,33 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						transform( Race.begin( ), Race.end( ), Race.begin( ), (int(*)(int))tolower );
 						unsigned char SID = (unsigned char)( Slot - 1 );
 
-						if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && !( m_Map->GetMapFlags( ) & MAPFLAG_RANDOMRACES ) && SID < m_Slots.size( ) )
+						if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && !( m_Map->GetMapFlags( ) & MAPFLAG_RANDOMRACES ) && SID < m_Slots.size( ) )
 						{
 							if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 							{
 								if( Race == "human" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_HUMAN );
+									m_Slots[SID].SetRace( SLOTRACE_HUMAN | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "orc" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_ORC );
+									m_Slots[SID].SetRace( SLOTRACE_ORC | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "night elf" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_NIGHTELF );
+									m_Slots[SID].SetRace( SLOTRACE_NIGHTELF | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "undead" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_UNDEAD );
+									m_Slots[SID].SetRace( SLOTRACE_UNDEAD | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else if( Race == "random" )
 								{
-									m_Slots[SID].SetRace( SLOTRACE_RANDOM );
+									m_Slots[SID].SetRace( SLOTRACE_RANDOM | SLOTRACE_SELECTABLE );
 									SendAllSlotInfo( );
 								}
 								else
@@ -1101,7 +1104,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "compteam" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
 				// extract the slot and the team
 				// e.g. "1 2" -> slot: "1", team: "2"
 
@@ -1127,7 +1129,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							unsigned char SID = (unsigned char)( Slot - 1 );
 
-							if( m_Map->GetMapGameType( ) != GAMETYPE_CUSTOM && Team < 12 && SID < m_Slots.size( ) )
+							if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) && Team < 12 && SID < m_Slots.size( ) )
 							{
 								if( m_Slots[SID].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[SID].GetComputer( ) == 1 )
 								{
@@ -1145,10 +1147,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			//
 
 			if( Command == "dbstatus" )
-			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_DB->GetStatus( ) );
-			}
 
 			//
 			// !DOWNLOAD
@@ -1157,7 +1156,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( ( Command == "download" || Command == "dl" ) && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				CGamePlayer *LastMatch = NULL;
 				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
@@ -1190,10 +1188,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			//
 
 			if( Command == "drop" && m_GameLoaded )
-			{
-				m_MessageWasCommand = true;
 				StopLaggers( "lagged out (dropped by admin)" );
-			}
 
 			//
 			// !END
@@ -1201,8 +1196,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "end" && m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
-				CONSOLE_Print( "[GAME: " + m_GameName + "] [ " + User + " ] Used !end to kill the game.");
+				CONSOLE_Print( "[GAME: " + m_GameName + "] is over (admin ended game)" );
 				StopPlayers( "was disconnected (admin ended game)" );
 			}
 
@@ -1212,11 +1206,34 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "fakeplayer" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				if( m_FakePlayerPID == 255 )
 					CreateFakePlayer( );
 				else
 					DeleteFakePlayer( );
+			}
+
+			//
+			// !FPPAUSE
+			//
+
+			if( Command == "fppause" && m_FakePlayerPID != 255 && m_GameLoaded )
+			{
+				BYTEARRAY CRC;
+				BYTEARRAY Action;
+				Action.push_back( 1 );
+				m_Actions.push( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
+			}
+
+			//
+			// !FPRESUME
+			//
+
+			if( Command == "fpresume" && m_FakePlayerPID != 255 && m_GameLoaded )
+			{
+				BYTEARRAY CRC;
+				BYTEARRAY Action;
+				Action.push_back( 2 );
+				m_Actions.push( new CIncomingAction( m_FakePlayerPID, CRC, Action ) );
 			}
 
 			//
@@ -1225,7 +1242,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "from" )
 			{
-				m_MessageWasCommand = true;
 				string Froms;
 
 				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
@@ -1259,7 +1275,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "hcl" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				if( !Payload.empty( ) )
 				{
 					if( Payload.size( ) <= m_Slots.size( ) )
@@ -1270,7 +1285,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 						{
 							m_HCLCommandString = Payload;
 							SendAllChat( m_GHost->m_Language->SettingHCL( m_HCLCommandString ) );
-							m_HCLOverride = true;
 						}
 						else
 							SendAllChat( m_GHost->m_Language->UnableToSetHCLInvalid( ) );
@@ -1288,7 +1302,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "hold" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				// hold as many players as specified, e.g. "Varlock Kilranin" holds players "Varlock" and "Kilranin"
 
 				stringstream SS;
@@ -1318,7 +1331,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "kick" && !Payload.empty( ) )
 			{
-				m_MessageWasCommand = true;
 				CGamePlayer *LastMatch = NULL;
 				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
@@ -1347,17 +1359,16 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "latency" )
 			{
-				m_MessageWasCommand = true;
 				if( Payload.empty( ) )
 					SendAllChat( m_GHost->m_Language->LatencyIs( UTIL_ToString( m_Latency ) ) );
 				else
 				{
 					m_Latency = UTIL_ToUInt32( Payload );
 
-					if( m_Latency <= 50 )
+					if( m_Latency <= 20 )
 					{
-						m_Latency = 50;
-						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( "50" ) );
+						m_Latency = 20;
+						SendAllChat( m_GHost->m_Language->SettingLatencyToMinimum( "20" ) );
 					}
 					else if( m_Latency >= 500 )
 					{
@@ -1375,7 +1386,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "lock" && ( RootAdminCheck || IsOwner( User ) ) )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->GameLocked( ) );
 				m_Locked = true;
 			}
@@ -1404,7 +1414,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "mute" )
 			{
-				m_MessageWasCommand = true;
 				CGamePlayer *LastMatch = NULL;
 				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
@@ -1425,7 +1434,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "muteall" && m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->GlobalChatMuted( ) );
 				m_MuteAll = true;
 			}
@@ -1436,7 +1444,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "open" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				// open as many slots as specified, e.g. "5 10" opens slots 5 and 10
 
 				stringstream SS;
@@ -1462,10 +1469,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			//
 
 			if( Command == "openall" && !m_GameLoading && !m_GameLoaded )
-			{
-				m_MessageWasCommand = true;
 				OpenAllSlots( );
-			}
 
 			//
 			// !OWNER (set game owner)
@@ -1473,7 +1477,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "owner" )
 			{
-				m_MessageWasCommand = true;
 				if( RootAdminCheck || IsOwner( User ) || !GetPlayerFromName( m_OwnerName, false ) )
 				{
 					if( !Payload.empty( ) )
@@ -1497,7 +1500,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "ping" )
 			{
-				m_MessageWasCommand = true;
 				// kick players with ping higher than payload if payload isn't empty
 				// we only do this if the game hasn't started since we don't want to kick players from a game in progress
 
@@ -1561,36 +1563,40 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "priv" && !Payload.empty( ) && !m_CountDownStarted && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
-				CONSOLE_Print( "[GAME: " + m_GameName + "] trying to rehost as private game [" + Payload + "]" );
-				SendAllChat( m_GHost->m_Language->TryingToRehostAsPrivateGame( Payload ) );
-				m_GameState = GAME_PRIVATE;
-				m_LastGameName = m_GameName;
-				m_GameName = Payload;
-				m_HostCounter = m_GHost->m_HostCounter++;
-				m_RefreshError = false;
-				m_RefreshRehosted = true;
-
-				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				if( Payload.length() < 31 )
 				{
-					// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
-					// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
-					// we assume this won't happen very often since the only downside is a potential false positive
+					CONSOLE_Print( "[GAME: " + m_GameName + "] trying to rehost as private game [" + Payload + "]" );
+					SendAllChat( m_GHost->m_Language->TryingToRehostAsPrivateGame( Payload ) );
+					m_GameState = GAME_PRIVATE;
+					m_LastGameName = m_GameName;
+					m_GameName = Payload;
+					m_HostCounter = m_GHost->m_HostCounter++;
+					m_RefreshError = false;
+					m_RefreshRehosted = true;
 
-					(*i)->UnqueueGameRefreshes( );
-					(*i)->QueueGameUncreate( );
-					(*i)->QueueEnterChat( );
+					for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+					{
+						// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
+						// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
+						// we assume this won't happen very often since the only downside is a potential false positive
 
-					// we need to send the game creation message now because private games are not refreshed
-
-					(*i)->QueueGameCreate( m_GameState, m_GameName, string( ), m_Map, NULL, m_HostCounter );
-
-					if( (*i)->GetPasswordHashType( ) != "pvpgn" )
+						(*i)->UnqueueGameRefreshes( );
+						(*i)->QueueGameUncreate( );
 						(*i)->QueueEnterChat( );
-				}
 
-				m_CreationTime = GetTime( );
-				m_LastRefreshTime = GetTime( );
+						// we need to send the game creation message now because private games are not refreshed
+
+						(*i)->QueueGameCreate( m_GameState, m_GameName, string( ), m_Map, NULL, m_HostCounter );
+
+						if( (*i)->GetPasswordHashType( ) != "pvpgn" )
+							(*i)->QueueEnterChat( );
+					}
+
+					m_CreationTime = GetTime( );
+					m_LastRefreshTime = GetTime( );
+				}
+				else
+					SendAllChat( m_GHost->m_Language->UnableToCreateGameNameTooLong( Payload ) );
 			}
 
 			//
@@ -1599,40 +1605,42 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "pub" && !Payload.empty( ) && !m_CountDownStarted && !m_SaveGame )
 			{
-				m_MessageWasCommand = true;
-				CONSOLE_Print( "[GAME: " + m_GameName + "] trying to rehost as public game [" + Payload + "]" );
-				SendAllChat( m_GHost->m_Language->TryingToRehostAsPublicGame( Payload ) );
-				m_GameState = GAME_PUBLIC;
-				m_LastGameName = m_GameName;
-				m_GameName = Payload;
-				m_HostCounter = m_GHost->m_HostCounter++;
-				m_RefreshError = false;
-				m_RefreshRehosted = true;
-
-				for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+				if( Payload.length() < 31 )
 				{
-					// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
-					// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
-					// we assume this won't happen very often since the only downside is a potential false positive
+					CONSOLE_Print( "[GAME: " + m_GameName + "] trying to rehost as public game [" + Payload + "]" );
+					SendAllChat( m_GHost->m_Language->TryingToRehostAsPublicGame( Payload ) );
+					m_GameState = GAME_PUBLIC;
+					m_LastGameName = m_GameName;
+					m_GameName = Payload;
+					m_HostCounter = m_GHost->m_HostCounter++;
+					m_RefreshError = false;
+					m_RefreshRehosted = true;
 
-					(*i)->UnqueueGameRefreshes( );
-					(*i)->QueueGameUncreate( );
-					(*i)->QueueEnterChat( );
+					for( vector<CBNET *> :: iterator i = m_GHost->m_BNETs.begin( ); i != m_GHost->m_BNETs.end( ); i++ )
+					{
+						// unqueue any existing game refreshes because we're going to assume the next successful game refresh indicates that the rehost worked
+						// this ignores the fact that it's possible a game refresh was just sent and no response has been received yet
+						// we assume this won't happen very often since the only downside is a potential false positive
 
-					// the game creation message will be sent on the next refresh
+						(*i)->UnqueueGameRefreshes( );
+						(*i)->QueueGameUncreate( );
+						(*i)->QueueEnterChat( );
+
+						// the game creation message will be sent on the next refresh
+					}
+
+					m_CreationTime = GetTime( );
+					m_LastRefreshTime = GetTime( );
 				}
-
-				m_CreationTime = GetTime( );
-				m_LastRefreshTime = GetTime( );
+				else
+					SendAllChat( m_GHost->m_Language->UnableToCreateGameNameTooLong( Payload ) );
 			}
-
 			//
 			// !REFRESH (turn on or off refresh messages)
 			//
 
 			if( Command == "refresh" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				if( Payload == "on" )
 				{
 					SendAllChat( m_GHost->m_Language->RefreshMessagesEnabled( ) );
@@ -1663,7 +1671,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "sendlan" && !Payload.empty( ) && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				// extract the ip and the port
 				// e.g. "1.2.3.4 6112" -> ip: "1.2.3.4", port: "6112"
 
@@ -1680,6 +1687,15 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					CONSOLE_Print( "[GAME: " + m_GameName + "] bad inputs to sendlan command" );
 				else
 				{
+					// construct a fixed host counter which will be used to identify players from this "realm" (i.e. LAN)
+					// the fixed host counter's 4 most significant bits will contain a 4 bit ID (0-15)
+					// the rest of the fixed host counter will contain the 28 least significant bits of the actual host counter
+					// since we're destroying 4 bits of information here the actual host counter should not be greater than 2^28 which is a reasonable assumption
+					// when a player joins a game we can obtain the ID from the received host counter
+					// note: LAN broadcasts use an ID of 0, battle.net refreshes use an ID of 1-10, the rest are unused
+
+					uint32_t FixedHostCounter = m_HostCounter & 0x0FFFFFFF;
+
 					// we send 12 for SlotsTotal because this determines how many PID's Warcraft 3 allocates
 					// we need to make sure Warcraft 3 allocates at least SlotsTotal + 1 but at most 12 PID's
 					// this is because we need an extra PID for the virtual host player (but we always delete the virtual host player when the 12th person joins)
@@ -1689,31 +1705,26 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					// so if we try to send accurate numbers it'll always be off by one and results in Warcraft 3 assuming the game is full when it still needs one more player
 					// the easiest solution is to simply send 12 for both so the game will always show up as (1/12) players
 
-					BYTEARRAY MapGameType;
-
-					// construct the correct W3GS_GAMEINFO packet
-
 					if( m_SaveGame )
 					{
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 2 );
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 0 );
+						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
+
+						uint32_t MapGameType = MAPGAMETYPE_SAVEDGAME;
 						BYTEARRAY MapWidth;
 						MapWidth.push_back( 0 );
 						MapWidth.push_back( 0 );
 						BYTEARRAY MapHeight;
 						MapHeight.push_back( 0 );
 						MapHeight.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_LANWar3Version, MapGameType, m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, m_HostCounter ) );
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), MapWidth, MapHeight, m_GameName, "Varlock", GetTime( ) - m_CreationTime, "Save\\Multiplayer\\" + m_SaveGame->GetFileNameNoPath( ), m_SaveGame->GetMagicNumber( ), 12, 12, m_HostPort, FixedHostCounter, m_EntryKey ) );
 					}
 					else
 					{
-						MapGameType.push_back( m_Map->GetMapGameType( ) );
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 0 );
-						MapGameType.push_back( 0 );
-						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_LANWar3Version, MapGameType, m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, m_HostCounter ) );
+						// note: the PrivateGame flag is not set when broadcasting to LAN (as you might expect)
+						// note: we do not use m_Map->GetMapGameType because none of the filters are set when broadcasting to LAN (also as you might expect)
+
+						uint32_t MapGameType = MAPGAMETYPE_UNKNOWN0;
+						m_GHost->m_UDPSocket->SendTo( IP, Port, m_Protocol->SEND_W3GS_GAMEINFO( m_GHost->m_TFT, m_GHost->m_LANWar3Version, UTIL_CreateByteArray( MapGameType, false ), m_Map->GetMapGameFlags( ), m_Map->GetMapWidth( ), m_Map->GetMapHeight( ), m_GameName, "Varlock", GetTime( ) - m_CreationTime, m_Map->GetMapPath( ), m_Map->GetMapCRC( ), 12, 12, m_HostPort, FixedHostCounter, m_EntryKey ) );
 					}
 				}
 			}
@@ -1724,7 +1735,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "sp" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->ShufflingPlayers( ) );
 				ShuffleSlots( );
 			}
@@ -1735,7 +1745,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "start" && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				// if the player sent "!start force" skip the checks and start the countdown
 				// otherwise check that the game is ready to start
 
@@ -1743,7 +1752,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					StartCountDown( true );
 				else
 				{
-					if( GetTicks( ) >= m_LastPlayerLeaveTicks + 2000 )
+					if( GetTicks( ) - m_LastPlayerLeaveTicks >= 2000 )
 						StartCountDown( false );
 					else
 						SendAllChat( m_GHost->m_Language->CountDownAbortedSomeoneLeftRecently( ) );
@@ -1756,7 +1765,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "swap" && !Payload.empty( ) && !m_GameLoading && !m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				uint32_t SID1;
 				uint32_t SID2;
 				stringstream SS;
@@ -1787,7 +1795,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "synclimit" )
 			{
-				m_MessageWasCommand = true;
 				if( Payload.empty( ) )
 					SendAllChat( m_GHost->m_Language->SyncLimitIs( UTIL_ToString( m_SyncLimit ) ) );
 				else
@@ -1809,16 +1816,12 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				}
 			}
 
-
 			//
 			// !UNHOST
 			//
 
 			if( Command == "unhost" && !m_CountDownStarted )
-			{
-				m_MessageWasCommand = true;
 				m_Exiting = true;
-			}
 
 			//
 			// !UNLOCK
@@ -1826,7 +1829,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "unlock" && ( RootAdminCheck || IsOwner( User ) ) )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->GameUnlocked( ) );
 				m_Locked = false;
 			}
@@ -1837,7 +1839,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "unmute" )
 			{
-				m_MessageWasCommand = true;
 				CGamePlayer *LastMatch = NULL;
 				uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
 
@@ -1858,7 +1859,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "unmuteall" && m_GameLoaded )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->GlobalChatUnmuted( ) );
 				m_MuteAll = false;
 			}
@@ -1869,7 +1869,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "virtualhost" && !Payload.empty( ) && Payload.size( ) <= 15 && !m_CountDownStarted )
 			{
-				m_MessageWasCommand = true;
 				DeleteVirtualHost( );
 				m_VirtualHostName = Payload;
 			}
@@ -1880,12 +1879,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 			if( Command == "votecancel" && !m_KickVotePlayer.empty( ) )
 			{
-				m_MessageWasCommand = true;
 				SendAllChat( m_GHost->m_Language->VoteKickCancelled( m_KickVotePlayer ) );
 				m_KickVotePlayer.clear( );
 				m_StartedKickVoteTime = 0;
-				m_StartedVoteEndTime = 0;
-				m_VoteEndInProgress = false;
 			}
 
 			//
@@ -1912,144 +1908,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 				HideCommand = true;
 			}
-
-			//
-			// !normalcountdown
-			//
-
-			if ( Command == "normalcountdown" && !Payload.empty( ) )
-			{
-				m_MessageWasCommand = true;
-				if ( Payload == "on" )
-				{				
-					m_GHost->m_UseNormalCountDown = true;
-					SendAllChat("Normal WC3 countdown enabled");
-				}
-				else if ( Payload == "off" )
-				{
-					m_GHost->m_UseNormalCountDown = false;
-					SendAllChat("Normal WC3 countdown disabled");
-				}
-			}
-			
-			
-			//
-			// !statsobserver
-			//
-			
-			if ( ( Command == "statsanalyze" || Command == "stata" ) && m_GameLoaded && !Payload.empty())
-			{
-				
-				m_MessageWasCommand = true;
-				uint32_t ValueInt = UTIL_ToUInt32(Payload);
-				string Name;
-				
-				if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
-				{
-					CDBDotAPlayer *Player = m_Stats->GetPlayerStats(ValueInt);
-					
-					if (Player)
-					{
-						string Name;
-						if (Player->GetName().empty())
-						{
-							for ( vector<CDBGamePlayer *> :: iterator it = m_DBGamePlayers.begin( ); it != m_DBGamePlayers.end( ); it++ )
-							{
-								if ( ValueInt == (*it)->GetColour( ) )
-								{
-									Name = (*it)->GetName();
-									break;
-								}
-							}
-						}
-						SendAllChat("Player [ " + Name + " ] with colour " + UTIL_ToString(ValueInt) + " has K/D of " + UTIL_ToString(Player->GetKills()) + "/" + UTIL_ToString(Player->GetDeaths()) + " and a T/R/C of " + UTIL_ToString(Player->GetTowerKills()) + "/" + UTIL_ToString(Player->GetRaxKills()) + "/" + UTIL_ToString(Player->GetCourierKills()));
-					}
-					else
-						SendAllChat( "Player with colour " + UTIL_ToString(ValueInt) + " not found." );
-				}
-				else
-				{
-					SendAllChat("Please specify which player-color to analyze. Valid colours are: 1-5 and 6-11.");
-				}
-				
-			}
-			
-			//
-			// !allow
-			//
-			
-			if ( Command == "allow" && !m_GameLoaded && !Payload.empty())
-			{
-				m_MessageWasCommand = true;
-				transform( Payload.begin( ), Payload.end( ), Payload.begin( ), (int(*)(int))toupper );
-				
-				if ( Payload == "ALL")
-				{
-					m_GHost->m_ApprovedCountries.erase();
-				}
-				else if ( Payload.length() % 2 == 0 )
-				{
-                	
-					m_GHost->m_ApprovedCountries = Payload;
-					SendAllChat("Allowing countries: " + Payload);
-					
-				}
-				else
-					SendAllChat("Error! Country-codes is 2 characters each, u have given an uneven length string.");
-			}
-			
-			//
-			// !scorelimit
-			//
-
-			if( Command == "minscore" && !m_CountDownStarted && !m_GameLoaded )
-			{
-				m_MessageWasCommand = true;
-				if( !Payload.empty( ) )
-				{
-					uint32_t score = UTIL_ToUInt32(Payload);
-					m_MinimumScore = score;
-					SendAllChat( "Minimum required score set to: " + Payload );
-				}
-				else
-					SendAllChat( "Minimum required score: " + UTIL_ToString(m_MinimumScore, 0) );
-			}
-			
-			if( Command == "maxscore" && !m_CountDownStarted && !m_GameLoaded )
-			{
-				m_MessageWasCommand = true;
-				if( !Payload.empty( ) )
-				{
-					uint32_t score = UTIL_ToUInt32(Payload);
-					m_MaximumScore = score;
-					SendAllChat( "Maximum required score set to: " + Payload );
-				}
-				else
-					SendAllChat( "Maximum required score: " + UTIL_ToString(m_MaximumScore, 0) );
-			}
-			
-			if ( Command == "checkvotes" && m_GameLoaded)
-			{
-				uint32_t Votes = 0;
-				
-				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-				{
-					if( (*i)->GetEndVote( ) )
-						Votes++;
-				}
-				SendAllChat("Current registered end-votes: " + UTIL_ToString(Votes));
-			}
-			
-			if ( Command == "checkteams" && m_GameLoaded)
-			{
-				for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-					SendChat(player, (*i)->GetName() + " : team " + UTIL_ToString((*i)->GetTeam()));		
-			}
-			if ( Command == "allowff" && m_GameLoaded)
-			{
-				m_ForfeitDelayTime = GetTime();
-			}
-			
 		}
 		else
 		{
@@ -2068,47 +1926,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	/*********************
 	* NON ADMIN COMMANDS *
 	*********************/
-
-	if( Command == "top10" )
-	{
-		uint32_t Count = 0;
-		string Line;
-		ifstream in;
-
-		Count = 0;
-		Line = "";
-
-		in.open( "league/top10.txt" );
-
-		if( !in.fail( ) )
-		{
-			// don't print more than 2 line1
-
-			while( !in.eof( ) && Count < 2 )
-			{
-				getline( in, Line );
-
-				if( !Line.empty( ) )
-					SendAllChat( Line );
-
-				Count++;
-			}
-
-			in.close( );
-		}
-		else
-		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] Failed to open league/top10.txt!" );
-		}
-	}
-
+	
 	//
 	// !CHECKBALANCE / !CB
 	//
 
 	if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
 	{
-		m_MessageWasCommand = true;
         for( unsigned char i = 0; i < 12; i++ )
         {
             bool TeamHasPlayers = false;
@@ -2141,229 +1965,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		}
 	}
 
-
 	//
 	// !CHECKME
 	//
 
 	if( Command == "checkme" )
-	{
-		m_MessageWasCommand = true;
 		SendChat( player, m_GHost->m_Language->CheckedPlayer( User, player->GetNumPings( ) > 0 ? UTIL_ToString( player->GetPing( m_GHost->m_LCPings ) ) + "ms" : "N/A", m_GHost->m_DBLocal->FromCheck( UTIL_ByteArrayToUInt32( player->GetExternalIP( ), true ) ), AdminCheck || RootAdminCheck ? "Yes" : "No", IsOwner( User ) ? "Yes" : "No", player->GetSpoofed( ) ? "Yes" : "No", player->GetSpoofedRealm( ).empty( ) ? "N/A" : player->GetSpoofedRealm( ), player->GetReserved( ) ? "Yes" : "No" ) );
-	}
 
-    //
-    // !REPORT
-    //
-/*
-    if( Command == "report" )
-    {
-		m_MessageWasCommand = true;
-            if( !Payload.empty( ) )
-            {
-                    SendChat( player, "Your report has been submitted. An administrator will view it soon.");
-                    CONSOLE_ReportPrint( Payload, User );
-                    CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Payload + "]. It was added to report.log." );
-            }
-    } */
-
-	if( Command == "report" && !Payload.empty( ) )
-	{
-		m_MessageWasCommand = true;
-		string Victim;
-		string Reason;
-		
-		stringstream SS;
-		SS << Payload;
-		SS >> Victim;
-
-		if( SS.fail( ) || Victim.empty() )
-			SendChat( player, "Error, no player specified to report. Usage: !report Player Reason for report" );
-		else
-		{
-			
-			CGamePlayer *LastMatch = NULL;
-			uint32_t Matches = GetPlayerFromNamePartial( Victim, &LastMatch );
-
-			if( Matches == 0 )
-				SendChat( player, "Error no match for player [" + Victim + "]" );
-			else if( Matches == 1 )
-			{
-				if (!SS.eof())
-				{
-					// we got a reason, submit the report
-
-					getline( SS, Reason );
-					string :: size_type Start = Reason.find_first_not_of( " " );
-
-					if( Start != string :: npos )
-						Reason = Reason.substr( Start );
-						
-					SendAllChat( "[REPORT] user [" + User + "] reported [" + Victim + "] with reason [" + Reason + "]" );
-						
-					CONSOLE_Print( "[REPORT] user [" + User + "] reported [" + Victim + "]. It was added to report.log." );
-					
-					// ThreadedReportAdd or use DotaEventAdd(NL_REPORT, reporter, victim, reportercolor, victimcolour) or whatever
-
-
-				}
-				else
-				{
-					// no reason specified, cannot submit a report without a reason
-					SendChat( player, "Error, no reason specified. Usage: !report Player Reason for report" );
-				}
-			}
-			else
-				SendChat( player, "Error found more than one match for player [" + Victim + "]" );
-		}
-	}
-
-
-	//
-	// !STATS
-	//
-
-	if( (Command == "stats" || Command == "s") && GetTime( ) >= player->GetStatsSentTime( ) + 5 )
-	{
-		m_MessageWasCommand = true;
-		string StatsUser = User;
-
-		if( !Payload.empty( ) )
-			StatsUser = Payload;
-			
-		CGamePlayer *LastMatch = NULL;
-		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
-
-		if( Matches > 1 )
-			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
-		else
-		{
-			if (LastMatch)
-				StatsUser = LastMatch->GetName();
-
-			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-				m_PairedGPSChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
-			else
-				m_PairedGPSChecks.push_back( PairedGPSCheck( User, m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
-				
-			player->SetStatsSentTime( GetTime( ) );
-		}
-	}
-
-	//
-	// !STATSDOTA
-	//
-
-	if( (Command == "statsdota" || Command == "sd" ) && GetTime( ) >= player->GetStatsDotASentTime( ) + 5 )
-	{
-		m_MessageWasCommand = true;
-		string StatsUser = User;
-
-		if( !Payload.empty( ) )
-			StatsUser = Payload;
-			
-		CGamePlayer *LastMatch = NULL;
-		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
-
-		if( Matches > 1 )
-			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
-		else
-		{
-			if (LastMatch)
-				StatsUser = LastMatch->GetName();
-
-			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-				m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
-			else
-				m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
-				
-			player->SetStatsDotASentTime( GetTime( ) );
-		}	
-	}
-
-	//
-	// !VERSION
-	//
-
-	if( Command == "version" )
-	{
-		m_MessageWasCommand = true;
-		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
-			SendChat( player, m_GHost->m_Language->VersionAdmin( m_GHost->m_Version ) );
-		else
-			SendChat( player, m_GHost->m_Language->VersionNotAdmin( m_GHost->m_Version ) );
-	}
-
-	//
-	// !VOTEKICK
-	//
-
-	if( Command == "votekick" && m_GHost->m_VoteKickAllowed && !Payload.empty( ) )
-	{
-		m_MessageWasCommand = true;
-		if( !m_KickVotePlayer.empty( ) )
-			SendChat( player, m_GHost->m_Language->UnableToVoteKickAlreadyInProgress( ) );
-		else if( m_Players.size( ) == 2 )
-			SendChat( player, m_GHost->m_Language->UnableToVoteKickNotEnoughPlayers( ) );
-		else
-		{
-			CGamePlayer *LastMatch = NULL;
-			uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
-
-			if( Matches == 0 )
-				SendChat( player, m_GHost->m_Language->UnableToVoteKickNoMatchesFound( Payload ) );
-			else if( Matches == 1 )
-			{
-				if( LastMatch->GetReserved( ) )
-					SendChat( player, m_GHost->m_Language->UnableToVoteKickPlayerIsReserved( LastMatch->GetName( ) ) );
-				else
-				{
-					m_KickVotePlayer = LastMatch->GetName( );
-					m_StartedKickVoteTime = GetTime( );
-					m_VoteEndInProgress = false;
-
-					for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-						(*i)->SetKickVote( false );
-
-					player->SetKickVote( true );
-					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] started by player [" + User + "]" );
-					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, UTIL_ToString( (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
-					SendAllChat( m_GHost->m_Language->TypeYesToVote( string( 1, m_GHost->m_CommandTrigger ) ) );
-				}
-			}
-			else
-				SendChat( player, m_GHost->m_Language->UnableToVoteKickFoundMoreThanOneMatch( Payload ) );
-		}
-	}
-	
-	//
-	// !VOTEEND
-	//
-
-	if( Command == "voteend" && m_GHost->m_VoteEndAllowed && m_GameLoaded )
-	{
-		m_MessageWasCommand = true;
-		if( !m_KickVotePlayer.empty( ) )
-			SendChat( player, "Unable to start end-vote, a kick-vote is in progress." );
-		else if( m_VoteEndInProgress )
-			SendChat( player, m_GHost->m_Language->UnableToVoteEndAlreadyInProgress( ) );
-		else if( m_Players.size( ) == 2 )
-			SendChat( player, m_GHost->m_Language->UnableToVoteEndNotEnoughPlayers( ) );
-		else
-		{
-			m_VoteEndInProgress = true;
-			m_StartedVoteEndTime = GetTime( );
-
-			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-				(*i)->SetEndVote( false );
-
-			player->SetEndVote( true );
-			CONSOLE_Print( "[GAME: " + m_GameName + "] voteend started by player [" + User + "]" );
-			SendAllChat( m_GHost->m_Language->StartedVoteEnd( User, UTIL_ToString( (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteEndPercentage / 100 ) - 1 ) ) );
-			SendAllChat( m_GHost->m_Language->TypeYesToVote( string( 1, m_GHost->m_CommandTrigger ) ) );
-		}
-
-	}
 
 	//
 	// !ff
@@ -2375,7 +1983,6 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			NordicLeague - @begin - We got a forfeit request going on.
 			todo: move all outputs to the language class for multilingual support
 		*/
-		m_MessageWasCommand = true;
 		
 		if (m_ForfeitDelayTime > GetTime())
 		{
@@ -2397,12 +2004,16 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				if (player->GetTeam() == m_FFTeam && !player->GetFFVote())
 				{
 					player->SetFFVote(true);
-				
+					m_FFVotesNeeded = 0;
 					uint32_t Votes = 0;
 					for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 					{
-						if ((*i)->GetTeam() == m_FFTeam && (*i)->GetFFVote())
-							Votes++;
+						if ((*i)->GetTeam() == m_FFTeam)
+						{
+							m_FFVotesNeeded++;
+							if ( (*i)->GetFFVote() )
+								Votes++;
+						}
 					}
 				
 					SendAllChat(player->GetName() + " has voted to forfeit the game. " + UTIL_ToString(Votes) + "/" + UTIL_ToString(m_FFVotesNeeded));
@@ -2471,94 +2082,163 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			}
 		}
 	}
-	
+
+	//
+	// !STATS
+	//
+
+	if( (Command == "stats" || Command == "s") && GetTime( ) >= player->GetStatsSentTime( ) + 5 )
+	{
+		string StatsUser = User;
+
+		if( !Payload.empty( ) )
+			StatsUser = Payload;
+			
+		CGamePlayer *LastMatch = NULL;
+		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
+
+		if( Matches > 1 )
+			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
+		else
+		{
+			if (LastMatch)
+				StatsUser = LastMatch->GetName();
+
+			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+				m_PairedGPSChecks.push_back( PairedGPSCheck( string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+			else
+				m_PairedGPSChecks.push_back( PairedGPSCheck( User, m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+				
+			player->SetStatsSentTime( GetTime( ) );
+		}
+	}
+
+	//
+	// !STATSDOTA
+	//
+
+	if( (Command == "statsdota" || Command == "sd" ) && GetTime( ) >= player->GetStatsDotASentTime( ) + 5 )
+	{
+		string StatsUser = User;
+
+		if( !Payload.empty( ) )
+			StatsUser = Payload;
+			
+		CGamePlayer *LastMatch = NULL;
+		uint32_t Matches = GetPlayerFromNamePartial( StatsUser, &LastMatch );
+
+		if( Matches > 1 )
+			SendAllChat( m_GHost->m_Language->UnableToStatsMoreThanOneMatch( StatsUser ) );
+		else
+		{
+			if (LastMatch)
+				StatsUser = LastMatch->GetName();
+
+			if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+				m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
+			else
+				m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
+				
+			player->SetStatsDotASentTime( GetTime( ) );
+		}	
+	}
+
+	//
+	// !VERSION
+	//
+
+	if( Command == "version" )
+	{
+		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+			SendChat( player, m_GHost->m_Language->VersionAdmin( m_GHost->m_Version ) );
+		else
+			SendChat( player, m_GHost->m_Language->VersionNotAdmin( m_GHost->m_Version ) );
+	}
+
+	//
+	// !VOTEKICK
+	//
+
+	if( Command == "votekick" && m_GHost->m_VoteKickAllowed && !Payload.empty( ) )
+	{
+		if( !m_KickVotePlayer.empty( ) )
+			SendChat( player, m_GHost->m_Language->UnableToVoteKickAlreadyInProgress( ) );
+		else if( m_Players.size( ) == 2 )
+			SendChat( player, m_GHost->m_Language->UnableToVoteKickNotEnoughPlayers( ) );
+		else
+		{
+			CGamePlayer *LastMatch = NULL;
+			uint32_t Matches = GetPlayerFromNamePartial( Payload, &LastMatch );
+
+			if( Matches == 0 )
+				SendChat( player, m_GHost->m_Language->UnableToVoteKickNoMatchesFound( Payload ) );
+			else if( Matches == 1 )
+			{
+				if( LastMatch->GetReserved( ) )
+					SendChat( player, m_GHost->m_Language->UnableToVoteKickPlayerIsReserved( LastMatch->GetName( ) ) );
+				else
+				{
+					m_KickVotePlayer = LastMatch->GetName( );
+					m_StartedKickVoteTime = GetTime( );
+
+					for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+						(*i)->SetKickVote( false );
+
+					player->SetKickVote( true );
+					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] started by player [" + User + "]" );
+					SendAllChat( m_GHost->m_Language->StartedVoteKick( LastMatch->GetName( ), User, UTIL_ToString( (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 ) - 1 ) ) );
+					SendAllChat( m_GHost->m_Language->TypeYesToVote( string( 1, m_GHost->m_CommandTrigger ) ) );
+				}
+			}
+			else
+				SendChat( player, m_GHost->m_Language->UnableToVoteKickFoundMoreThanOneMatch( Payload ) );
+		}
+	}
+
 	//
 	// !YES
 	//
 
-	if( Command == "yes" ) 
+	if( Command == "yes" && !m_KickVotePlayer.empty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
 	{
-		
-		/*
-			NordicLeague - @begin - We got a vote going on.
-		*/
-		
-		if (!m_KickVotePlayer.empty( ) && player->GetName( ) != m_KickVotePlayer && !player->GetKickVote( ) )
+		player->SetKickVote( true );
+		uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
+		uint32_t Votes = 0;
+
+		for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 		{
+			if( (*i)->GetKickVote( ) )
+				Votes++;
+		}
 
-			// so we got a kickvote going.
-			
-			m_MessageWasCommand = true;
-			player->SetKickVote( true );
-			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteKickPercentage / 100 );
-			uint32_t Votes = 0;
+		if( Votes >= VotesNeeded )
+		{
+			CGamePlayer *Victim = GetPlayerFromName( m_KickVotePlayer, true );
 
-			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			if( Victim )
 			{
-				if( (*i)->GetKickVote( ) )
-					Votes++;
-			}
+				Victim->SetDeleteMe( true );
+				Victim->SetLeftReason( m_GHost->m_Language->WasKickedByVote( ) );
 
-			if( Votes >= VotesNeeded )
-			{
-				CGamePlayer *Victim = GetPlayerFromName( m_KickVotePlayer, true );
-
-				if( Victim )
-				{
-					Victim->SetDeleteMe( true );
-					Victim->SetLeftReason( m_GHost->m_Language->WasKickedByVote( ) );
-
-					if( !m_GameLoading && !m_GameLoaded )
-						Victim->SetLeftCode( PLAYERLEAVE_LOBBY );
-					else
-						Victim->SetLeftCode( PLAYERLEAVE_LOST );
-
-					if( !m_GameLoading && !m_GameLoaded )
-						OpenSlot( GetSIDFromPID( Victim->GetPID( ) ), false );
-
-					CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
-					SendAllChat( m_GHost->m_Language->VoteKickPassed( m_KickVotePlayer ) );
-				}
+				if( !m_GameLoading && !m_GameLoaded )
+					Victim->SetLeftCode( PLAYERLEAVE_LOBBY );
 				else
-					SendAllChat( m_GHost->m_Language->ErrorVoteKickingPlayer( m_KickVotePlayer ) );
+					Victim->SetLeftCode( PLAYERLEAVE_LOST );
 
-				m_KickVotePlayer.clear( );
-				m_StartedKickVoteTime = 0;
+				if( !m_GameLoading && !m_GameLoaded )
+					OpenSlot( GetSIDFromPID( Victim->GetPID( ) ), false );
+
+				CONSOLE_Print( "[GAME: " + m_GameName + "] votekick against player [" + m_KickVotePlayer + "] passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
+				SendAllChat( m_GHost->m_Language->VoteKickPassed( m_KickVotePlayer ) );
 			}
 			else
-				SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );
+				SendAllChat( m_GHost->m_Language->ErrorVoteKickingPlayer( m_KickVotePlayer ) );
+
+			m_KickVotePlayer.clear( );
+			m_StartedKickVoteTime = 0;
 		}
-		else if (m_GameLoaded && m_VoteEndInProgress && m_KickVotePlayer.empty( ) && m_GHost->m_VoteEndAllowed)
-		{
-			
-			// so we got a endvote going
-			
-			uint32_t VotesNeeded = (uint32_t)ceil( ( GetNumHumanPlayers( ) - 1 ) * (float)m_GHost->m_VoteEndPercentage / 100 );
-			uint32_t Votes = 0;
-			
-			player->SetEndVote( true );
-
-			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-			{
-				if( (*i)->GetEndVote( ) )
-					Votes++;
-			}
-
-
-			if( Votes >= VotesNeeded )
-			{
-				CONSOLE_Print( "[GAME: " + m_GameName + "] voteend passed with " + UTIL_ToString( Votes ) + "/" + UTIL_ToString( GetNumHumanPlayers( ) ) + " votes" );
-				SendAllChat( m_GHost->m_Language->VoteEndPassed( )  );
-				
-				m_VoteEndInProgress = false;
-				m_StartedVoteEndTime = 0;
-				
-				StopPlayers( "was disconnected (voteend succeeded)" );
-				
-			}
-			else
-				SendAllChat( m_GHost->m_Language->VoteEndAcceptedNeedMoreVotes( User, UTIL_ToString( VotesNeeded - Votes ) ) );
-		}
+		else
+			SendAllChat( m_GHost->m_Language->VoteKickAcceptedNeedMoreVotes( m_KickVotePlayer, User, UTIL_ToString( VotesNeeded - Votes ) ) );
 	}
 
 	return HideCommand;
@@ -2574,7 +2254,7 @@ void CGame :: EventGameStarted( )
 	// so we create a "potential ban" for each player and only store it in the database if requested to by an admin
 
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
-		m_DBBans.push_back( new CDBBan( (*i)->GetJoinedRealm( ), (*i)->GetName( ), (*i)->GetExternalIPString( ), string( ), string( ), string( ), string( ), 0 ) );
+		m_DBBans.push_back( new CDBBan( (*i)->GetJoinedRealm( ), (*i)->GetName( ), (*i)->GetExternalIPString( ), string( ), string( ), string( ), string( ) ) );
 }
 
 bool CGame :: IsGameDataSaved( )

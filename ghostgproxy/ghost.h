@@ -23,15 +23,14 @@
 
 #include "includes.h"
 
-// custom functions
-void CONSOLE_RequestPrint( string message,string user );
-void CONSOLE_ReportPrint( string message,string user );
-
 //
 // CGHost
 //
 
 class CUDPSocket;
+class CTCPServer;
+class CTCPSocket;
+class CGPSProtocol;
 class CCRC32;
 class CSHA1;
 class CBNET;
@@ -48,6 +47,9 @@ class CGHost
 {
 public:
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
+	CTCPServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
+	vector<CTCPSocket *> m_ReconnectSockets;// vector of sockets attempting to reconnect (connected but not identified yet)
+	CGPSProtocol *m_GPSProtocol;
 	CCRC32 *m_CRC;							// for calculating CRC's
 	CSHA1 *m_SHA;							// for calculating SHA1's
 	vector<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
@@ -78,11 +80,16 @@ public:
 	bool m_AutoHostMatchMaking;
 	double m_AutoHostMinimumScore;
 	double m_AutoHostMaximumScore;
+	bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)
 	uint32_t m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
 	string m_LanguageFile;					// config value: language file
 	string m_Warcraft3Path;					// config value: Warcraft 3 path
+	bool m_TFT;								// config value: TFT enabled or not
 	string m_BindAddress;					// config value: the address to host games on
 	uint16_t m_HostPort;					// config value: the port to host games on
+	bool m_Reconnect;						// config value: GProxy++ reliable reconnects enabled or not
+	uint16_t m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
+	uint32_t m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
 	uint32_t m_MaxGames;					// config value: maximum number of games in progress
 	char m_CommandTrigger;					// config value: the command trigger inside games
 	string m_MapCFGPath;					// config value: map cfg path
@@ -95,6 +102,7 @@ public:
 	bool m_CheckMultipleIPUsage;			// config value: check for multiple IP address usage
 	uint32_t m_SpoofChecks;					// config value: do automatic spoof checks or not
 	bool m_RequireSpoofChecks;				// config value: require spoof checks or not
+	bool m_ReserveAdmins;					// config value: consider admins to be reserved players or not
 	bool m_RefreshMessages;					// config value: display refresh messages or not (by default)
 	bool m_AutoLock;						// config value: auto lock games when the owner is present
 	bool m_AutoSave;						// config value: auto save before someone disconnects
@@ -115,46 +123,45 @@ public:
 	string m_MOTDFile;						// config value: motd.txt
 	string m_GameLoadedFile;				// config value: gameloaded.txt
 	string m_GameOverFile;					// config value: gameover.txt
-	bool m_UseRegexes;						// config value: use regular expressions or not
+	bool m_LocalAdminMessages;				// config value: send local admin messages or not
 	bool m_AdminGameCreate;					// config value: create the admin game or not
 	uint16_t m_AdminGamePort;				// config value: the port to host the admin game on
 	string m_AdminGamePassword;				// config value: the admin game password
-	bool m_RelayCommands;					// config value: if the bot commands should be relayed
 	string m_AdminGameMap;					// config value: the admin game map config to use
-	string m_ApprovedCountries;				// custom value: approved countries 
 	unsigned char m_LANWar3Version;			// config value: LAN warcraft 3 version
 	uint32_t m_ReplayWar3Version;			// config value: replay warcraft 3 version (for saving replays)
 	uint32_t m_ReplayBuildNumber;			// config value: replay build number (for saving replays)
 	bool m_TCPNoDelay;						// config value: use Nagle's algorithm or not
 	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
-	bool m_UseNormalCountDown;				// config value: use normal wc3 countdown
-
+	
+	
 	/*
 		NordicLeague - @begin - define our config variables
 	*/
+	string 		m_ApprovedCountries;			// custom value: approved countries 
+	bool 		m_DisplayAdminInGameMessage;	// config value: Display a message that admins are present in the game when game is loaded.
+	string 		m_DisplayAdminInGameFile;		// config value: adminingame.txt
+	bool 		m_SendDownloadLink;				// config value: send a download link if map downloads are disabled
+	string 		m_MapDownloadLink;				// config value: the download link to send
+	string 		m_RegisterEmailRegEx;
+	bool		m_AdminCanAlwaysJoin;			// config value: should we kick a non-reserved player to make room for admins?
+	bool		m_EnforceBalance;				// config value: force balance before gamestart?
+	bool		m_VoteEndAllowed;				// config value: do we allow !voteend ?
+	uint32_t 	m_VoteEndPercentage;			// config value: percentage of players required to vote yes for a voteend to pass
 	
-	bool m_DisplayAdminInGameMessage;		// config value: Display a message that admins are present in the game when game is loaded.
-	string m_DisplayAdminInGameFile;		// config value: adminingame.txt
-	bool m_SendDownloadLink;				// config value: send a download link if map downloads are disabled
-	string m_MapDownloadLink;				// config value: the download link to send
-	string m_RegisterEmailRegEx;
-	bool	m_AdminCanAlwaysJoin;			// config value: should we kick a non-reserved player to make room for admins?
-	bool	m_EnforceBalance;				// config value: force balance before gamestart?
-	bool	m_VoteEndAllowed;				// config value: do we allow !voteend ?
-	uint32_t m_VoteEndPercentage;			// config value: percentage of players required to vote yes for a voteend to pass
-	
-	bool m_SafeGames;						// are we hosting safe games?
-	uint32_t m_GamesReq;					// minimum amount of games required to be able to join safe games
-	uint32_t m_StayReq;						// minimum amount of stay % to be able to join
-	bool m_EnableFF;
+	bool 		m_SafeGames;						// are we hosting safe games?
+	uint32_t 	m_GamesReq;					// minimum amount of games required to be able to join safe games
+	uint32_t 	m_StayReq;						// minimum amount of stay % to be able to join
+	bool 		m_EnableFF;
 	set<string> m_BypassEnforcer;
-	bool m_Debug;
+	bool 		m_Debug;
 	
-	void LoadEnforcerSkiplist();
+	void 		LoadEnforcerSkiplist();
 
 	/*
 		NordicLeague - @end - define our config variables
 	*/
+	
 
 	CGHost( CConfig *CFG );
 	~CGHost( );
@@ -184,9 +191,7 @@ public:
 	void SetConfigs( CConfig *CFG );
 	void ExtractScripts( );
 	void LoadIPToCountryData( );
-	bool CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper );
-	
-
+	void CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper );
 };
 
 #endif
