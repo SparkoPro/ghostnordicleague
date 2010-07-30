@@ -1974,6 +1974,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		}
 		else if (m_GameLoaded)
 		{
+			SendAllChat(m_SentinelCB);
+			SendAllChat(m_ScourgeCB);
+			/*
 	        for( unsigned char i = 1; i < 3; i++ )
 	        {
 	            bool TeamHasPlayers = false;
@@ -2000,8 +2003,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	            if( TeamHasPlayers )
 					SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
-			}
-		}
+			} */
+		} 
 	}
 
 	//
