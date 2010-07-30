@@ -4582,8 +4582,15 @@ void CBaseGame :: BalanceSlots( )
 		}
 
 		if( TeamHasPlayers )
+		{
+			if (i == 0)
+				m_SentinelCB = m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString(TeamPlayers), UTIL_ToString(TeamUnratedPlayers) );
+			else if (i == 1)
+				m_ScourgeCB = m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString(TeamPlayers), UTIL_ToString(TeamUnratedPlayers) );
+				
 			SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString(TeamPlayers), UTIL_ToString(TeamUnratedPlayers) ) );
 			//SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ) ) );
+		}
 	}
 }
 

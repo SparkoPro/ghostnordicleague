@@ -129,6 +129,9 @@ protected:
 	bool m_MatchMaking;								// if matchmaking mode is enabled
 	bool m_LocalAdminMessages;						// if local admin messages should be relayed or not
 	
+	string m_SentinelCB;
+	string m_ScourgeCB;
+	
 	/*
 		NordicLeague - @begin - Some added custom variables
 	*/
