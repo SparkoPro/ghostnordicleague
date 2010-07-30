@@ -61,7 +61,7 @@ uint32_t CGHostDB :: RegisterPlayerAdd( string name, string email, string ip )
 	return 0;
 }
 
-uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
+uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
 {
 	return 0;
 }
@@ -71,7 +71,7 @@ bool CGHostDB :: UpdateGameInfo( string name, uint32_t players, bool ispublic )
 	return false;
 }
 
-CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
+CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
 {
 	return NULL;
 }

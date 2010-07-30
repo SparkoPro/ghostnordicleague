@@ -703,9 +703,9 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	
 	// nordicleague
 
-	if( !m_CountDownStarted && !m_GameLoading && !m_GameLoaded && GetTime( ) >= m_LastGameInfoUpdateTime + 5)
+	if( !m_GameLoaded && !m_CountDownStarted && !m_GameLoading && GetTime( ) - m_LastGameInfoUpdateTime >= 10)
 	{		
-		if (m_LastGameInfoPlayers != m_Players.size() || m_LastGameInfoUpdateTime == 0 || m_LastGameInfoName != m_GameName)
+		if (m_LastGameInfoPlayers != m_Players.size())
 		{
 			m_LastGameInfoPlayers = m_Players.size();
 			
@@ -713,13 +713,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, true) );
 			else
 				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, false) );
-			
-			if (m_LastGameInfoName != m_GameName)
-			{
-				// trash the old one
-				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_LastGameInfoName, 255, false) );
-				m_LastGameInfoName = m_GameName;
-			}
 		}
 		
 		m_LastGameInfoUpdateTime = GetTime( );
@@ -1079,14 +1072,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	/*
 		NordicLeague - @begin - Expire the voteend
 	*/
-	/*
-	if( m_VoteEndInProgress && GetTime( ) >= m_StartedVoteEndTime + 60 )
-	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] voteend expired" );
-		SendAllChat( m_GHost->m_Language->VoteEndExpired( ) );
-		m_VoteEndInProgress = false;
-		m_StartedVoteEndTime = 0;
-	} */
 	
 	// expire the FF
 	if( m_FFSucceeded == false && m_FFTeam > 0 && GetTime( ) >= m_FFStartedTime + 60 )
@@ -1096,7 +1081,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		m_FFStartedTime = 0;
 	}
 	
-	if (m_FFSucceeded == true && m_FFTeam > 0 && GetTime( ) >= m_FFKickTime + 5)
+	if (m_FFSucceeded == true && m_FFTeam > 0 && GetTime( ) >= m_FFKickTime + 7)
 	{
 		if (m_Players.size( ) > 0)
 		{
@@ -1109,13 +1094,15 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 					else
 						SendChat(*i, "You have won the game by forfeited, you are now beeing disconnected.");
 
-					(*i)->SetDeleteMe( true );
+					
 					(*i)->SetLeftReason( "Team " + UTIL_ToString(m_FFTeam) + " forfeited the game." );
 					
 					if ((*i)->GetTeam() == m_FFTeam)
 						(*i)->SetLeftCode( PLAYERLEAVE_LOST );
 					else
 						(*i)->SetLeftCode( PLAYERLEAVE_WON );
+						
+					(*i)->SetDeleteMe( true );
 
 					m_FFKickTime = GetTime();
 					break;
@@ -1846,6 +1833,13 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	unsigned char SID = 255;
 	SID = GetEmptySlot( false );
 	
+	if( m_IgnoredNames.find( joinPlayer->GetName( ) ) != m_IgnoredNames.end( ) )
+	{
+		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
+		potential->SetDeleteMe( true );
+		return;
+	}
+	
 	if (SID == 255)
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but the game is full." );
@@ -2396,7 +2390,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	// check if the new player's name is the same as the virtual host name
 
-/*	if( joinPlayer->GetName( ) == m_VirtualHostName )
+	if( joinPlayer->GetName( ) == m_VirtualHostName )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game with the virtual host name" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
@@ -2406,7 +2400,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	// check if the new player's name is already taken
 
-	if( GetPlayerFromName( joinPlayer->GetName( ), false ) )
+/*	if( GetPlayerFromName( joinPlayer->GetName( ), false ) )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but that name is already taken" );
 		// SendAllChat( m_GHost->m_Language->TryingToJoinTheGameButTaken( joinPlayer->GetName( ) ) );

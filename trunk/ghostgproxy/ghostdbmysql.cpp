@@ -357,14 +357,14 @@ CCallableDotAGameAdd *CGHostDBMySQL :: ThreadedDotAGameAdd( uint32_t gameid, uin
 	return Callable;
 }
 
-CCallableDotAEventAdd *CGHostDBMySQL :: ThreadedDotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour )
+CCallableDotAEventAdd *CGHostDBMySQL :: ThreadedDotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableDotAEventAdd *Callable = new CMySQLCallableDotAEventAdd( gameid, killer, victim, kcolour, vcolour, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableDotAEventAdd *Callable = new CMySQLCallableDotAEventAdd( gameid, gamename, killer, victim, kcolour, vcolour, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -1000,11 +1000,17 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	return GamePlayerSummary;
 }
 
-uint32_t MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour )
+uint32_t MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour )
 {
 	uint32_t RowID = 0;
-	string Query = "INSERT INTO dotaevents ( killer, victim, kcolour, vcolour ) VALUES ( '" + killer + "', '" + victim + "', " + UTIL_ToString(kcolour) + ", " + UTIL_ToString(vcolour) + ")";
+	string EscGameName = MySQLEscapeString( conn, gamename );
+	string EscKiller = MySQLEscapeString( conn, killer );
+	string EscVictim = MySQLEscapeString( conn, victim );
+	string Query = "INSERT INTO dotaevents ( eventid, gamename, killer, victim, kcolour, vcolour ) VALUES ( " + UTIL_ToString(gameid) + ",'" + EscGameName + "', '" + EscKiller + "', '" + EscVictim + "', " + UTIL_ToString(kcolour) + ", " + UTIL_ToString(vcolour) + ")";
+	string DebugQuery = "VALUES ( " + UTIL_ToString(gameid) + ",'" + EscGameName + "', '" + EscKiller + "', '" + EscVictim + "', " + UTIL_ToString(kcolour) + ", " + UTIL_ToString(vcolour) + ")";
 
+	CONSOLE_Print( "[DOTAEVENT] Insert: " + DebugQuery );
+	
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
 	else
@@ -1516,7 +1522,7 @@ void CMySQLCallableDotAEventAdd :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLDotAEventAdd( m_Connection, &m_Error, m_GameID, m_Killer, m_Victim, m_KillerColour, m_VictimColour );
+		m_Result = MySQLDotAEventAdd( m_Connection, &m_Error, m_GameID, m_GameName, m_Killer, m_Victim, m_KillerColour, m_VictimColour );
 
 	Close( );
 }

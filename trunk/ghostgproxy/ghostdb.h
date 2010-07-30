@@ -114,8 +114,8 @@ public:
 	virtual uint32_t RegisterPlayerAdd( string name, string email, string ip );
 	virtual CCallableRegisterPlayerAdd *ThreadedRegisterPlayerAdd( string name, string email, string ip );
 	
-	virtual uint32_t DotAEventAdd( uint32_t gameid, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
-	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
+	virtual uint32_t DotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
+	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string gamename, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
 	
 	// Keep track of current games in database for channel/website info
 		
@@ -453,6 +453,7 @@ class CCallableDotAEventAdd : virtual public CBaseCallable
 {
 protected:
 	uint32_t m_GameID;
+	string	 m_GameName;
 	string 	 m_Killer;
 	string 	 m_Victim;
 	uint32_t m_Result;
@@ -460,7 +461,7 @@ protected:
 	uint32_t m_VictimColour;
 
 public:
-	CCallableDotAEventAdd( uint32_t nGameID, string nKiller, string nVictim, uint32_t kcolour, uint32_t vcolour ) : CBaseCallable( ), m_GameID( nGameID), m_Killer( nKiller ), m_Victim( nVictim ), m_KillerColour( kcolour ), m_VictimColour( vcolour ), m_Result( 0 ) { }
+	CCallableDotAEventAdd( uint32_t nGameID, string nGameName, string nKiller, string nVictim, uint32_t kcolour, uint32_t vcolour ) : CBaseCallable( ), m_GameID( nGameID), m_GameName( nGameName ), m_Killer( nKiller ), m_Victim( nVictim ), m_KillerColour( kcolour ), m_VictimColour( vcolour ), m_Result( 0 ) { }
 	virtual ~CCallableDotAEventAdd( );
 
 	virtual uint32_t GetResult( )				{ return m_Result; }
