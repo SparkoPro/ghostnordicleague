@@ -2046,7 +2046,8 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		}
 	}
 
-	if( m_MatchMaking && !m_Map->GetMapMatchMakingCategory( ).empty( ) && m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS )
+//	if( m_MatchMaking && !m_Map->GetMapMatchMakingCategory( ).empty( ) && m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS )
+	if( m_MatchMaking && !m_Map->GetMapMatchMakingCategory( ).empty( ) ) // && m_Map->GetMapGameType( ) == GAMETYPE_CUSTOM )
 	{
 		// matchmaking is enabled
 		// start a database query to determine the player's score

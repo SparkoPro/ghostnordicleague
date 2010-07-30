@@ -499,6 +499,29 @@ CGHost :: CGHost( CConfig *CFG )
 	m_AllGamesFinished = false;
 	m_AllGamesFinishedTime = 0;
 	m_TFT = CFG->GetInt( "bot_tft", 1 ) == 0 ? false : true;
+	
+
+
+	// @disturbed_oc
+	// added autohost counter tracking
+
+	string counter = UTIL_FileRead("autohost_start.cfg");
+
+    if (!counter.empty())
+		m_HostCounter = atoi(counter.c_str())+1;
+
+    // @end
+
+	m_AutoHostMatchMaking = CFG->GetInt( "autohost_matchmaking", 0 ) ? true : false;
+	m_AutoHostMinimumScore = CFG->GetInt( "autohostmm_minscore", 0 );
+	m_AutoHostMaximumScore = CFG->GetInt( "autohostmm_maxscore", 10000);
+
+	if (m_AutoHostMatchMaking)
+		CONSOLE_Print( "[AUTOHOST] Mode: Matchmaking");
+	else
+		CONSOLE_Print( "[AUTOHOST] Mode: Standard");
+
+
 
 	if( m_TFT )
 		CONSOLE_Print( "[GHOST] acting as Warcraft III: The Frozen Throne" );
@@ -1130,16 +1153,11 @@ bool CGHost :: Update( long usecBlock )
 						{
 							if( !m_Map->GetMapMatchMakingCategory( ).empty( ) )
 							{
-								if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) )
-									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found but matchmaking can only be used with fixed player settings, matchmaking disabled" );
-								else
-								{
 									CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory [" + m_Map->GetMapMatchMakingCategory( ) + "] found, matchmaking enabled" );
 
 									m_CurrentGame->SetMatchMaking( true );
 									m_CurrentGame->SetMinimumScore( m_AutoHostMinimumScore );
 									m_CurrentGame->SetMaximumScore( m_AutoHostMaximumScore );
-								}
 							}
 							else
 								CONSOLE_Print( "[GHOST] autohostmm - map_matchmakingcategory not found, matchmaking disabled" );
