@@ -1908,6 +1908,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 				HideCommand = true;
 			}
+			
+			if ( Command == "allowff" && m_GameLoaded)
+			{
+				m_ForfeitDelayTime = GetTime();
+			}
 		}
 		else
 		{
@@ -1931,37 +1936,71 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !CHECKBALANCE / !CB
 	//
 
-	if ( (Command == "checkbalance" || Command == "cb") && !m_GameLoaded && !m_GameLoading )
+	if ( (Command == "checkbalance" || Command == "cb") )
 	{
-        for( unsigned char i = 0; i < 12; i++ )
-        {
-            bool TeamHasPlayers = false;
-			double TeamScore = 0.0;
-			uint32_t TeamUnratedPlayers = 0;
-			uint32_t TeamPlayers = 0;
+		
+		if (!m_GameLoaded && !m_GameLoading)
+		{
+	        for( unsigned char i = 0; i < 12; i++ )
+	        {
+	            bool TeamHasPlayers = false;
+				double TeamScore = 0.0;
+				uint32_t TeamUnratedPlayers = 0;
+				uint32_t TeamPlayers = 0;
 			
-   	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
-           	{
-				unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
+	   	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+	           	{
+					unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
 
-				if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
-				{
-					TeamHasPlayers = true;
-					TeamPlayers++;
-					double Score = (*j)->GetScore( );
-
-					if( Score < -99999.0 )
+					if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
 					{
-						Score = m_Map->GetMapDefaultPlayerScore( );
-						TeamUnratedPlayers++;
+						TeamHasPlayers = true;
+						TeamPlayers++;
+						double Score = (*j)->GetScore( );
+
+						if( Score < -99999.0 )
+						{
+							Score = m_Map->GetMapDefaultPlayerScore( );
+							TeamUnratedPlayers++;
+						}
+
+						TeamScore += Score;
 					}
+	            }
 
-					TeamScore += Score;
-				}
-            }
+	            if( TeamHasPlayers )
+					SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
+			}
+		}
+		else if (m_GameLoaded)
+		{
+	        for( unsigned char i = 1; i < 3; i++ )
+	        {
+	            bool TeamHasPlayers = false;
+				double TeamScore = 0.0;
+				uint32_t TeamUnratedPlayers = 0;
+				uint32_t TeamPlayers = 0;
 
-            if( TeamHasPlayers )
-				SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i + 1 ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
+	   	        for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+	           	{
+					if( (*j)->GetTeam( ) == i )
+					{
+						TeamHasPlayers = true;
+						TeamPlayers++;
+						double Score = (*j)->GetScore( );
+
+						if( Score < -99999.0 )
+						{
+							Score = m_Map->GetMapDefaultPlayerScore( );
+							TeamUnratedPlayers++;
+						}
+						TeamScore += Score;
+					}
+	            }
+
+	            if( TeamHasPlayers )
+					SendAllChat( m_GHost->m_Language->TeamCombinedScore( UTIL_ToString( i ), UTIL_ToString( TeamScore, 2 ), UTIL_ToString( TeamPlayers ), UTIL_ToString( TeamUnratedPlayers ) ) );
+			}
 		}
 	}
 
