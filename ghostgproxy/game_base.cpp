@@ -3095,13 +3095,14 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 					CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Obs/Ref] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 				}
-				else
+				/*else
 				{
 					if ( player->GetTeam( ) == 1 )
 						CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Sentinel] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 					else
 						CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Scourge] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
-				}
+				} */
+				
 				if( Relay )
 				{
 					// add chat message to replay
