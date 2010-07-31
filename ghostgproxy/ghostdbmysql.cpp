@@ -488,6 +488,19 @@ CCallableUpdateGameInfo *CGHostDBMySQL :: ThreadedUpdateGameInfo( string name, u
 	return Callable;
 }
 
+CCallableLastSeenPlayer *CGHostDBMySQL :: ThreadedLastSeenPlayer( string name )
+{
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableLastSeenPlayer *Callable = new CMySQLCallableLastSeenPlayer( name, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CreateThread( Callable );
+	m_OutstandingCallables++;
+	return Callable;
+}
+
 
 void *CGHostDBMySQL :: GetIdleConnection( )
 {
@@ -1333,6 +1346,41 @@ bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name
 	return true;
 }
 
+CDBLastSeenPlayer *MySQLLastSeenPlayer( void *conn, string *error, uint32_t botid, string user )
+{
+	string Name = user;
+	transform( user.begin( ), user.end( ), user.begin( ), (int(*)(int))tolower );
+	
+	string EscUser = MySQLEscapeString( conn, user );
+	CDBLastSeenPlayer *Player = NULL;
+	//string Query = "SELECT gp.name, datetime, gamename, hero, team + 1, winner, deg.gain, kills, deaths, assists FROM `gameplayers` as gp LEFT JOIN dotaplayers as dp ON (dp.gameid = gp.gameid AND dp.colour = gp.colour) LEFT JOIN games as g ON (g.id = gp.gameid) LEFT JOIN dotagames as dg ON (dg.gameid = gp.gameid) LEFT JOIN dota_elo_gains as deg ON (deg.gameid = gp.gameid AND deg.name = gp.name) where gp.name = 'EscUser' ORDER BY gp.id DESC LIMIT 1";
+	string Query = "SELECT gp.name, datetime, gamename, de.name, team + 1, winner, deg.gain, kills, deaths, assists FROM `gameplayers` as gp LEFT JOIN dotaplayers as dp ON (dp.gameid = gp.gameid AND dp.colour = gp.colour) LEFT JOIN games as g ON (g.id = gp.gameid) LEFT JOIN dotagames as dg ON (dg.gameid = gp.gameid) LEFT JOIN dota_elo_gains as deg ON (deg.gameid = gp.gameid AND deg.name = gp.name) LEFT JOIN dota_entitys as de ON (de.entity_id = dp.hero) where gp.name = '" + EscUser + "' ORDER BY gp.id DESC LIMIT 1";
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+		*error = mysql_error( (MYSQL *)conn );
+	else
+	{
+		MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
+
+		if( Result )
+		{
+			vector<string> Row = MySQLFetchRow( Result );
+
+			if( Row.size( ) == 10 )
+			{
+				Player = new CDBLastSeenPlayer( true, Name, Row[1], Row[2], Row[3], UTIL_ToUInt32(Row[4]), UTIL_ToUInt32(Row[5]), UTIL_ToDouble(Row[6]), UTIL_ToUInt32(Row[7]), UTIL_ToUInt32(Row[8]), UTIL_ToUInt32(Row[9]) );
+			}
+			else
+				*error = "error checking last seen player [ " + user + "] - row doesn't have 10 columns";
+
+			mysql_free_result( Result );
+		}
+		else
+			*error = mysql_error( (MYSQL *)conn );
+	}
+
+	return Player;
+}
+
 //
 // MySQL Callables
 //
@@ -1612,6 +1660,16 @@ void CMySQLCallableUpdateGameInfo :: operator( )( )
 
 	if( m_Error.empty( ) )
 		m_Result = MySQLUpdateGameInfo( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Players, m_Public );
+
+	Close( );
+}
+
+void CMySQLCallableLastSeenPlayer :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLLastSeenPlayer( m_Connection, &m_Error, m_SQLBotID, m_Name );
 
 	Close( );
 }

@@ -56,6 +56,8 @@ public:
 	
 	string ErrorBanningUser( string server, string victim, bool ipban );
 	
+	string WasLastSeenPlaying( string name, string date, string lastgame, string lasthero, uint32_t lastteam, uint32_t lastoutcome, double lastgain, uint32_t kills, uint32_t deaths, uint32_t assists );
+	
 /*
 	NordicLeague - @end- Custom language functions for VoteEnd
 */

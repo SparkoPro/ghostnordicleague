@@ -156,6 +156,31 @@ string CLanguage :: ErrorBanningUser( string server, string victim, bool ipban )
 	return Out;
 }
 
+string CLanguage :: WasLastSeenPlaying( string name, string date, string lastgame, string lasthero, uint32_t lastteam, uint32_t lastoutcome, double lastgain, uint32_t kills, uint32_t deaths, uint32_t assists )
+{
+	string Out = m_CFG->GetString( "lang_0400", "lang_0400" );
+	
+	UTIL_Replace( Out, "$USER$", name );
+	UTIL_Replace( Out, "$GAME$", lastgame );
+	UTIL_Replace( Out, "$DATE$", date );
+	UTIL_Replace( Out, "$HERO$", lasthero );
+	
+	if (lastoutcome == 0)
+		UTIL_Replace( Out, "$OUTCOME$", "chillin'" );
+	else if (lastteam == lastoutcome)
+		UTIL_Replace( Out, "$OUTCOME$", "winning" );
+	else
+		UTIL_Replace( Out, "$OUTCOME$", "loosing" );
+		
+	UTIL_Replace( Out, "$K$", UTIL_ToString(kills) );
+	UTIL_Replace( Out, "$D$", UTIL_ToString(deaths) );
+	UTIL_Replace( Out, "$A$", UTIL_ToString(assists) );
+	UTIL_Replace( Out, "$GAIN$", UTIL_ToString(lastgain, 2) );
+	
+	return Out;
+	
+}
+
 /*
 	NordicLeague - @end - Custom language functions for VoteKick
 */

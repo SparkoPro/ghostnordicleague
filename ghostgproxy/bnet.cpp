@@ -181,6 +181,9 @@ CBNET :: ~CBNET( )
 		
 	for( vector<PairedRegisterPlayerAdd> :: iterator i = m_PairedRegisterPlayerAdds.begin( ); i != m_PairedRegisterPlayerAdds.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
+		
+	for( vector<PairedSeenCheck> :: iterator i = m_PairedSeenChecks.begin( ); i != m_PairedSeenChecks.end( ); i++ )
+		m_GHost->m_Callables.push_back( i->second );
 
 	if( m_CallableAdminList )
 		m_GHost->m_Callables.push_back( m_CallableAdminList );
@@ -463,6 +466,43 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
 			i = m_PairedDPSChecks.erase( i );
+		}
+		else
+			i++;
+	}
+	
+	
+	for( vector<PairedSeenCheck> :: iterator i = m_PairedSeenChecks.begin( ); i != m_PairedSeenChecks.end( ); )
+	{
+		if( i->second->GetReady( ) )
+		{
+			CDBLastSeenPlayer *Player = i->second->GetResult( );
+
+/*
+
+bool 		Seen( )				{ return m_Seen; }
+string 		GetName( )			{ return m_Name; }
+string 		GetDate( )			{ return m_Date; }
+string 		GetLastGame( )		{ return m_LastGame; }
+string 		GetLastHero( )		{ return m_LastHero; }
+uint32_t 	GetLastTeam( )		{ return m_LastTeam; }
+uint32_t 	GetLastOutcome( )	{ return m_LastOutcome; }
+double 		GetLastGain( )		{ return m_LastGain; }
+uint32_t 	GetKills( )			{ return m_Kills; }
+uint32_t 	GetDeaths( )		{ return m_Deaths; }
+uint32_t 	GetAssists( )		{ return m_Assists; }
+string		GetKDA()			{ return UTIL_ToString(m_Kills) + "/" + UTIL_ToString(m_Deaths) + "/" + UTIL_ToString(m_Assists); }
+
+*/
+
+			if( Player && Player->Seen() )
+				QueueChatCommand( m_GHost->m_Language->WasLastSeenPlaying( i->second->GetName( ), Player->GetDate(), Player->GetLastGame( ), Player->GetLastHero( ), Player->GetLastTeam( ), Player->GetLastOutcome( ), Player->GetLastGain( ), Player->GetKills( ), Player->GetDeaths( ), Player->GetAssists( ) ), i->first, !i->first.empty( ) );
+			else
+				QueueChatCommand( m_GHost->m_Language->HasntPlayedGamesWithThisBot( i->second->GetName( ) ), i->first, !i->first.empty( ) );
+
+			m_GHost->m_DB->RecoverCallable( i->second );
+			delete i->second;
+			i = m_PairedSeenChecks.erase( i );
 		}
 		else
 			i++;
@@ -2539,6 +2579,20 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					if( !StatsUser.empty( ) && StatsUser.size( ) < 16 && StatsUser[0] != '/' )
 						m_PairedGPSChecks.push_back( PairedGPSCheck( Whisper ? User : string( ), m_GHost->m_DB->ThreadedGamePlayerSummaryCheck( StatsUser ) ) );
+				}
+				
+				//
+				// !SEEN
+				//
+
+				if( Command == "seen" )
+				{
+					if( !Payload.empty( ) )
+					{
+						// check for potential abuse
+						if( !Payload.empty( ) && Payload.size( ) < 16 && Payload[0] != '/' )
+							m_PairedSeenChecks.push_back( PairedSeenCheck( Whisper ? User : string( ), m_GHost->m_DB->ThreadedLastSeenPlayer( Payload ) ) );						
+					}
 				}
 
 				//

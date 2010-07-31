@@ -52,11 +52,16 @@ class CDBGamePlayer;
 class CDBGamePlayerSummary;
 class CDBDotAPlayerSummary;
 
+
 // nordicleague 
+class CDBLastSeenPlayer;
+class CCallableLastSeenPlayer;
 
 class CCallableRegisterPlayerAdd;
 class CCallableDotAEventAdd;
 class CCallableUpdateGameInfo;
+class CCallableSeenPlayer;
+
 
 typedef pair<uint32_t,string> VarP;
 
@@ -111,18 +116,19 @@ public:
 	
 	// nordicleague
 	
-	virtual uint32_t RegisterPlayerAdd( string name, string email, string ip );
-	virtual CCallableRegisterPlayerAdd *ThreadedRegisterPlayerAdd( string name, string email, string ip );
+	virtual uint32_t 					RegisterPlayerAdd( string name, string email, string ip );
+	virtual CCallableRegisterPlayerAdd 	*ThreadedRegisterPlayerAdd( string name, string email, string ip );
 	
-	virtual uint32_t DotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
-	virtual CCallableDotAEventAdd *ThreadedDotAEventAdd( uint32_t gameid, string gamename, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
+	virtual uint32_t 					DotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
+	virtual CCallableDotAEventAdd 		*ThreadedDotAEventAdd( uint32_t gameid, string gamename, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
 	
 	// Keep track of current games in database for channel/website info
 		
-	virtual bool UpdateGameInfo( string name, uint32_t players, bool ispublic);
-	virtual CCallableUpdateGameInfo *ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
+	virtual bool 						UpdateGameInfo( string name, uint32_t players, bool ispublic);
+	virtual CCallableUpdateGameInfo 	*ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
 	
-	
+	virtual CDBLastSeenPlayer			*LastSeenPlayer( string name );
+	virtual CCallableLastSeenPlayer 	*ThreadedLastSeenPlayer( string name );
 
 	// threaded database functions
 
@@ -995,6 +1001,62 @@ public:
 
 	virtual uint32_t GetResult( )				{ return m_Result; }
 	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+};
+
+//
+// CDBLastSeenPlayer
+//
+
+class CDBLastSeenPlayer
+{
+private:
+	bool 		m_Seen;
+	string 		m_Name;
+	string 		m_Date;
+	string 		m_LastGame;
+	string 		m_LastHero;
+	uint32_t 	m_LastTeam;
+	uint32_t 	m_LastOutcome;
+	double 		m_LastGain;
+	uint32_t 	m_Kills;
+	uint32_t 	m_Deaths;
+	uint32_t 	m_Assists;
+
+public:
+	CDBLastSeenPlayer( string nName );
+	CDBLastSeenPlayer( bool nSeen, string nName );
+	CDBLastSeenPlayer( bool nSeen, string nName, string nDate, string nLastGame, string nLastHero, uint32_t nLastTeam, uint32_t nLastOutcome, double nLastGain, uint32_t nKills, uint32_t nDeaths, uint32_t nAssists );
+	~CDBLastSeenPlayer( );
+
+	bool 		Seen( )				{ return m_Seen; }
+	string 		GetName( )			{ return m_Name; }
+	string 		GetDate( )			{ return m_Date; }
+	string 		GetLastGame( )		{ return m_LastGame; }
+	string 		GetLastHero( )		{ return m_LastHero; }
+	uint32_t 	GetLastTeam( )		{ return m_LastTeam; }
+	uint32_t 	GetLastOutcome( )	{ return m_LastOutcome; }
+	double 		GetLastGain( )		{ return m_LastGain; }
+	uint32_t 	GetKills( )			{ return m_Kills; }
+	uint32_t 	GetDeaths( )		{ return m_Deaths; }
+	uint32_t 	GetAssists( )		{ return m_Assists; }
+	string		GetKDA()			{ return UTIL_ToString(m_Kills) + "/" + UTIL_ToString(m_Deaths) + "/" + UTIL_ToString(m_Assists); }
+
+};
+
+class CCallableLastSeenPlayer : virtual public CBaseCallable
+{
+protected:
+	string 				m_Name;
+	CDBLastSeenPlayer 	*m_Result;
+
+public:
+	CCallableLastSeenPlayer( string nName ) : CBaseCallable( ), m_Name( nName ), m_Result( 0 ) { }
+	virtual ~CCallableLastSeenPlayer( );
+
+	virtual string 				GetName() 								{ return m_Name; }
+
+	virtual CDBLastSeenPlayer 	*GetResult( )							{ return m_Result; }
+	virtual void 				SetResult( CDBLastSeenPlayer *nResult )	{ m_Result = nResult; }
 };
 
 #endif

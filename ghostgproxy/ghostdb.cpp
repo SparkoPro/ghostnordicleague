@@ -81,6 +81,16 @@ CCallableUpdateGameInfo *CGHostDB :: ThreadedUpdateGameInfo( string name, uint32
 	return NULL;
 }
 
+CDBLastSeenPlayer *CGHostDB :: LastSeenPlayer( string name )
+{
+	return NULL;
+}
+
+CCallableLastSeenPlayer *CGHostDB :: ThreadedLastSeenPlayer( string name )
+{
+	return NULL;
+}
+
 CCallableRegisterPlayerAdd :: ~CCallableRegisterPlayerAdd( )
 {
 
@@ -94,6 +104,11 @@ CCallableDotAEventAdd :: ~CCallableDotAEventAdd( )
 CCallableUpdateGameInfo :: ~CCallableUpdateGameInfo( )
 {
 	
+}
+
+CCallableLastSeenPlayer :: ~CCallableLastSeenPlayer( )
+{
+
 }
 
 //
@@ -231,6 +246,7 @@ bool CGHostDB :: W3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings )
 {
 	return false;
 }
+
 
 void CGHostDB :: CreateThread( CBaseCallable *callable )
 {
@@ -806,4 +822,30 @@ CDBDotAPlayerSummary :: CDBDotAPlayerSummary( string nServer, string nName, uint
 CDBDotAPlayerSummary :: ~CDBDotAPlayerSummary( )
 {
 
+}
+
+CDBLastSeenPlayer :: CDBLastSeenPlayer( bool nSeen, string nName )
+{
+	m_Seen = nSeen;
+	m_Name = nName;
+}
+
+CDBLastSeenPlayer :: CDBLastSeenPlayer( bool nSeen, string nName, string nDate, string nLastGame, string nLastHero, uint32_t nLastTeam, uint32_t nLastOutcome, double nLastGain, uint32_t nKills, uint32_t nDeaths, uint32_t nAssists )
+{
+	m_Seen = nSeen;
+	m_Name = nName;
+	m_Date = nDate;
+	m_LastGame = nLastGame;
+	m_LastHero = nLastHero;
+	m_LastTeam = nLastTeam;
+	m_LastOutcome = nLastOutcome;
+	m_LastGain = nLastGain;
+	m_Kills = nKills;
+	m_Deaths = nDeaths;
+	m_Assists = nAssists;
+}
+
+CDBLastSeenPlayer :: ~CDBLastSeenPlayer( )
+{
+	
 }

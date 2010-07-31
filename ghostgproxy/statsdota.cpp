@@ -114,16 +114,22 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							
 								if( Killer && Victim )
 								{
-									if (!m_Players[ValueInt])
-										m_Players[ValueInt] = new CDBDotAPlayer( );
+									if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
+									{
+										if (!m_Players[ValueInt])
+											m_Players[ValueInt] = new CDBDotAPlayer( );
 
-									if (Killer->GetName() != Victim->GetName())
-										m_Players[ValueInt]->SetKills( m_Players[ValueInt]->GetKills() + 1 );
+										if (Killer->GetName() != Victim->GetName())
+											m_Players[ValueInt]->SetKills( m_Players[ValueInt]->GetKills() + 1 );
+									}
 									
-									if (!m_Players[VictimColour])
-										m_Players[VictimColour] = new CDBDotAPlayer( );
+									if( ( VictimColour >= 1 && VictimColour <= 5 ) || ( VictimColour >= 7 && VictimColour <= 11 ) )
+									{
+										if (!m_Players[VictimColour])
+											m_Players[VictimColour] = new CDBDotAPlayer( );
 												
-									m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
+										m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
+									}
 									
 									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player on team " + UTIL_ToString(Killer->GetTeam()) + " [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
 									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, m_Game->GetGameName( ), Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
@@ -137,10 +143,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								}
 								else if( Victim )
 								{
-									if (!m_Players[VictimColour])
-												m_Players[VictimColour] = new CDBDotAPlayer( );
+									if( ( VictimColour >= 1 && VictimColour <= 5 ) || ( VictimColour >= 7 && VictimColour <= 11 ) )
+									{
+										if (!m_Players[VictimColour])
+											m_Players[VictimColour] = new CDBDotAPlayer( );
 												
-									m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
+										m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
+									}
 									
 									if( ValueInt == 0 )
 										CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] the Sentinel killed player [" + Victim->GetName( ) + "]" );
@@ -156,10 +165,14 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								
 								if (Player)
 								{
-									if (!m_Players[ValueInt])
-												m_Players[ValueInt] = new CDBDotAPlayer( );
+									if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
+									{
+									
+										if (!m_Players[ValueInt])
+											m_Players[ValueInt] = new CDBDotAPlayer( );
 										
-									m_Players[ValueInt]->SetLevel(Level);
+										m_Players[ValueInt]->SetLevel(Level);
+									}
 									//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] "+ Player->GetName() + " is now level " + UTIL_ToString(m_Players[ValueInt]->GetLevel()) );
 								}								
 							}
@@ -173,21 +186,26 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 
 								if (Player && Victim)
 								{
-									if (!m_Players[Assist])
-												m_Players[Assist] = new CDBDotAPlayer( );
+									if( ( Assist >= 1 && Assist <= 5 ) || ( Assist >= 7 && Assist <= 11 ) )
+									{
+										if (!m_Players[Assist])
+											m_Players[Assist] = new CDBDotAPlayer( );
 
-									m_Players[Assist]->SetAssists( m_Players[Assist]->GetAssists() + 1 );
+										m_Players[Assist]->SetAssists( m_Players[Assist]->GetAssists() + 1 );
+									}
 									//CONSOLE_Print( "[OBSERVER: " + m_Game->GetGameName( ) + "] Assist detected on team " + UTIL_ToString(Player->GetTeam()) + " by: " + Player->GetName() );
 								}
 							}
 							else if( KeyString.size( ) >= 8 && KeyString.substr( 0, 7 ) == "Courier" )
 							{
 								// a courier died
-								if (!m_Players[ValueInt])
-											m_Players[ValueInt] = new CDBDotAPlayer( );
+								
 
 								if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
 								{
+									if (!m_Players[ValueInt])
+												m_Players[ValueInt] = new CDBDotAPlayer( );
+												
 									m_Players[ValueInt]->SetCourierKills( m_Players[ValueInt]->GetCourierKills( ) + 1 );
 								}
 
@@ -209,11 +227,12 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 							else if( KeyString.size( ) >= 8 && KeyString.substr( 0, 5 ) == "Tower" )
 							{
 								// a tower died
-								if (!m_Players[ValueInt])
-											m_Players[ValueInt] = new CDBDotAPlayer( );
 
 								if( ( ValueInt >= 1 && ValueInt <= 5 ) || ( ValueInt >= 7 && ValueInt <= 11 ) )
 								{
+									if (!m_Players[ValueInt])
+												m_Players[ValueInt] = new CDBDotAPlayer( );
+												
 									m_Players[ValueInt]->SetTowerKills( m_Players[ValueInt]->GetTowerKills( ) + 1 );
 								}
 
@@ -323,10 +342,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								string PlayerID = KeyString.substr( 3 );
 								uint32_t ID = UTIL_ToUInt32( PlayerID );
 								
-								if (!m_Players[ID])
-											m_Players[ID] = new CDBDotAPlayer( );
+								if( ( ID >= 1 && ID <= 5 ) || ( ID >= 7 && ID <= 11 ) )
+								{
+									if (!m_Players[ID])
+										m_Players[ID] = new CDBDotAPlayer( );
 													
-								m_Players[ID]->SetCreepKills(ValueInt);
+									m_Players[ID]->SetCreepKills(ValueInt);
+								}
 							}
 							else if( KeyString.size( ) >= 3 && KeyString.substr( 0, 3 ) == "CSD" )
 							{
@@ -334,10 +356,14 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								string PlayerID = KeyString.substr( 3 );
 								uint32_t ID = UTIL_ToUInt32( PlayerID );
 								
-								if (!m_Players[ID])
-											m_Players[ID] = new CDBDotAPlayer( );
+								if( ( ID >= 1 && ID <= 5 ) || ( ID >= 7 && ID <= 11 ) )
+								{
+									
+									if (!m_Players[ID])
+										m_Players[ID] = new CDBDotAPlayer( );
 								
-								m_Players[ID]->SetCreepDenies(ValueInt);
+									m_Players[ID]->SetCreepDenies(ValueInt);
+								}
 							}
 							
 							else if( KeyString.size( ) >= 2 && KeyString.substr( 0, 2 ) == "NK" )
@@ -346,10 +372,13 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 								string PlayerID = KeyString.substr( 2 );
 								uint32_t ID = UTIL_ToUInt32( PlayerID );
 								
-								if (!m_Players[ID])
-											m_Players[ID] = new CDBDotAPlayer( );
+								if( ( ID >= 1 && ID <= 5 ) || ( ID >= 7 && ID <= 11 ) )
+								{
+									if (!m_Players[ID])
+										m_Players[ID] = new CDBDotAPlayer( );
 											
-								m_Players[ID]->SetNeutralKills(ValueInt);
+									m_Players[ID]->SetNeutralKills(ValueInt);
+								}
 							}
 							else if( KeyString.size( ) >= 9 && KeyString.substr( 0, 9 ) == "GameStart" )
 							{
@@ -536,18 +565,19 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 		{
 			if( m_Players[i] )
 			{
-				uint32_t Colour = m_Players[i]->GetNewColour( );
+				uint32_t Colour = m_Players[i]->GetColour( );
 
 				if( !( ( Colour >= 1 && Colour <= 5 ) || ( Colour >= 7 && Colour <= 11 ) ) )
 				{
-					CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] discarding player data, invalid colour found" );
-					DB->Commit( );
-					return;
+					delete m_Players[i];
+					CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] discarding player data, invalid colour found! [" + UTIL_ToString(Colour) + "]" );
+					//DB->Commit( );
+					//return;
 				}
 
 				for( unsigned int j = i + 1; j < 12; j++ )
 				{
-					if( m_Players[j] && Colour == m_Players[j]->GetNewColour( ) )
+					if( m_Players[j] && Colour == m_Players[j]->GetColour( ) )
 					{
 						CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] discarding player data, duplicate colour found" );
 						DB->Commit( );
@@ -575,7 +605,7 @@ void CStatsDOTA :: Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, 
 					}
 				}
 
-				if ( (m_Players[i]->GetNewColour() < 6 && m_Winner == 1) || (m_Players[i]->GetNewColour() > 6 && m_Winner == 2) )
+				if ( (m_Players[i]->GetColour( ) < 6 && m_Winner == 1) || (m_Players[i]->GetColour( ) > 6 && m_Winner == 2) )
 					m_Players[i]->SetOutcome(1); // Win
 				else if (m_Winner == 0)
 					m_Players[i]->SetOutcome(0); // Draw
