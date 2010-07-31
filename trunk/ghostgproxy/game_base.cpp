@@ -141,7 +141,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_FFStartedTime = 0;
 	m_FFSucceeded = false;
 	m_LastGameInfoUpdateTime = 0;
-	m_LastGameInfoPlayers = 0;
+	m_LastGameInfoPlayers = 10;
 	m_LastGameInfoName = nGameName;
 	// make lobby time limitlocal for each game, to bypass timelimit triggering and closing the game when !autostart off is issued
 	m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
