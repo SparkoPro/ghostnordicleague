@@ -146,6 +146,8 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	// make lobby time limitlocal for each game, to bypass timelimit triggering and closing the game when !autostart off is issued
 	m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
 	
+	m_GameIsInHouse = false;
+	
 	/*
 		NordicLeague - @begin - Keep track of autohost #, quick and dirty way.
 	*/
@@ -703,16 +705,12 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	
 	// nordicleague
 
-	if( !m_GameLoaded && !m_CountDownStarted && !m_GameLoading && GetTime( ) - m_LastGameInfoUpdateTime >= 10)
+	if( !m_GameLoaded && !m_CountDownStarted && !m_GameLoading && GetTime( ) - m_LastGameInfoUpdateTime >= 3)
 	{		
 		if (m_LastGameInfoPlayers != m_Players.size())
 		{
-			m_LastGameInfoPlayers = m_Players.size();
-			
-			if (m_GameState == GAME_PUBLIC)
-				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, true) );
-			else
-				m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, false) );
+			m_LastGameInfoPlayers = m_Players.size();			
+			m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, (m_GameState == GAME_PUBLIC) ? true : false) );
 		}
 		
 		m_LastGameInfoUpdateTime = GetTime( );
@@ -738,6 +736,20 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	if( !m_CountDownStarted && m_AutoStartPlayers != 0 && GetTime( ) - m_LastAutoStartTime >= 10 )
 	{
+		if (m_GHost->m_SafeGames)
+		{
+			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+			{
+				if ((*i)->GetGames() < m_GHost->m_GamesReq || (*i)->GetAvgStay() < m_GHost->m_StayReq )
+				{
+					(*i)->SetDeleteMe( true );
+					(*i)->SetLeftReason( "Not allowed to play safe games yet" );
+					(*i)->SetLeftCode( PLAYERLEAVE_LOBBY );
+					OpenSlot( GetSIDFromPID( (*i)->GetPID( ) ), false );
+				}
+			}
+		}
+
 		StartCountDownAuto( m_GHost->m_RequireSpoofChecks );
 		m_LastAutoStartTime = GetTime( );
 	}
@@ -1588,6 +1600,16 @@ void CBaseGame :: SendEndMessage( )
 void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
+	
+	if (m_GameLoaded)
+	{
+		if (!m_FFSucceeded)
+		{
+			// Add this player to be processed by the automated penalty-system.
+			//m_Penalty
+			//GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, m_Game->GetGameName( ), Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
+		}
+	}
 
 	// remove any queued spoofcheck messages for this player
 
@@ -1831,7 +1853,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 {
 
 	unsigned char SID = 255;
-	SID = GetEmptySlot( false );
+	SID = GetEmptySlot( false, joinPlayer->GetName( ) );
 	
 	if( m_IgnoredNames.find( joinPlayer->GetName( ) ) != m_IgnoredNames.end( ) )
 	{
@@ -2412,7 +2434,8 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	// check if the new player's score is within the limits
 
 	//if( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) )
-	if (m_GHost->m_SafeGames && m_GHost->m_MatchMakingMethod && (score < m_MinimumScore || score > m_MaximumScore))
+	//if (m_GHost->m_SafeGames && m_GHost->m_MatchMakingMethod && (score < m_MinimumScore || score > m_MaximumScore))
+	if (m_GHost->m_SafeGames && m_GHost->m_MatchMakingMethod && ( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) ) )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
@@ -2422,6 +2445,13 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	
 	if (m_GHost->m_SafeGames)
 	{
+		if ( score < -99999.0 || games <= 30 || staypercent < 90 || games > 5000)
+		{
+                        CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has too few games [" + UTIL_ToString( games ) + "] required [" + UTIL_ToString( m_GHost->m_GamesReq ) + "]" );
+                        potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
+                        potential->SetDeleteMe( true );
+                        return;
+		}
 		
 		if (games < m_GHost->m_GamesReq)
 		{
@@ -2442,7 +2472,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	// try to find an empty slot
 
-	unsigned char SID = GetEmptySlot( false );
+	unsigned char SID = GetEmptySlot( false, joinPlayer->GetName( ) );
 
 	// check if the player is an admin or root admin on any connected realm for determining reserved status
 	// we can't just use the spoof checked realm like in EventPlayerBotCommand because the player hasn't spoof checked yet
@@ -2654,6 +2684,8 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] joined the game" );
 	CGamePlayer *Player = new CGamePlayer( potential, GetNewPID( ), JoinedRealm, joinPlayer->GetName( ), joinPlayer->GetInternalIP( ), false );
 	Player->SetAdmin(AnyAdminCheck);
+	Player->SetGames(games);
+	Player->SetStay(staypercent);
 		
 	// consider LAN players to have already spoof checked since they can't
 	// since so many people have trouble with this feature we now use the JoinedRealm to determine LAN status
@@ -2818,7 +2850,11 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	if (m_MatchMaking && m_GHost->m_EnforceBalance)
 	{
 		if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
+		{
+			m_BalanceSlotsTime = GetTime();
+			//SendAllChat( m_GHost->m_Language->GameFull( joinPlayer->GetName( ), Others ) );
 			BalanceSlots( );
+		}
 	}
 }
 
@@ -3734,7 +3770,7 @@ void CBaseGame :: EventGameLoaded( )
 		in.close( );
 	}
 	
-	m_ForfeitDelayTime = GetTime() + 1620;
+	m_ForfeitDelayTime = GetTime() + 1680;
 }
 
 unsigned char CBaseGame :: GetSIDFromPID( unsigned char PID )
@@ -3950,7 +3986,7 @@ unsigned char CBaseGame :: GetHostPID( )
 	return 255;
 }
 
-unsigned char CBaseGame :: GetEmptySlot( bool reserved )
+unsigned char CBaseGame :: GetEmptySlot( bool reserved, string name )
 {
 	if( m_Slots.size( ) > 255 )
 		return 255;
@@ -3969,6 +4005,20 @@ unsigned char CBaseGame :: GetEmptySlot( bool reserved )
 		}
 
 		// don't bother with reserved slots in savegames
+	}
+	else if (m_GameIsInHouse && !m_EnforcePlayers.empty())
+	{
+		for( vector<PIDPlayer> :: iterator i = m_EnforcePlayers.begin( ); i != m_EnforcePlayers.end( ); i++ )
+		{
+			if( (*i).second == name )
+				return (*i).first;
+		}
+		
+		for( unsigned char i = 0; i < m_Slots.size( ); i++ )
+		{
+			if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OPEN )
+				return i;
+		}
 	}
 	else
 	{

@@ -2310,12 +2310,92 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						Owner = Payload.substr( 0, GameNameStart );
 						GameName = Payload.substr( GameNameStart + 1 );
 						m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Owner, User, m_Server, Whisper );
-
-						m_GHost->m_CurrentGame->SetMatchMaking( true );
-						m_GHost->m_CurrentGame->SetMinimumScore( 0 );
-						m_GHost->m_CurrentGame->SetMaximumScore( 10000 );
-						m_GHost->m_CurrentGame->SetAutoStartPlayers( 10 );
+						
+						if (m_GHost->m_CurrentGame)
+						{
+							m_GHost->m_CurrentGame->SetMatchMaking( true );
+							m_GHost->m_CurrentGame->SetMinimumScore( 0 );
+							m_GHost->m_CurrentGame->SetMaximumScore( 10000 );
+							m_GHost->m_CurrentGame->SetAutoStartPlayers( 0 );
+						}
 					}
+				}
+				
+				if( Command == "ih" && !Payload.empty( ) )
+				{
+					// extract the owner and the game name
+					// e.g. "Varlock dota 6.54b arem ~~~" -> owner: "Varlock", game name: "dota 6.54b arem ~~~"
+
+					string Mode;
+					string GameName;
+					vector<PIDPlayer> Players;
+					
+					stringstream SS;
+					SS << Payload;
+					SS >> GameName;
+					SS >> Mode;
+					
+					unsigned char i = 0;
+
+					while( !SS.eof( ) )
+					{
+						string Player;
+						SS >> Player;
+
+						if( SS.fail( ) )
+						{
+							CONSOLE_Print( "[INHOUSE] bad input to !ih command." );
+							break;
+						}
+						
+						Players.push_back( PIDPlayer(i, Player));
+						i++;
+					}
+					
+					if (!Mode.empty() && Players.size() >= 10 && Players.size() <= 12)
+					{
+						CONSOLE_Print( "[INHOUSE] Creating inhouse game with mode [" + Mode + "] and [" + UTIL_ToString(Players.size()) + "] players." );
+						
+						for( vector<PIDPlayer> :: iterator i = Players.begin( ); i != Players.end( ); i++ )
+						{
+							CONSOLE_Print( "[INHOUSE] Slot reservation [" + UTIL_ToString((*i).first) + "] player [" + (*i).second + "]." );
+						}
+						
+						
+						m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Players.front().second, User, m_Server, Whisper );
+						
+						if (m_GHost->m_CurrentGame)
+						{
+							m_GHost->m_CurrentGame->SetInhouse( true );
+							m_GHost->m_CurrentGame->SetEnforcePlayers( Players );
+							m_GHost->m_CurrentGame->SetHCLMode( Mode );
+							m_GHost->m_CurrentGame->SetMatchMaking( true );
+							m_GHost->m_CurrentGame->SetMinimumScore( 0 );
+							m_GHost->m_CurrentGame->SetMaximumScore( 10000 );
+							m_GHost->m_CurrentGame->SetAutoStartPlayers( 0 );
+							m_GHost->m_CurrentGame->CloseAllSlots( );
+							
+							if (Players.size() == 10)
+							{
+								m_GHost->m_CurrentGame->OpenSlot((unsigned char)10, false);
+								m_GHost->m_CurrentGame->OpenSlot((unsigned char)11, false);
+							}
+							else if (Players.size() == 11)
+								m_GHost->m_CurrentGame->OpenSlot((unsigned char)11, false);
+						}
+						
+					}
+					else
+					{
+						if (Mode.empty())
+						{
+							CONSOLE_Print( "[INHOUSE] Bad mode for hosting inhouse, we recieved [" + Mode + "]" );
+						}
+						else
+							CONSOLE_Print( "[INHOUSE] Bad amount of playernames for hosting inhouse, need 10-12 we got [" + UTIL_ToString(Players.size()) + "]" );
+					}
+
+
 				}
 				
 				//
@@ -2375,6 +2455,18 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					else
 						QueueChatCommand( m_GHost->m_Language->YouDontHaveAccessToThatCommand( ), User, Whisper );
 				}
+
+				if( Command == "reloadmap" )
+				{
+					if( IsRootAdmin( User ) )
+					{
+						QueueChatCommand( m_GHost->m_Language->ReloadingConfigurationFiles( ) + " (+map)", User, Whisper );
+						m_GHost->ReloadMap( );
+					}
+					else
+						QueueChatCommand( m_GHost->m_Language->YouDontHaveAccessToThatCommand( ), User, Whisper );
+				}
+
 
 				//
 				// !SAY
