@@ -2846,16 +2846,6 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		m_Locked = true;
 	}
 
-	// balance the slots
-	if (m_MatchMaking && m_GHost->m_EnforceBalance)
-	{
-		if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
-		{
-			m_BalanceSlotsTime = GetTime();
-			//SendAllChat( m_GHost->m_Language->GameFull( joinPlayer->GetName( ), Others ) );
-			BalanceSlots( );
-		}
-	}
 }
 
 void CBaseGame :: EventPlayerLeft( CGamePlayer *player, uint32_t reason )
@@ -4827,6 +4817,18 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 			SendAllChat( m_GHost->m_Language->WaitingForPlayersBeforeAutoStart( UTIL_ToString( m_AutoStartPlayers ), UTIL_ToString( m_AutoStartPlayers - GetNumHumanPlayers( ) ) ) );
 			return;
 		}
+
+		// balance the slots
+		if (m_MatchMaking && m_GHost->m_EnforceBalance)
+		{
+			if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
+			{
+				m_BalanceSlotsTime = GetTime();
+				//SendAllChat( m_GHost->m_Language->GameFull( joinPlayer->GetName( ), Others ) );
+				BalanceSlots( );
+			}
+		}
+
 
 		// check if everyone has the map
 
