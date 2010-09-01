@@ -971,7 +971,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	string EscName = MySQLEscapeString( conn, name );
 	CDBGamePlayerSummary *GamePlayerSummary = NULL;
 //	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
-	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid LEFT JOIN dotastats on dotastats.player_name=name WHERE name LIKE '" + EscName + "'";
+	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on dotastats.player_name=gameplayers.name WHERE gameplayers.name='" + EscName + "'";
 //	string Query = "SELECT (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), AVG(loadingtime), AVG(`left`/duration)*100 FROM gameplayers LEFT JOIN games ON games.id=gameid LEFT JOIN dotastats on dotastats.player_name=name WHERE name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -982,27 +982,30 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
-
-			if( Row.size( ) == 12 )
+			if (mysql_num_rows(Result) == 1)
 			{
-				string FirstGameDateTime = Row[0];
-				string LastGameDateTime = Row[1];
-				uint32_t TotalGames = UTIL_ToUInt32( Row[2] );
-				uint32_t MinLoadingTime = UTIL_ToUInt32( Row[3] );
-				uint32_t AvgLoadingTime = UTIL_ToUInt32( Row[4] );
-				uint32_t MaxLoadingTime = UTIL_ToUInt32( Row[5] );
-				uint32_t MinLeftPercent = UTIL_ToUInt32( Row[6] );
-				uint32_t AvgLeftPercent = UTIL_ToUInt32( Row[7] );
-				uint32_t MaxLeftPercent = UTIL_ToUInt32( Row[8] );
-				uint32_t MinDuration = UTIL_ToUInt32( Row[9] );
-				uint32_t AvgDuration = UTIL_ToUInt32( Row[10] );
-				uint32_t MaxDuration = UTIL_ToUInt32( Row[11] );
-				GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
-				//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string(), string(), TotalGames, 0, AvgLoadingTime, 0, 0, AvgLeftPercent, 0, 0, 0, 0 );
+				vector<string> Row = MySQLFetchRow( Result );
+
+				if( Row.size( ) == 12 )
+				{
+					string FirstGameDateTime = Row[0];
+					string LastGameDateTime = Row[1];
+					uint32_t TotalGames = UTIL_ToUInt32( Row[2] );
+					uint32_t MinLoadingTime = UTIL_ToUInt32( Row[3] );
+					uint32_t AvgLoadingTime = UTIL_ToUInt32( Row[4] );
+					uint32_t MaxLoadingTime = UTIL_ToUInt32( Row[5] );
+					uint32_t MinLeftPercent = UTIL_ToUInt32( Row[6] );
+					uint32_t AvgLeftPercent = UTIL_ToUInt32( Row[7] );
+					uint32_t MaxLeftPercent = UTIL_ToUInt32( Row[8] );
+					uint32_t MinDuration = UTIL_ToUInt32( Row[9] );
+					uint32_t AvgDuration = UTIL_ToUInt32( Row[10] );
+					uint32_t MaxDuration = UTIL_ToUInt32( Row[11] );
+					GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
+					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string(), string(), TotalGames, 0, AvgLoadingTime, 0, 0, AvgLeftPercent, 0, 0, 0, 0 );
+				}
+				else
+					*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
 			}
-			else
-				*error = "error checking gameplayersummary [" + name + "] - row doesn't have 3 columns";
 
 			mysql_free_result( Result );
 		}
@@ -1020,9 +1023,9 @@ uint32_t MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string g
 	string EscKiller = MySQLEscapeString( conn, killer );
 	string EscVictim = MySQLEscapeString( conn, victim );
 	string Query = "INSERT INTO dotaevents ( eventid, gamename, killer, victim, kcolour, vcolour ) VALUES ( " + UTIL_ToString(gameid) + ",'" + EscGameName + "', '" + EscKiller + "', '" + EscVictim + "', " + UTIL_ToString(kcolour) + ", " + UTIL_ToString(vcolour) + ")";
-	string DebugQuery = "VALUES ( " + UTIL_ToString(gameid) + ",'" + EscGameName + "', '" + EscKiller + "', '" + EscVictim + "', " + UTIL_ToString(kcolour) + ", " + UTIL_ToString(vcolour) + ")";
+	//string DebugQuery = "VALUES ( " + UTIL_ToString(gameid) + ",'" + EscGameName + "', '" + EscKiller + "', '" + EscVictim + "', " + UTIL_ToString(kcolour) + ", " + UTIL_ToString(vcolour) + ")";
 
-	CONSOLE_Print( "[DOTAEVENT] Insert: " + DebugQuery );
+	//CONSOLE_Print( "[DOTAEVENT] Insert: " + DebugQuery );
 	
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );

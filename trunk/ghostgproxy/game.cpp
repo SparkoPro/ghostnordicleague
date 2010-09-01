@@ -1912,6 +1912,8 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			if ( Command == "allowff" && m_GameLoaded)
 			{
 				m_ForfeitDelayTime = GetTime();
+				CONSOLE_Print( "[GAME: " + m_GameName + "] admin [" + User + "] allowed premature FF." );
+				SendAllChat( "Admin [" + User + "] has enabled Forfeit, you can now use !ff" );
 			}
 		}
 		else
@@ -2029,8 +2031,9 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		if (m_ForfeitDelayTime > GetTime())
 		{
 			
-			uint32_t min, sec;
-			sec = m_ForfeitDelayTime - GetTime();
+			uint32_t min = 0;
+			uint32_t sec = m_ForfeitDelayTime - GetTime();
+			
 			while(sec >= 60)
 			{
 				min++;

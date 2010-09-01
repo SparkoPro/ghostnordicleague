@@ -154,6 +154,10 @@ protected:
 
 	vector<PairedGPSCheck> m_PairedSafeGameChecks;		// vector of paired threaded database game player summary checks in progress for safegames
 	vector<PairedGPSCheck> m_PairedReliabilityChecks;	// vector of paired threaded database game player summary checks in progress
+	
+	uint32_t		m_BalanceSlotsTime; 				// timer for delaying balancing of slots.
+	
+	bool			m_GameIsInHouse;					// inhouse game.
 
 	/*
 		NordicLeague - @end - Some added custom variables
@@ -192,7 +196,9 @@ public:
 	virtual void SetMaximumScore( double nMaximumScore )				{ m_MaximumScore = nMaximumScore; }
 	virtual void SetRefreshError( bool nRefreshError )					{ m_RefreshError = nRefreshError; }
 	virtual void SetMatchMaking( bool nMatchMaking )					{ m_MatchMaking = nMatchMaking; }
-	virtual void SetForfeitDelayTime( uint32_t nTime )				{ m_ForfeitDelayTime = nTime; }
+	virtual void SetForfeitDelayTime( uint32_t nTime )					{ m_ForfeitDelayTime = nTime; }
+	virtual void SetInhouse( bool nInhouse )							{ m_GameIsInHouse = nInhouse; }
+	virtual void SetHCLMode( string nHCL )								{ m_HCLCommandString = nHCL; }
 
 	virtual uint32_t GetNextTimedActionTicks( );
 	virtual uint32_t GetSlotsOccupied( );
@@ -276,7 +282,7 @@ public:
 	virtual BYTEARRAY GetPIDs( );
 	virtual BYTEARRAY GetPIDs( unsigned char excludePID );
 	virtual unsigned char GetHostPID( );
-	virtual unsigned char GetEmptySlot( bool reserved );
+	virtual unsigned char GetEmptySlot( bool reserved, string name = string() );
 	virtual unsigned char GetEmptySlot( unsigned char team, unsigned char PID );
 	virtual void SwapSlots( unsigned char SID1, unsigned char SID2 );
 	virtual void OpenSlot( unsigned char SID, bool kick );

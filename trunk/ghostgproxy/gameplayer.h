@@ -135,7 +135,9 @@ private:
 	bool 		m_Admin;						// if the player is admin or not;
 	bool 		m_Moderator;
 	bool 		m_HasLeft;
-	
+	uint32_t	m_LeftTime;
+	uint32_t	m_Games;
+	uint32_t	m_Stay;
 
 public:
 	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved );
@@ -192,16 +194,19 @@ public:
 	uint32_t 	GetTeam( )						{ return m_Team; }
 	bool 		GetEndVote( )					{ return m_EndVote; }
 	bool 		GetFFVote( )					{ return m_FFVote; }
+	uint32_t 	GetLeftTime( )					{ return m_LeftTime; }
+	uint32_t 	GetGames( )					{ return m_Games; }
+	uint32_t 	GetAvgStay( )					{ return m_Stay; }
 	
 	void 		SetAdmin( bool nAdmin )			{ m_Admin = nAdmin; }
-	void 		SetModerator( bool nModerator )	{ m_Moderator = nModerator; }
+	void 		SetModerator( bool nModerator )		{ m_Moderator = nModerator; }
 	void 		SetLeft( bool nLeft )			{ m_HasLeft = nLeft; }
 	void 		SetTeam( uint32_t nTeam )		{ m_Team = nTeam; }
 	void 		SetEndVote( bool nVote )		{ m_EndVote = nVote; }
 	void 		SetFFVote( bool nVote )			{ m_FFVote = nVote; }
-	
-	
-
+	void 		SetLeftTime( uint32_t nTime )		{ m_LeftTime = nTime; }
+	void		SetGames( uint32_t nGames )		{ m_Games = nGames; }
+	void		SetStay( uint32_t nStay )		{ m_Stay = nStay; }
 	
 	void SetLeftReason( string nLeftReason )										{ m_LeftReason = nLeftReason; }
 	void SetSpoofedRealm( string nSpoofedRealm )									{ m_SpoofedRealm = nSpoofedRealm; }
