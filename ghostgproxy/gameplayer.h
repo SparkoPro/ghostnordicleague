@@ -138,6 +138,8 @@ private:
 	uint32_t	m_LeftTime;
 	uint32_t	m_Games;
 	uint32_t	m_Stay;
+	bool		m_IsLinked;
+	string		m_LinkedTo;
 
 public:
 	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved );
@@ -188,16 +190,18 @@ public:
 	
 	// nordicleague
 	
-	bool 		IsAdmin( )						{ return m_Admin; }
-	bool 		IsModerator( )					{ return m_Moderator; }
-	bool 		HasLeft( )						{ return m_HasLeft; }
-	uint32_t 	GetTeam( )						{ return m_Team; }
-	bool 		GetEndVote( )					{ return m_EndVote; }
-	bool 		GetFFVote( )					{ return m_FFVote; }
-	uint32_t 	GetLeftTime( )					{ return m_LeftTime; }
-	uint32_t 	GetGames( )					{ return m_Games; }
-	uint32_t 	GetAvgStay( )					{ return m_Stay; }
-	
+	bool 		IsAdmin( )				{ return m_Admin; }
+	bool 		IsModerator( )				{ return m_Moderator; }
+	bool 		HasLeft( )				{ return m_HasLeft; }
+	uint32_t 	GetTeam( )				{ return m_Team; }
+	bool 		GetEndVote( )				{ return m_EndVote; }
+	bool 		GetFFVote( )				{ return m_FFVote; }
+	uint32_t 	GetLeftTime( )				{ return m_LeftTime; }
+	uint32_t 	GetGames( )				{ return m_Games; }
+	uint32_t 	GetAvgStay( )				{ return m_Stay; }
+	bool		GetLinked()				{ return m_IsLinked; }
+	string		GetLinkedTo()				{ return m_LinkedTo; }	
+
 	void 		SetAdmin( bool nAdmin )			{ m_Admin = nAdmin; }
 	void 		SetModerator( bool nModerator )		{ m_Moderator = nModerator; }
 	void 		SetLeft( bool nLeft )			{ m_HasLeft = nLeft; }
@@ -207,26 +211,28 @@ public:
 	void 		SetLeftTime( uint32_t nTime )		{ m_LeftTime = nTime; }
 	void		SetGames( uint32_t nGames )		{ m_Games = nGames; }
 	void		SetStay( uint32_t nStay )		{ m_Stay = nStay; }
+	void		SetLinked( bool nLinked )		{ m_IsLinked = nLinked; }
+	void		SetLinkedTo( string nLinkedTo )		{ m_LinkedTo = nLinkedTo; }
 	
-	void SetLeftReason( string nLeftReason )										{ m_LeftReason = nLeftReason; }
-	void SetSpoofedRealm( string nSpoofedRealm )									{ m_SpoofedRealm = nSpoofedRealm; }
-	void SetLeftCode( uint32_t nLeftCode )											{ m_LeftCode = nLeftCode; }
-	void SetLoginAttempts( uint32_t nLoginAttempts )								{ m_LoginAttempts = nLoginAttempts; }
-	void SetSyncCounter( uint32_t nSyncCounter )									{ m_SyncCounter = nSyncCounter; }
-	void SetLastMapPartSent( uint32_t nLastMapPartSent )							{ m_LastMapPartSent = nLastMapPartSent; }
-	void SetLastMapPartAcked( uint32_t nLastMapPartAcked )							{ m_LastMapPartAcked = nLastMapPartAcked; }
+	void SetLeftReason( string nLeftReason )						{ m_LeftReason = nLeftReason; }
+	void SetSpoofedRealm( string nSpoofedRealm )						{ m_SpoofedRealm = nSpoofedRealm; }
+	void SetLeftCode( uint32_t nLeftCode )							{ m_LeftCode = nLeftCode; }
+	void SetLoginAttempts( uint32_t nLoginAttempts )					{ m_LoginAttempts = nLoginAttempts; }
+	void SetSyncCounter( uint32_t nSyncCounter )						{ m_SyncCounter = nSyncCounter; }
+	void SetLastMapPartSent( uint32_t nLastMapPartSent )					{ m_LastMapPartSent = nLastMapPartSent; }
+	void SetLastMapPartAcked( uint32_t nLastMapPartAcked )					{ m_LastMapPartAcked = nLastMapPartAcked; }
 	void SetStartedDownloadingTicks( uint32_t nStartedDownloadingTicks )			{ m_StartedDownloadingTicks = nStartedDownloadingTicks; }
 	void SetFinishedDownloadingTime( uint32_t nFinishedDownloadingTime )			{ m_FinishedDownloadingTime = nFinishedDownloadingTime; }
-	void SetStartedLaggingTicks( uint32_t nStartedLaggingTicks )					{ m_StartedLaggingTicks = nStartedLaggingTicks; }
-	void SetStatsSentTime( uint32_t nStatsSentTime )								{ m_StatsSentTime = nStatsSentTime; }
-	void SetStatsDotASentTime( uint32_t nStatsDotASentTime )						{ m_StatsDotASentTime = nStatsDotASentTime; }
-	void SetLastGProxyWaitNoticeSentTime( uint32_t nLastGProxyWaitNoticeSentTime )	{ m_LastGProxyWaitNoticeSentTime = nLastGProxyWaitNoticeSentTime; }
-	void SetScore( double nScore )													{ m_Score = nScore; }
-	void SetLoggedIn( bool nLoggedIn )												{ m_LoggedIn = nLoggedIn; }
-	void SetSpoofed( bool nSpoofed )												{ m_Spoofed = nSpoofed; }
-	void SetReserved( bool nReserved )												{ m_Reserved = nReserved; }
-	void SetWhoisShouldBeSent( bool nWhoisShouldBeSent )							{ m_WhoisShouldBeSent = nWhoisShouldBeSent; }
-	void SetDownloadAllowed( bool nDownloadAllowed )								{ m_DownloadAllowed = nDownloadAllowed; }
+	void SetStartedLaggingTicks( uint32_t nStartedLaggingTicks )				{ m_StartedLaggingTicks = nStartedLaggingTicks; }
+	void SetStatsSentTime( uint32_t nStatsSentTime )					{ m_StatsSentTime = nStatsSentTime; }
+	void SetStatsDotASentTime( uint32_t nStatsDotASentTime )				{ m_StatsDotASentTime = nStatsDotASentTime; }
+	void SetLastGProxyWaitNoticeSentTime( uint32_t nLastGProxyWaitNoticeSentTime )		{ m_LastGProxyWaitNoticeSentTime = nLastGProxyWaitNoticeSentTime; }
+	void SetScore( double nScore )								{ m_Score = nScore; }
+	void SetLoggedIn( bool nLoggedIn )							{ m_LoggedIn = nLoggedIn; }
+	void SetSpoofed( bool nSpoofed )							{ m_Spoofed = nSpoofed; }
+	void SetReserved( bool nReserved )							{ m_Reserved = nReserved; }
+	void SetWhoisShouldBeSent( bool nWhoisShouldBeSent )					{ m_WhoisShouldBeSent = nWhoisShouldBeSent; }
+	void SetDownloadAllowed( bool nDownloadAllowed )					{ m_DownloadAllowed = nDownloadAllowed; }
 	void SetDownloadStarted( bool nDownloadStarted )								{ m_DownloadStarted = nDownloadStarted; }
 	void SetDownloadFinished( bool nDownloadFinished )								{ m_DownloadFinished = nDownloadFinished; }
 	void SetLagging( bool nLagging )												{ m_Lagging = nLagging; }
