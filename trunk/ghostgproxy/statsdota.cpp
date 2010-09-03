@@ -131,8 +131,9 @@ bool CStatsDOTA :: ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost 
 										m_Players[VictimColour]->SetDeaths( m_Players[VictimColour]->GetDeaths() + 1 );
 									}
 									
-									CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player on team " + UTIL_ToString(Killer->GetTeam()) + " [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
-									GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, m_Game->GetGameName( ), Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
+									//CONSOLE_Print( "[STATSDOTA: " + m_Game->GetGameName( ) + "] player on team " + UTIL_ToString(Killer->GetTeam()) + " [" + Killer->GetName( ) + " (" + UTIL_ToString(m_Players[ValueInt]->GetKills()) + ") ] killed player [" + Victim->GetName( ) + " (" + UTIL_ToString(m_Players[VictimColour]->GetDeaths()) + ") ]" );
+									if (Killer && Victim)
+										GHost->m_Callables.push_back( DB->ThreadedDotAEventAdd( 0, m_Game->GetGameName( ), Killer->GetName(), Victim->GetName(), ValueInt, VictimColour ));
 								}
 								else if ( Killer && !Victim)
 								{

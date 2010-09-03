@@ -2686,7 +2686,8 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	Player->SetAdmin(AnyAdminCheck);
 	Player->SetGames(games);
 	Player->SetStay(staypercent);
-		
+	Player->SetLinked(false);
+
 	// consider LAN players to have already spoof checked since they can't
 	// since so many people have trouble with this feature we now use the JoinedRealm to determine LAN status
 
