@@ -1601,6 +1601,14 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
 	
+	if (!m_GameLoaded && player->GetLinked())
+	{
+		player->SetLinked(false);
+		CGamePlayer *Linked = GetPlayerFromName(player->GetLinkedTo(), false);
+		if (Linked)
+			Linked->SetLinked(false);
+	}
+	
 	if (m_GameLoaded)
 	{
 		if (!m_FFSucceeded)
@@ -2852,6 +2860,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 void CBaseGame :: EventPlayerLeft( CGamePlayer *player, uint32_t reason )
 {
 	// this function is only called when a player leave packet is received, not when there's a socket error, kick, etc...
+
 
 	player->SetDeleteMe( true );
 
@@ -4999,4 +5008,28 @@ void CBaseGame :: DeleteFakePlayer( )
 	SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( m_FakePlayerPID, PLAYERLEAVE_LOBBY ) );
 	SendAllSlotInfo( );
 	m_FakePlayerPID = 255;
+}
+
+void CBaseGame :: RemoveLinkedPlayers( string player )
+{
+	for( vector<PairedPlayers> :: iterator i = m_PairedLinkedPlayers.begin( ); i != m_PairedLinkedPlayers.end( ); )
+	{
+		if( i->first == player || i->second == player )
+		{
+			CGamePlayer *First = GetPlayerFromName(i->first, true);
+			CGamePlayer *Second = GetPlayerFromName(i->second, true);
+			
+			if (First)
+				First->RemoveLink();
+				
+			if (Second)
+				Second->RemoveLink();
+				
+			SendAllChat("Removing link between [" + i->first + "] and [" + i->second + "]");
+			
+			i = m_PairedLinkedPlayers.erase( i );
+		}
+		else
+			i++;
+	}	
 }

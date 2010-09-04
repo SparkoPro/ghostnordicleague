@@ -42,6 +42,7 @@ class CCallableScoreCheck;
 class CCallableGamePlayerSummaryCheck;
 
 typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
+typedef pair<string,string> PairedPlayers;
 
 class CBaseGame
 {
@@ -158,6 +159,7 @@ protected:
 	uint32_t		m_BalanceSlotsTime; 				// timer for delaying balancing of slots.
 	
 	bool			m_GameIsInHouse;					// inhouse game.
+	vector<PairedPlayers> m_PairedLinkedPlayers;
 
 	/*
 		NordicLeague - @end - Some added custom variables
@@ -199,6 +201,8 @@ public:
 	virtual void SetForfeitDelayTime( uint32_t nTime )					{ m_ForfeitDelayTime = nTime; }
 	virtual void SetInhouse( bool nInhouse )							{ m_GameIsInHouse = nInhouse; }
 	virtual void SetHCLMode( string nHCL )								{ m_HCLCommandString = nHCL; }
+	virtual void AddLinkedPlayers( PairedPlayers Linked )				{ m_PairedLinkedPlayers.push_back(Linked); }
+	virtual void RemoveLinkedPlayers( string player );
 
 	virtual uint32_t GetNextTimedActionTicks( );
 	virtual uint32_t GetSlotsOccupied( );
