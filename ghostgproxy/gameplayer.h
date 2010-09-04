@@ -213,6 +213,7 @@ public:
 	void		SetStay( uint32_t nStay )		{ m_Stay = nStay; }
 	void		SetLinked( bool nLinked )		{ m_IsLinked = nLinked; }
 	void		SetLinkedTo( string nLinkedTo )		{ m_LinkedTo = nLinkedTo; }
+	void		RemoveLink()					{ m_IsLinked = false; m_LinkedTo.clear(); }
 	
 	void SetLeftReason( string nLeftReason )						{ m_LeftReason = nLeftReason; }
 	void SetSpoofedRealm( string nSpoofedRealm )						{ m_SpoofedRealm = nSpoofedRealm; }

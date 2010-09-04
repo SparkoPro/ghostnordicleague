@@ -2127,6 +2127,19 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			}
 		}
 	}
+	
+	if ( Command == "checklinked" || Command == "cl" )
+	{
+		if (!m_PairedLinkedPlayers.empty())
+		{
+			for( vector<PairedPlayers> :: iterator i = m_PairedLinkedPlayers.begin( ); i != m_PairedLinkedPlayers.end( ); i++ )
+			{
+				SendAllChat("Linked players: [" + i->first + "] and [" + i->second + "]");
+			}
+		}
+		else
+			SendAllChat("No linked players in this game.");
+	}
 
 	//
 	// !LINK
@@ -2134,41 +2147,61 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 	if( Command == "link" && !player->GetLinked( ) && !Payload.empty() )
 	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] link requested [" + User + "] wants to link with [" + Payload + "]" );
-
-		string LinkTo = Payload;
-			
-		CGamePlayer *LastMatch = NULL;
-		uint32_t Matches = GetPlayerFromNamePartial( LinkTo, &LastMatch );
-
-		if ( Matches == 1 )
+		if (m_PairedLinkedPlayers.size() >= 2)
 		{
-			CONSOLE_Print( "[GAME: " + m_GameName + "] link requested, match found" );
-
-			LinkTo = LastMatch->GetName();
-			string PlayerName = player->GetName();
-			bool MutualLink = false;
-
-			string OtherLinked = LastMatch->GetLinkedTo();
-			if ( OtherLinked == PlayerName )
-				MutualLink = true;
-
-			player->SetLinkedTo( LinkTo );
-
-			if ( MutualLink )
-			{
-				LastMatch->SetLinked(true);
-				player->SetLinked(true);
-				SendAllChat("Linking player [" + User + "] and [" + LastMatch->GetName() + "]");
-			}
-			else
-				SendAllChat(User + " requesting to link with player [" + LastMatch->GetName() + "]");
-
+			SendAllChat("Unable to link! Too many linked players already. (2+2, use !cl to see which players)");
 		}
 		else
 		{
-			SendAllChat( "Unable to link, no match or multiple matches.." );
+			CONSOLE_Print( "[GAME: " + m_GameName + "] link requested [" + User + "] wants to link with [" + Payload + "]" );
+
+			string LinkTo = Payload;	
+			
+			CGamePlayer *LastMatch = NULL;
+			uint32_t Matches = GetPlayerFromNamePartial( LinkTo, &LastMatch );
+
+			if ( Matches == 1 )
+			{
+				
+				CONSOLE_Print( "[GAME: " + m_GameName + "] link requested, match found" );
+
+				LinkTo = LastMatch->GetName();
+				string PlayerName = player->GetName();
+				
+				if (LinkTo != PlayerName)
+				{
+					bool MutualLink = false;
+
+					string OtherLinked = LastMatch->GetLinkedTo();
+					if ( OtherLinked == PlayerName )
+						MutualLink = true;
+
+					player->SetLinkedTo( LinkTo );
+
+					if ( MutualLink )
+					{
+						LastMatch->SetLinked(true);
+						player->SetLinked(true);
+						AddLinkedPlayers( PairedPlayers(User, LastMatch->GetName()) );
+						SendAllChat("Linking player [" + User + "] and [" + LastMatch->GetName() + "]");
+					}
+					else
+						SendAllChat(User + " requesting to link with player [" + LastMatch->GetName() + "]");
+				}
+
+			}
+			else
+			{
+				SendAllChat( "Unable to link, no match or multiple matches.." );
+			}
 		}
+	}
+	
+	if ( Command == "unlink" )
+	{
+		if (player->GetLinked())
+			RemoveLinkedPlayers(player->GetName());
+		//player->RemoveLink();
 	}
 
 

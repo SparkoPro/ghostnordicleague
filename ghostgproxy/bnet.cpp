@@ -2361,7 +2361,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							CONSOLE_Print( "[INHOUSE] Slot reservation [" + UTIL_ToString((*i).first) + "] player [" + (*i).second + "]." );
 						}
 						
-						
 						m_GHost->CreateGame( m_GHost->m_Map, GAME_PRIVATE, false, GameName, Players.front().second, User, m_Server, Whisper );
 						
 						if (m_GHost->m_CurrentGame)
@@ -2716,7 +2715,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 
 					if (!Whisper)
 					{
-						QueueChatCommand( "Usage: /w NordicOnlyBot2 !register mymail@domain.com" , User, true);
+						QueueChatCommand( "Usage: /w NordicOnlyBot2 !register <my@email.com>" , User, true);
 					}
 					else
 					{
@@ -2725,8 +2724,8 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 							RegMail = Payload;
 
 						// check for potential abuse
-						if (RegMail.empty())
-							QueueChatCommand( "No email adress specified! Usage: /w NordicOnlyBot2 !register mymail@domain.com" , User, true );
+						if (RegMail.empty() || RegMail == "my@email.com")
+							QueueChatCommand( "No and/or incorrect email adress specified! Usage: /w NordicOnlyBot2 !register <my@email.com>" , User, true );
 						else
 						{
 							boost::regex expression(m_GHost->m_RegisterEmailRegEx);
@@ -2734,7 +2733,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
  							if( boost :: regex_match( RegMail, expression ) )
 								m_PairedRegisterPlayerAdds.push_back( PairedRegisterPlayerAdd( User, m_GHost->m_DB->ThreadedRegisterPlayerAdd( User, RegMail, string() ) ) );
 							else
-								QueueChatCommand( "Invalid email adress specified! Usage: /w NordicOnlyBot !register mymail@domain.com" , User, true );
+								QueueChatCommand( "Invalid email adress specified! Usage: /w NordicOnlyBot2 !register <my@email.com>" , User, true );
 						}
 					}
 				}
