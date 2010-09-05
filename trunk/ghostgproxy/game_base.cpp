@@ -4480,33 +4480,63 @@ void CBaseGame :: BalanceSlots( )
 	unsigned char TeamSizes[12];
 	double PlayerScores[13];
 	memset( TeamSizes, 0, sizeof( unsigned char ) * 12 );
+	vector<string> AlreadyLinked;
+	vector<unsigned char> LinkedPIDs;
 
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		unsigned char PID = (*i)->GetPID( );
-
-		if( PID < 13 )
+		
+		if ( find (AlreadyLinked.begin(), AlreadyLinked.end(), (*i)->GetName( )) == AlreadyLinked.end() )
 		{
-			unsigned char SID = GetSIDFromPID( PID );
+			unsigned char PID = (*i)->GetPID( );
 
-			if( SID < m_Slots.size( ) )
+			if( PID < 13 )
 			{
-				unsigned char Team = m_Slots[SID].GetTeam( );
+				unsigned char SID = GetSIDFromPID( PID );
 
-				if( Team < 12 )
+				if( SID < m_Slots.size( ) )
 				{
-					// we are forced to use a default score because there's no way to balance the teams otherwise
+					unsigned char Team = m_Slots[SID].GetTeam( );
 
-					double Score = (*i)->GetScore( );
+					if( Team < 12 )
+					{
+						// we are forced to use a default score because there's no way to balance the teams otherwise
 
-					if( Score < -99999.0 )
-						Score = m_Map->GetMapDefaultPlayerScore( );
+						double Score = (*i)->GetScore( );
 
-					PlayerIDs.push_back( PID );
-					TeamSizes[Team]++;
-					PlayerScores[PID] = Score;
+						if( Score < -99999.0 )
+							Score = m_Map->GetMapDefaultPlayerScore( );
+						
+						if ( (*i)->GetLinked() )
+						{
+							string LinkedToName = (*i)->GetLinkedTo();
+							CGamePlayer *LinkedTo = GetPlayerFromName(LinkedToName, true);
+							if ( LinkedTo )
+							{
+								if( LinkedTo->GetScore() < -99999.0 )
+									Score *= 2;
+								else
+									Score += LinkedTo->GetScore();
+								
+								AlreadyLinked.push_back(LinkedTo->GetName());
+								LinkedPIDs.push_back(LinkedTo->GetPID());
+								
+								if (m_GHost->m_Debug)
+									CONSOLE_Print( "[GAME: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
+							}
+						}
+
+						PlayerIDs.push_back( PID );
+						TeamSizes[Team]++;
+						PlayerScores[PID] = Score;
+					}
 				}
 			}
+		}
+		else
+		{
+			if (m_GHost->m_Debug)
+				CONSOLE_Print( "[GAME: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." );
 		}
 	}
 
@@ -4555,6 +4585,44 @@ void CBaseGame :: BalanceSlots( )
 	uint32_t StartTicks = GetTicks( );
 	vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
 	uint32_t EndTicks = GetTicks( );
+	
+	
+	if (!AlreadyLinked.empty())
+	{
+		vector<unsigned char> NewOrder = BestOrdering;
+		
+		unsigned char CurrentSlot = 0;
+		for( vector<unsigned char> :: iterator i = BestOrdering.begin( ); i != BestOrdering.end( ); i++ )
+		{
+			CGamePlayer *Who = GetPlayerFromPID(*i);
+			if (Who && Who->GetLinked())
+			{
+				if (CurrentSlot == 4)
+				{
+					// we got a problem, we can't inject the linked player after here because that will break the link.
+					// Slot should never be able to get to 9
+					SendAllChat("Linking for " + Who->GetName() + " broken by slot5..");
+				}
+				
+				CGamePlayer *Linked = GetPlayerFromName(Who->GetLinkedTo(), true);
+				if (Linked)
+				{				
+					NewOrder.insert(i, Linked->GetPID());
+					CurrentSlot++;
+				}
+			}
+			CurrentSlot++;
+		}
+		
+		if (m_GHost->m_Debug)
+		{
+			
+			for( vector<unsigned char> :: iterator i = BestOrdering.begin( ); i != BestOrdering.end( ); i++ )
+				CONSOLE_Print( "[GAME: " + m_GameName + "] Best ordering: " + UTIL_ToString((unsigned int)*i) );
+			for( vector<unsigned char> :: iterator i = NewOrder.begin( ); i != NewOrder.end( ); i++ )
+				CONSOLE_Print( "[GAME: " + m_GameName + "] New ordering: " + UTIL_ToString((unsigned int)*i) );
+		}
+	}
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order
