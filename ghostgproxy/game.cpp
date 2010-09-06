@@ -2200,8 +2200,10 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	if ( Command == "unlink" )
 	{
 		if (player->GetLinked())
+		{
 			RemoveLinkedPlayers(player->GetName());
-		//player->RemoveLink();
+		}
+		player->RemoveLink();
 	}
 
 

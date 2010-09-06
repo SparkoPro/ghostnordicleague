@@ -1602,12 +1602,7 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 	CONSOLE_Print( "[GAME: " + m_GameName + "] deleting player [" + player->GetName( ) + "]: " + player->GetLeftReason( ) );
 	
 	if (!m_GameLoaded && player->GetLinked())
-	{
-		player->SetLinked(false);
-		CGamePlayer *Linked = GetPlayerFromName(player->GetLinkedTo(), false);
-		if (Linked)
-			Linked->SetLinked(false);
-	}
+		RemoveLinkedPlayers(player->GetName());
 	
 	if (m_GameLoaded)
 	{
@@ -1773,7 +1768,10 @@ void CBaseGame :: EventPlayerDisconnectTimedOut( CGamePlayer *player )
 		player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
 		if( !m_GameLoading && !m_GameLoaded )
+		{
+			RemoveLinkedPlayers(player->GetName());
 			OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
+		}
 	}
 }
 
@@ -1788,7 +1786,10 @@ void CBaseGame :: EventPlayerDisconnectPlayerError( CGamePlayer *player )
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
 	if( !m_GameLoading && !m_GameLoaded )
+	{
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
+		RemoveLinkedPlayers(player->GetName());
+	}
 }
 
 void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
@@ -1821,7 +1822,10 @@ void CBaseGame :: EventPlayerDisconnectSocketError( CGamePlayer *player )
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
 	if( !m_GameLoading && !m_GameLoaded )
+	{
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
+		RemoveLinkedPlayers(player->GetName());
+	}
 }
 
 void CBaseGame :: EventPlayerDisconnectConnectionClosed( CGamePlayer *player )
@@ -1854,7 +1858,10 @@ void CBaseGame :: EventPlayerDisconnectConnectionClosed( CGamePlayer *player )
 	player->SetLeftCode( PLAYERLEAVE_DISCONNECT );
 
 	if( !m_GameLoading && !m_GameLoaded )
+	{
 		OpenSlot( GetSIDFromPID( player->GetPID( ) ), false );
+		RemoveLinkedPlayers(player->GetName());
+	}
 }
 
 void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer )
@@ -2861,7 +2868,8 @@ void CBaseGame :: EventPlayerLeft( CGamePlayer *player, uint32_t reason )
 {
 	// this function is only called when a player leave packet is received, not when there's a socket error, kick, etc...
 
-
+	RemoveLinkedPlayers(player->GetName());
+	
 	player->SetDeleteMe( true );
 
 	if( reason == PLAYERLEAVE_GPROXY )
@@ -4520,9 +4528,10 @@ void CBaseGame :: BalanceSlots( )
 								
 								AlreadyLinked.push_back(LinkedTo->GetName());
 								LinkedPIDs.push_back(LinkedTo->GetPID());
+								//TeamSizes[Team]++;
 								
 								if (m_GHost->m_Debug)
-									CONSOLE_Print( "[GAME: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
+									CONSOLE_Print( "[DEBUG: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
 							}
 						}
 
@@ -4536,10 +4545,13 @@ void CBaseGame :: BalanceSlots( )
 		else
 		{
 			if (m_GHost->m_Debug)
-				CONSOLE_Print( "[GAME: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." );
+				CONSOLE_Print( "[DEBUG: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." );
 		}
 	}
 
+	if (m_GHost->m_Debug)
+		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Passed to sorting and calculated cost.." );
+	
 	sort( PlayerIDs.begin( ), PlayerIDs.end( ) );
 
 	// balancing the teams is a variation of the bin packing problem which is NP
@@ -4581,47 +4593,71 @@ void CBaseGame :: BalanceSlots( )
 		ShuffleSlots( );
 		return;
 	}
+	
+	if (m_GHost->m_Debug)
+		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running BalanceSlotsRecursive()" );
 
 	uint32_t StartTicks = GetTicks( );
 	vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
 	uint32_t EndTicks = GetTicks( );
 	
+	CGamePlayer *NeedSwap = NULL;
+	bool LinkedGame = false;
 	
 	if (!AlreadyLinked.empty())
 	{
+		if (m_GHost->m_Debug)
+			CONSOLE_Print( "[DEBUG: " + m_GameName + "] Trying to restore linked-in players.." );
+		
 		vector<unsigned char> NewOrder = BestOrdering;
 		
-		unsigned char CurrentSlot = 0;
+		int CurrentSlot = 0;
 		for( vector<unsigned char> :: iterator i = BestOrdering.begin( ); i != BestOrdering.end( ); i++ )
 		{
-			CGamePlayer *Who = GetPlayerFromPID(*i);
-			if (Who && Who->GetLinked())
+			CGamePlayer *Who = GetPlayerFromPID( *i );
+			if (Who)
 			{
-				if (CurrentSlot == 4)
+				if (Who->GetLinked())
 				{
-					// we got a problem, we can't inject the linked player after here because that will break the link.
-					// Slot should never be able to get to 9
-					SendAllChat("Linking for " + Who->GetName() + " broken by slot5..");
-				}
-				
-				CGamePlayer *Linked = GetPlayerFromName(Who->GetLinkedTo(), true);
-				if (Linked)
-				{				
-					NewOrder.insert(i, Linked->GetPID());
-					CurrentSlot++;
+					if (CurrentSlot == 4)
+					{
+						// we got a problem, we can't inject the linked player after here because that will break the link.
+						// Slot should never be able to get to 9
+						if (m_GHost->m_Debug)
+							SendAllChat("Linking for " + Who->GetName() + " broken by slot5, trying to fix with swap..");
+
+						NeedSwap = Who;
+					}
+			
+					CGamePlayer *Linked = GetPlayerFromName(Who->GetLinkedTo(), true);
+					if (Linked)
+					{	
+						if (m_GHost->m_Debug)
+							CONSOLE_Print( "[DEBUG: " + m_GameName + "] Injecting player in slot [" + UTIL_ToString(CurrentSlot) + "].." );			
+						//BestOrdering.insert(i, );
+						
+						NewOrder.insert(NewOrder.begin() + CurrentSlot, Linked->GetPID());
+						CurrentSlot++;
+						
+						unsigned char SID = GetSIDFromPID( Who->GetPID() );
+						TeamSizes[m_Slots[SID].GetTeam( )]++;
+						
+						LinkedGame = true;
+					}
 				}
 			}
 			CurrentSlot++;
-		}
+		}	
 		
 		if (m_GHost->m_Debug)
 		{
-			
 			for( vector<unsigned char> :: iterator i = BestOrdering.begin( ); i != BestOrdering.end( ); i++ )
-				CONSOLE_Print( "[GAME: " + m_GameName + "] Best ordering: " + UTIL_ToString((unsigned int)*i) );
+				CONSOLE_Print( "[DEBUG: " + m_GameName + "] Best ordering: " + UTIL_ToString((unsigned int)*i) );
 			for( vector<unsigned char> :: iterator i = NewOrder.begin( ); i != NewOrder.end( ); i++ )
-				CONSOLE_Print( "[GAME: " + m_GameName + "] New ordering: " + UTIL_ToString((unsigned int)*i) );
+				CONSOLE_Print( "[DEBUG: " + m_GameName + "] New ordering: " + UTIL_ToString((unsigned int)*i) );
 		}
+		
+		BestOrdering = NewOrder;
 	}
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
@@ -4631,35 +4667,79 @@ void CBaseGame :: BalanceSlots( )
 
 	for( unsigned char i = 0; i < 12; i++ )
 	{
-		unsigned char CurrentSlot = 0;
-
-		for( unsigned char j = 0; j < TeamSizes[i]; j++ )
+		/*
+		if (LinkedGame)
 		{
-			while( CurrentSlot < m_Slots.size( ) && m_Slots[CurrentSlot].GetTeam( ) != i )
+			unsigned char SID = GetSIDFromPID( *CurrentPID );
+		}
+		else
+		{ */
+			unsigned char CurrentSlot = 0;
+
+			for( unsigned char j = 0; j < TeamSizes[i]; j++ )
+			{
+				while( CurrentSlot < m_Slots.size( ) && m_Slots[CurrentSlot].GetTeam( ) != i )
+					CurrentSlot++;
+
+				// put the CurrentPID player on team i by swapping them into CurrentSlot
+
+				unsigned char SID1 = CurrentSlot;
+				unsigned char SID2 = GetSIDFromPID( *CurrentPID );
+
+				if( SID1 < m_Slots.size( ) && SID2 < m_Slots.size( ) )
+				{
+					CGameSlot Slot1 = m_Slots[SID1];
+					CGameSlot Slot2 = m_Slots[SID2];
+					m_Slots[SID1] = CGameSlot( Slot2.GetPID( ), Slot2.GetDownloadStatus( ), Slot2.GetSlotStatus( ), Slot2.GetComputer( ), Slot1.GetTeam( ), Slot1.GetColour( ), Slot1.GetRace( ) );
+					m_Slots[SID2] = CGameSlot( Slot1.GetPID( ), Slot1.GetDownloadStatus( ), Slot1.GetSlotStatus( ), Slot1.GetComputer( ), Slot2.GetTeam( ), Slot2.GetColour( ), Slot2.GetRace( ) );
+				}
+				else
+				{
+					CONSOLE_Print( "[GAME: " + m_GameName + "] shuffling slots instead of balancing - the balancing algorithm tried to do an invalid swap (this shouldn't happen)" );
+					SendAllChat( m_GHost->m_Language->ShufflingPlayers( ) );
+					ShuffleSlots( );
+					return;
+				}
+
+				CurrentPID++;
 				CurrentSlot++;
-
-			// put the CurrentPID player on team i by swapping them into CurrentSlot
-
-			unsigned char SID1 = CurrentSlot;
-			unsigned char SID2 = GetSIDFromPID( *CurrentPID );
-
-			if( SID1 < m_Slots.size( ) && SID2 < m_Slots.size( ) )
-			{
-				CGameSlot Slot1 = m_Slots[SID1];
-				CGameSlot Slot2 = m_Slots[SID2];
-				m_Slots[SID1] = CGameSlot( Slot2.GetPID( ), Slot2.GetDownloadStatus( ), Slot2.GetSlotStatus( ), Slot2.GetComputer( ), Slot1.GetTeam( ), Slot1.GetColour( ), Slot1.GetRace( ) );
-				m_Slots[SID2] = CGameSlot( Slot1.GetPID( ), Slot1.GetDownloadStatus( ), Slot1.GetSlotStatus( ), Slot1.GetComputer( ), Slot2.GetTeam( ), Slot2.GetColour( ), Slot2.GetRace( ) );
 			}
-			else
+		//}
+	}
+	
+	if (NeedSwap)
+	{
+		double SmallestDifference = 5000;
+		unsigned char SwapSID = 255;
+		// We need to find the best suitable player to swap in to keep the linking intact.
+		// Find the player with the closest score in the opposite team
+		
+		for( unsigned char i = 0; i < 4; i++ )
+		{
+			if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 && m_Slots[i].GetTeam( ) == 0 )
 			{
-				CONSOLE_Print( "[GAME: " + m_GameName + "] shuffling slots instead of balancing - the balancing algorithm tried to do an invalid swap (this shouldn't happen)" );
-				SendAllChat( m_GHost->m_Language->ShufflingPlayers( ) );
-				ShuffleSlots( );
-				return;
+				CGamePlayer *Player = GetPlayerFromPID(m_Slots[i].GetPID());
+				
+				double Difference = abs( NeedSwap->GetScore() - Player->GetScore() );
+				
+				if( SmallestDifference > Difference )
+				{
+					SmallestDifference = Difference;
+					SwapSID = i;
+					
+					if (m_GHost->m_Debug)
+						CONSOLE_Print( "[DEBUG: " + m_GameName + "] Found new better suitable SID [" + UTIL_ToString((int)SwapSID) + "]" );
+				}
 			}
-
-			CurrentPID++;
-			CurrentSlot++;
+		}
+		
+		if ( SwapSID < 255 )
+		{
+			// ok we found the closest scored player, do the actual swap
+			if (m_GHost->m_Debug)
+				CONSOLE_Print( "[DEBUG: " + m_GameName + "] swapping to keep linking intact.." );
+				
+			SwapSlots(GetSIDFromPID(NeedSwap->GetPID()), SwapSID);
 		}
 	}
 
