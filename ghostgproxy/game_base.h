@@ -43,6 +43,7 @@ class CCallableGamePlayerSummaryCheck;
 
 typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<string,string> PairedPlayers;
+typedef std::pair<unsigned char, double> BalancePlayerPair;
 
 class CBaseGame
 {
@@ -297,6 +298,7 @@ public:
 	virtual void CloseAllSlots( );
 	virtual void ShuffleSlots( );
 	virtual vector<unsigned char> BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
+	virtual void BalanceSlotsLinked(vector<BalancePlayerPair> Players);
 	virtual void BalanceSlots( );
 	virtual void AddToSpoofed( string server, string name, bool sendMessage );
 	virtual void AddToReserved( string name );
