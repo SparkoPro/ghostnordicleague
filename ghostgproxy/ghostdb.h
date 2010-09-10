@@ -984,7 +984,9 @@ public:
 	float GetAvgCourierKills( )			{ return m_TotalGames > 0 ? (float)m_TotalCourierKills / m_TotalGames : 0; }
 };
 
+
 // nordicleague
+
 
 class CCallableRegisterPlayerAdd : virtual public CBaseCallable
 {
