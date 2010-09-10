@@ -37,6 +37,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <boost/bind.hpp>
+
 #include "next_combination.h"
 
 //
@@ -4473,6 +4475,159 @@ vector<unsigned char> CBaseGame :: BalanceSlotsRecursive( vector<unsigned char> 
 	return BestOrdering;
 }
 
+void CBaseGame :: BalanceSlotsLinked(vector<BalancePlayerPair> Players)
+{
+	unsigned char CurrentPlayer = 0;
+	
+	bool SentinelGotALink = false;
+	bool ScourgeGotALink = false;
+	
+	vector<unsigned char>Scourge;
+	vector<unsigned char>Sentinel;
+	
+	for( vector<BalancePlayerPair> :: iterator i = Players.begin( ); i != Players.end( ); i++ )
+		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Before balance: " + UTIL_ToString((unsigned int)(*i).first) + " : " + UTIL_ToString((*i).second, 2) );
+	
+	sort(Players.begin(), Players.end(), boost::bind(&std::pair<unsigned char, double>::second, _1) >
+	          boost::bind(&std::pair<unsigned char, double>::second, _2));
+	
+	for( vector<BalancePlayerPair> :: iterator i = Players.begin( ); i != Players.end( ); i++ )
+		CONSOLE_Print( "[DEBUG: " + m_GameName + "] After balance: " + UTIL_ToString((unsigned int)(*i).first) + " : " + UTIL_ToString((*i).second, 2) );
+	
+	for( vector<BalancePlayerPair> :: iterator i = Players.begin( ); i != Players.end( ); i++ )
+	{
+		
+		CGamePlayer *Player = GetPlayerFromPID((*i).first);
+		CGamePlayer *Linked = NULL;
+		GetPlayerFromName(Player->GetLinkedTo(), true);
+		
+		if (Player && Player->GetLinked())
+		{
+			CONSOLE_Print("[DEBUG: " + m_GameName + "] Linked player [" + Player->GetName() + "] with [" + Player->GetLinkedTo() + "] trying to inject.." );
+			Linked = GetPlayerFromName(Player->GetLinkedTo(), true);
+		}
+			
+		if (Sentinel.size() > Scourge.size())
+		{
+			if (Linked && Linked->GetLinked())
+			{
+				if (!ScourgeGotALink)
+				{
+					CONSOLE_Print("[DEBUG: " + m_GameName + "] Scourge got no linked players, injecting linked players." );
+					Scourge.push_back( (*i).first );
+					Scourge.push_back( Linked->GetPID() );
+				}
+				else
+				{
+					CONSOLE_Print("[DEBUG: " + m_GameName + "] Scourge already got linked players, injecting linked players to sentinel." );
+					Sentinel.push_back( (*i).first);
+					Sentinel.push_back( Linked->GetPID() );
+				}
+			}
+			else
+				Scourge.push_back( (*i).first );
+		}
+		else
+		{
+			if (Linked && Linked->GetLinked())
+			{
+				if (!SentinelGotALink)
+				{
+					CONSOLE_Print("[DEBUG: " + m_GameName + "] Sentinel got no linked players, injecting linked players." );
+					Sentinel.push_back( (*i).first);
+					Sentinel.push_back( Linked->GetPID() );
+				}
+				else
+				{
+					CONSOLE_Print("[DEBUG: " + m_GameName + "] Sentinel already got linked players, injecting linked players to scourge." );
+					Scourge.push_back( (*i).first );
+					Scourge.push_back( Linked->GetPID() );
+				}
+			}
+			else
+				Sentinel.push_back( (*i).first );
+		}
+	}
+	
+	unsigned char SID1 = 0;
+
+	for( vector<unsigned char> :: iterator i = Sentinel.begin( ); i != Sentinel.end( ); i++ )
+	{
+		unsigned char SID2 = GetSIDFromPID( *i );
+		if( SID1 < m_Slots.size( ) && SID2 < m_Slots.size( ) )
+		{
+			CGameSlot Slot1 = m_Slots[SID1];
+			CGameSlot Slot2 = m_Slots[SID2];
+			m_Slots[SID1] = CGameSlot( Slot2.GetPID( ), Slot2.GetDownloadStatus( ), Slot2.GetSlotStatus( ), Slot2.GetComputer( ), Slot1.GetTeam( ), Slot1.GetColour( ), Slot1.GetRace( ) );
+			m_Slots[SID2] = CGameSlot( Slot1.GetPID( ), Slot1.GetDownloadStatus( ), Slot1.GetSlotStatus( ), Slot1.GetComputer( ), Slot2.GetTeam( ), Slot2.GetColour( ), Slot2.GetRace( ) );
+		}
+		SID1++;
+	}
+	
+	SID1 = 5;
+	
+	for( vector<unsigned char> :: iterator i = Scourge.begin( ); i != Scourge.end( ); i++ )
+	{
+		unsigned char SID2 = GetSIDFromPID( *i );
+		if( SID1 < m_Slots.size( ) && SID2 < m_Slots.size( ) )
+		{
+			CGameSlot Slot1 = m_Slots[SID1];
+			CGameSlot Slot2 = m_Slots[SID2];
+			m_Slots[SID1] = CGameSlot( Slot2.GetPID( ), Slot2.GetDownloadStatus( ), Slot2.GetSlotStatus( ), Slot2.GetComputer( ), Slot1.GetTeam( ), Slot1.GetColour( ), Slot1.GetRace( ) );
+			m_Slots[SID2] = CGameSlot( Slot1.GetPID( ), Slot1.GetDownloadStatus( ), Slot1.GetSlotStatus( ), Slot1.GetComputer( ), Slot2.GetTeam( ), Slot2.GetColour( ), Slot2.GetRace( ) );
+		}
+		SID1++;
+	}
+	
+	/*
+	for( vector<BalancePlayerPair> :: iterator i = NewPlayers.begin( ); i != NewPlayers.end( ); i++ )
+	{
+		unsigned char SID2 = GetSIDFromPID( (*i).first );
+		if (CurrentTeam % 2 == 1 )
+			SID1 = CurrentScourgeSlot++;
+		else
+			SID1 = CurrentSentSlot++;
+		
+		if( SID1 < m_Slots.size( ) && SID2 < m_Slots.size( ) )
+		{
+			CGameSlot Slot1 = m_Slots[SID1];
+			CGameSlot Slot2 = m_Slots[SID2];
+			m_Slots[SID1] = CGameSlot( Slot2.GetPID( ), Slot2.GetDownloadStatus( ), Slot2.GetSlotStatus( ), Slot2.GetComputer( ), Slot1.GetTeam( ), Slot1.GetColour( ), Slot1.GetRace( ) );
+			m_Slots[SID2] = CGameSlot( Slot1.GetPID( ), Slot1.GetDownloadStatus( ), Slot1.GetSlotStatus( ), Slot1.GetComputer( ), Slot2.GetTeam( ), Slot2.GetColour( ), Slot2.GetRace( ) );
+		}
+		
+		CGamePlayer *Player = GetPlayerFromPID((*i).first);
+		if (Player && Player->GetLinked())
+		{
+			CONSOLE_Print("[DEBUG: " + m_GameName + "] Linked player [" + Player->GetName() + "] with [" + Player->GetLinkedTo() + "] trying to inject.." );
+			CGamePlayer *Linked = GetPlayerFromName(Player->GetLinkedTo(), true);
+			if (Linked && Linked->GetLinked())
+			{
+				if (CurrentTeam % 2 == 1 )
+					SID1 = CurrentScourgeSlot++;
+				else
+					SID1 = CurrentSentSlot++;
+					
+				SID2 = GetSIDFromPID(Linked->GetPID());
+				
+				if( SID1 < m_Slots.size( ) && SID2 < m_Slots.size( ) )
+				{
+					CGameSlot Slot1 = m_Slots[SID1];
+					CGameSlot Slot2 = m_Slots[SID2];
+					m_Slots[SID1] = CGameSlot( Slot2.GetPID( ), Slot2.GetDownloadStatus( ), Slot2.GetSlotStatus( ), Slot2.GetComputer( ), Slot1.GetTeam( ), Slot1.GetColour( ), Slot1.GetRace( ) );
+					m_Slots[SID2] = CGameSlot( Slot1.GetPID( ), Slot1.GetDownloadStatus( ), Slot1.GetSlotStatus( ), Slot1.GetComputer( ), Slot2.GetTeam( ), Slot2.GetColour( ), Slot2.GetRace( ) );
+					CONSOLE_Print("[DEBUG: " + m_GameName + "] Linked player [" + Linked->GetName() + "] succesfully inject." );
+					CurrentTeam++;
+				}
+			}
+			
+		}
+		
+		CurrentPlayer++;
+		CurrentTeam++;
+	} */
+}
+
 void CBaseGame :: BalanceSlots( )
 {
 	if( !( m_Map->GetMapOptions( ) & MAPOPT_FIXEDPLAYERSETTINGS ) )
@@ -4489,8 +4644,9 @@ void CBaseGame :: BalanceSlots( )
 	double PlayerScores[13];
 	memset( TeamSizes, 0, sizeof( unsigned char ) * 12 );
 	vector<string> AlreadyLinked;
-	vector<unsigned char> LinkedPIDs;
 
+	vector<BalancePlayerPair> LinkedBalancePlayers;
+	
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
 		
@@ -4527,13 +4683,13 @@ void CBaseGame :: BalanceSlots( )
 									Score += LinkedTo->GetScore();
 								
 								AlreadyLinked.push_back(LinkedTo->GetName());
-								LinkedPIDs.push_back(LinkedTo->GetPID());
-								//TeamSizes[Team]++;
 								
 								if (m_GHost->m_Debug)
 									CONSOLE_Print( "[DEBUG: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
 							}
 						}
+						
+						LinkedBalancePlayers.push_back(BalancePlayerPair(PID, Score));
 
 						PlayerIDs.push_back( PID );
 						TeamSizes[Team]++;
@@ -4549,11 +4705,8 @@ void CBaseGame :: BalanceSlots( )
 		}
 	}
 
-	if (m_GHost->m_Debug)
-		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Passed to sorting and calculated cost.." );
-	
 	sort( PlayerIDs.begin( ), PlayerIDs.end( ) );
-
+	
 	// balancing the teams is a variation of the bin packing problem which is NP
 	// we can have up to 12 players and/or teams so the scope of the problem is sometimes small enough to process quickly
 	// let's try to figure out roughly how much work this is going to take
@@ -4595,15 +4748,9 @@ void CBaseGame :: BalanceSlots( )
 	}
 	
 	if (m_GHost->m_Debug)
-		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running BalanceSlotsRecursive()" );
-
-	uint32_t StartTicks = GetTicks( );
-	vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
-	uint32_t EndTicks = GetTicks( );
-	
-	CGamePlayer *NeedSwap = NULL;
-	bool LinkedGame = false;
-	
+		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running Balance..." );
+		
+	/*
 	if (!AlreadyLinked.empty())
 	{
 		if (m_GHost->m_Debug)
@@ -4617,7 +4764,8 @@ void CBaseGame :: BalanceSlots( )
 			CGamePlayer *Who = GetPlayerFromPID( *i );
 			if (Who)
 			{
-				if (Who->GetLinked())
+				//string LinkedTo = Who->GetLinkedTo().empty()
+				if (Who->GetLinked() && !Who->GetLinkedTo().empty())
 				{
 					if (CurrentSlot == 4)
 					{
@@ -4658,22 +4806,28 @@ void CBaseGame :: BalanceSlots( )
 		}
 		
 		BestOrdering = NewOrder;
-	}
+	} */
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order
+	uint32_t StartTicks, EndTicks;
 
-	vector<unsigned char> :: iterator CurrentPID = BestOrdering.begin( );
-
-	for( unsigned char i = 0; i < 12; i++ )
+	if (!m_PairedLinkedPlayers.empty())
 	{
-		/*
-		if (LinkedGame)
+		StartTicks = GetTicks( );
+		BalanceSlotsLinked(LinkedBalancePlayers);
+		EndTicks = GetTicks( );
+	}
+	else
+	{
+		StartTicks = GetTicks( );
+		vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
+		EndTicks = GetTicks( );
+
+		vector<unsigned char> :: iterator CurrentPID = BestOrdering.begin( );
+
+		for( unsigned char i = 0; i < 12; i++ )
 		{
-			unsigned char SID = GetSIDFromPID( *CurrentPID );
-		}
-		else
-		{ */
 			unsigned char CurrentSlot = 0;
 
 			for( unsigned char j = 0; j < TeamSizes[i]; j++ )
@@ -4704,44 +4858,9 @@ void CBaseGame :: BalanceSlots( )
 				CurrentPID++;
 				CurrentSlot++;
 			}
-		//}
-	}
-	
-	if (NeedSwap)
-	{
-		double SmallestDifference = 5000;
-		unsigned char SwapSID = 255;
-		// We need to find the best suitable player to swap in to keep the linking intact.
-		// Find the player with the closest score in the opposite team
-		
-		for( unsigned char i = 0; i < 4; i++ )
-		{
-			if( m_Slots[i].GetSlotStatus( ) == SLOTSTATUS_OCCUPIED && m_Slots[i].GetComputer( ) == 0 && m_Slots[i].GetTeam( ) == 0 )
-			{
-				CGamePlayer *Player = GetPlayerFromPID(m_Slots[i].GetPID());
-				
-				double Difference = abs( NeedSwap->GetScore() - Player->GetScore() );
-				
-				if( SmallestDifference > Difference )
-				{
-					SmallestDifference = Difference;
-					SwapSID = i;
-					
-					if (m_GHost->m_Debug)
-						CONSOLE_Print( "[DEBUG: " + m_GameName + "] Found new better suitable SID [" + UTIL_ToString((int)SwapSID) + "]" );
-				}
-			}
-		}
-		
-		if ( SwapSID < 255 )
-		{
-			// ok we found the closest scored player, do the actual swap
-			if (m_GHost->m_Debug)
-				CONSOLE_Print( "[DEBUG: " + m_GameName + "] swapping to keep linking intact.." );
-				
-			SwapSlots(GetSIDFromPID(NeedSwap->GetPID()), SwapSID);
 		}
 	}
+
 
 	CONSOLE_Print( "[GAME: " + m_GameName + "] balancing slots completed in " + UTIL_ToString( EndTicks - StartTicks ) + "ms (with a cost of " + UTIL_ToString( AlgorithmCost ) + ")" );
 	SendAllChat( m_GHost->m_Language->BalancingSlotsCompleted( ) );
