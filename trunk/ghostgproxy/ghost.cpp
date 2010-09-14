@@ -1441,6 +1441,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_StayReq = CFG->GetInt( "safe_stayreq", 90 );				// minimum amount of games required to be able to join safe games
 
 	m_Debug = CFG->GetInt( "bot_debug", 0 ) == 0 ? false : true;
+	m_LinkEnabled = CFG->GetInt( "bot_linkenabled", 0 ) == 0 ? false : true;
 
 	LoadEnforcerSkiplist();
 
