@@ -155,7 +155,8 @@ public:
 	bool 		m_EnableFF;
 	set<string> m_BypassEnforcer;
 	bool 		m_Debug;
-	
+	bool		m_LinkEnabled;
+
 	void 		LoadEnforcerSkiplist();
 
 	/*
