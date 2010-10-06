@@ -2063,7 +2063,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 			for(int x = 0; x < num; x++)
 			{
 				//Approve the player if their country is approved
-				if(PlayerLocation == ApprovedLocations[x])
+				if(PlayerLocation == ApprovedLocations[x] || PlayerLocation == "??")
 					playerIsApproved = true;
 			}
 
