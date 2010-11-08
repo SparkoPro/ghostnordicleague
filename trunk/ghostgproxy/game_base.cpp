@@ -4811,14 +4811,46 @@ void CBaseGame :: BalanceSlots( )
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order
 	uint32_t StartTicks, EndTicks;
+	
+	bool broken = false;
 
 	if (!m_PairedLinkedPlayers.empty())
 	{
 		StartTicks = GetTicks( );
 		BalanceSlotsLinked(LinkedBalancePlayers);
+		double TeamScores[2];
+		TeamScores[0] = 0.0;
+		TeamScores[1] = 0.0;
+		
+		for( unsigned char i = 0; i < 2; i++ )
+		{
+			for( vector<CGamePlayer *> :: iterator j = m_Players.begin( ); j != m_Players.end( ); j++ )
+			{
+				unsigned char SID = GetSIDFromPID( (*j)->GetPID( ) );
+				if( SID < m_Slots.size( ) && m_Slots[SID].GetTeam( ) == i )
+				{
+					double Score = (*j)->GetScore( );
+					if( Score < -99999.0 )
+						Score = m_Map->GetMapDefaultPlayerScore( );
+					TeamScores[i] += Score;
+				}
+			}
+		}
+		
+		double Spread = TeamScores[0] - TeamScores[1];
+		if (Spread < 0)
+			Spread *= -1;
+							
+		if (Spread >= 500)
+		{
+			RemoveAllLinkedPlayers();
+			SendAllChat("Linking causing too much unbalance! Spread: " + UTIL_ToString(Spread, 2));
+			SendAllChat("Breaking all links and rebalancing...");
+		}	
 		EndTicks = GetTicks( );
 	}
-	else
+	
+	if (m_PairedLinkedPlayers.empty())
 	{
 		StartTicks = GetTicks( );
 		vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
@@ -5299,4 +5331,24 @@ void CBaseGame :: RemoveLinkedPlayers( string player )
 		else
 			i++;
 	}	
+}
+
+void CBaseGame :: RemoveAllLinkedPlayers( )
+{
+	for( vector<PairedPlayers> :: iterator i = m_PairedLinkedPlayers.begin( ); i != m_PairedLinkedPlayers.end( ); )
+	{
+
+		CGamePlayer *First = GetPlayerFromName(i->first, true);
+		CGamePlayer *Second = GetPlayerFromName(i->second, true);
+			
+		if (First)
+			First->RemoveLink();
+				
+		if (Second)
+			Second->RemoveLink();
+				
+		i++;
+	}
+	
+	m_PairedLinkedPlayers.clear();
 }

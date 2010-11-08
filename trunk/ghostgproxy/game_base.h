@@ -204,6 +204,7 @@ public:
 	virtual void SetHCLMode( string nHCL )								{ m_HCLCommandString = nHCL; }
 	virtual void AddLinkedPlayers( PairedPlayers Linked )				{ m_PairedLinkedPlayers.push_back(Linked); }
 	virtual void RemoveLinkedPlayers( string player );
+	virtual void RemoveAllLinkedPlayers( );
 
 	virtual uint32_t GetNextTimedActionTicks( );
 	virtual uint32_t GetSlotsOccupied( );
