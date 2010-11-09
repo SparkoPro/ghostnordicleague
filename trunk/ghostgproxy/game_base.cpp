@@ -149,6 +149,7 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_LobbyTimeLimit = m_GHost->m_LobbyTimeLimit;
 	
 	m_GameIsInHouse = false;
+	m_ChatLog.clear();
 	
 	/*
 		NordicLeague - @begin - Keep track of autohost #, quick and dirty way.
@@ -3128,26 +3129,35 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 					// this is an ingame [All] message, print it to the console
 
 					CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [All] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+					m_ChatLog.push_back( "(" + MinString + ":" + SecString + ") [All] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 
 					// don't relay ingame messages targeted for all players if we're currently muting all
 					// note that commands will still be processed even when muting all because we only stop relaying the messages, the rest of the function is unaffected
 
 					if( m_MuteAll )
 						Relay = false;
+
 				}
 				else if( ExtraFlags[0] == 2 )
 				{
 					// this is an ingame [Obs/Ref] message, print it to the console
 
+					m_ChatLog.push_back( "(" + MinString + ":" + SecString + ") [Obs/Ref] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 					CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Obs/Ref] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 				}
-				/*else
+				else
 				{
 					if ( player->GetTeam( ) == 1 )
-						CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Sentinel] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+					{
+						m_ChatLog.push_back( "(" + MinString + ":" + SecString + ") [Sentinel] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+						//CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Sentinel] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+					}
 					else
-						CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Scourge] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
-				} */
+					{
+						m_ChatLog.push_back( "(" + MinString + ":" + SecString + ") [Scourge] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+						//CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Scourge] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
+					}
+				}
 				
 				if( Relay )
 				{
@@ -3161,7 +3171,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 			else
 			{
 				// this is a lobby message, print it to the console
-
+				m_ChatLog.push_back( "[Lobby] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 				CONSOLE_Print( "[GAME: " + m_GameName + "] [Lobby] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 
 				if( m_MuteLobby )

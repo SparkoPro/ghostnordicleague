@@ -292,14 +292,14 @@ CCallableBanList *CGHostDBMySQL :: ThreadedBanList( string server )
 	return Callable;
 }
 
-CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver )
+CCallableGameAdd *CGHostDBMySQL :: ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver, vector<string> chatlog )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableGameAdd *Callable = new CMySQLCallableGameAdd( server, map, gamename, ownername, duration, gamestate, creatorname, creatorserver, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableGameAdd *Callable = new CMySQLCallableGameAdd( server, map, gamename, ownername, duration, gamestate, creatorname, creatorserver, chatlog, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -888,7 +888,7 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 	return BanList;
 }
 
-uint32_t MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver )
+uint32_t MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver, vector<string> chatlog )
 {
 	uint32_t RowID = 0;
 	string EscServer = MySQLEscapeString( conn, server );
@@ -904,6 +904,20 @@ uint32_t MySQLGameAdd( void *conn, string *error, uint32_t botid, string server,
 	else
 		RowID = mysql_insert_id( (MYSQL *)conn );
 
+
+	if (RowID != 0)
+	{
+		string EscChatLog;
+
+		for( vector<string> :: iterator i = chatlog.begin( ); i != chatlog.end( ); i++ )
+			EscChatLog.append( (*i) + "\r\n" );
+
+		EscChatLog = MySQLEscapeString( conn, EscChatLog );
+		string Query2 = "INSERT INTO chatlogs ( gameid, chatlog ) VALUES ( " + UTIL_ToString(RowID) + ", '" + EscChatLog + "')";
+
+		mysql_real_query( (MYSQL *)conn, Query2.c_str( ), Query2.size( ) );
+
+	}
 	return RowID;
 }
 
@@ -1533,7 +1547,7 @@ void CMySQLCallableGameAdd :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLGameAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_Map, m_GameName, m_OwnerName, m_Duration, m_GameState, m_CreatorName, m_CreatorServer );
+		m_Result = MySQLGameAdd( m_Connection, &m_Error, m_SQLBotID, m_Server, m_Map, m_GameName, m_OwnerName, m_Duration, m_GameState, m_CreatorName, m_CreatorServer, m_ChatLog );
 
 	Close( );
 }
