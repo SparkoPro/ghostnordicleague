@@ -161,6 +161,7 @@ protected:
 	
 	bool			m_GameIsInHouse;					// inhouse game.
 	vector<PairedPlayers> m_PairedLinkedPlayers;
+	vector<string>		m_ChatLog;
 
 	/*
 		NordicLeague - @end - Some added custom variables
