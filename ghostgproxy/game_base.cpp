@@ -4659,9 +4659,6 @@ void CBaseGame :: BalanceSlots( )
 	
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-		
-		if ( find (AlreadyLinked.begin(), AlreadyLinked.end(), (*i)->GetName( )) == AlreadyLinked.end() )
-		{
 			unsigned char PID = (*i)->GetPID( );
 
 			if( PID < 13 )
@@ -4675,44 +4672,41 @@ void CBaseGame :: BalanceSlots( )
 					if( Team < 12 )
 					{
 						// we are forced to use a default score because there's no way to balance the teams otherwise
-
 						double Score = (*i)->GetScore( );
 
 						if( Score < -99999.0 )
 							Score = m_Map->GetMapDefaultPlayerScore( );
-						
-						if ( (*i)->GetLinked() )
-						{
-							string LinkedToName = (*i)->GetLinkedTo();
-							CGamePlayer *LinkedTo = GetPlayerFromName(LinkedToName, true);
-							if ( LinkedTo )
-							{
-								if( LinkedTo->GetScore() < -99999.0 )
-									Score *= 2;
-								else
-									Score += LinkedTo->GetScore();
-								
-								AlreadyLinked.push_back(LinkedTo->GetName());
-								
-								if (m_GHost->m_Debug)
-									CONSOLE_Print( "[DEBUG: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
-							}
-						}
-						
-						LinkedBalancePlayers.push_back(BalancePlayerPair(PID, Score));
 
 						PlayerIDs.push_back( PID );
 						TeamSizes[Team]++;
 						PlayerScores[PID] = Score;
+													
+						if ( find (AlreadyLinked.begin(), AlreadyLinked.end(), (*i)->GetName( )) == AlreadyLinked.end() )
+						{
+							if ( (*i)->GetLinked() )
+							{
+								string LinkedToName = (*i)->GetLinkedTo();
+								CGamePlayer *LinkedTo = GetPlayerFromName(LinkedToName, true);
+								if ( LinkedTo )
+								{
+									if( LinkedTo->GetScore() < -99999.0 )
+										Score *= 2;
+									else
+										Score += LinkedTo->GetScore();
+								
+									AlreadyLinked.push_back(LinkedTo->GetName());
+								
+									if (m_GHost->m_Debug)
+										CONSOLE_Print( "[DEBUG: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
+								}
+							}
+							LinkedBalancePlayers.push_back(BalancePlayerPair(PID, Score));
+						}
+						else if (m_GHost->m_Debug)
+							CONSOLE_Print( "[DEBUG: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." );
 					}
 				}
 			}
-		}
-		else
-		{
-			if (m_GHost->m_Debug)
-				CONSOLE_Print( "[DEBUG: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." );
-		}
 	}
 
 	sort( PlayerIDs.begin( ), PlayerIDs.end( ) );
@@ -4854,6 +4848,7 @@ void CBaseGame :: BalanceSlots( )
 		if (Spread >= 500)
 		{
 			RemoveAllLinkedPlayers();
+			m_PairedLinkedPlayers.clear();
 			SendAllChat("Linking causing too much unbalance! Spread: " + UTIL_ToString(Spread, 2));
 			SendAllChat("Breaking all links and rebalancing...");
 		}	
