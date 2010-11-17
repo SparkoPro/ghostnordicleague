@@ -2150,7 +2150,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !LINK
 	//
 
-	if( Command == "link" && !player->GetLinked( ) && !Payload.empty() && m_GHost->m_LinkEnabled )
+	if( Command == "link" && !player->GetLinked( ) && !Payload.empty() && m_GHost->m_LinkEnabled && !m_CountDownStarted && !m_GameLoading && !m_GameLoaded )
 	{
 		if (m_PairedLinkedPlayers.size() >= 2)
 		{
