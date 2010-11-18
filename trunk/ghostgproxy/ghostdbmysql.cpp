@@ -1341,18 +1341,30 @@ bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gamei
 }
 
 bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic )
-{
-		
+{	
 	string Query;
 	string EscName = MySQLEscapeString( conn, name );
 	uint32_t IsPublic = ispublic ? 1 : 0;
-
-	if ( name.empty() && players == 255 )
-		Query = "DELETE FROM gameinfo WHERE botid = " + UTIL_ToString( botid );	
-	else if ( players == 255 )
-		Query = "DELETE FROM gameinfo WHERE name = '" + EscName + "' AND botid = " + UTIL_ToString( botid );
-	else
-		Query = "INSERT INTO gameinfo (name, players, botid, public) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ") ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ";";
+	
+	switch (players)
+	{
+		case GI_ACTIVATE_GAME:
+			Query = "UPDATE gameinfo SET active = 1, started = NOW() WHERE name = '" + EscName + "'";
+			break;
+		case GI_DELETE_GAME:
+			if ( name.empty() )
+				Query = "DELETE FROM gameinfo WHERE botid = " + UTIL_ToString( botid );	
+			else
+				Query = "DELETE FROM gameinfo WHERE name = '" + EscName + "' AND botid = " + UTIL_ToString( botid );
+			break;
+		case GI_NEW_GAME:
+		default:
+			Query = "INSERT INTO gameinfo (name, players, botid, public) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ") ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ";";
+			break;
+	}
+	
+	if (Query.empty())
+		return false;
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 	{

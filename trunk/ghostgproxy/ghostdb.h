@@ -21,6 +21,10 @@
 #ifndef GHOSTDB_H
 #define GHOSTDB_H
 
+#define GI_ACTIVATE_GAME 100
+#define GI_DELETE_GAME 255
+#define GI_NEW_GAME 0
+
 //
 // CGHostDB
 //
