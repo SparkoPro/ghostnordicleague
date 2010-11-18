@@ -206,6 +206,7 @@ public:
 	virtual void AddLinkedPlayers( PairedPlayers Linked )				{ m_PairedLinkedPlayers.push_back(Linked); }
 	virtual void RemoveLinkedPlayers( string player );
 	virtual void RemoveAllLinkedPlayers( );
+	virtual bool IsLinked( string player, string player2 );
 
 	virtual uint32_t GetNextTimedActionTicks( );
 	virtual uint32_t GetSlotsOccupied( );

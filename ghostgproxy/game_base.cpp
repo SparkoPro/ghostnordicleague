@@ -253,6 +253,9 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 
 CBaseGame :: ~CBaseGame( )
 {
+	
+	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, GI_DELETE_GAME, (m_GameState == GAME_PUBLIC) ? true : false) );
+	
 	// save replay
 	// todotodo: put this in a thread
 
@@ -3521,7 +3524,7 @@ void CBaseGame :: EventGameRefreshed( string server )
 void CBaseGame :: EventGameStarted( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
-	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, 255, false) );
+	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, GI_ACTIVATE_GAME, (m_GameState == GAME_PUBLIC) ? true : false) );
 	
 	for( unsigned char i = 0; i < 12; i++ )
     {
@@ -4400,6 +4403,7 @@ void CBaseGame :: ShuffleSlots( )
 
 vector<unsigned char> CBaseGame :: BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam )
 {
+	CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running recursive balance with [" + UTIL_ToString(PlayerIDs.size()) + "] players.");
 	// take a brute force approach to finding the best balance by iterating through every possible combination of players
 	// 1.) since the number of teams is arbitrary this algorithm must be recursive
 	// 2.) on the first recursion step every possible combination of players into two "teams" is checked, where the first team is the correct size and the second team contains everyone else
@@ -4487,6 +4491,7 @@ vector<unsigned char> CBaseGame :: BalanceSlotsRecursive( vector<unsigned char> 
 
 void CBaseGame :: BalanceSlotsLinked(vector<BalancePlayerPair> Players)
 {
+	CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running linked balance with [" + UTIL_ToString(Players.size()) + "] players.");
 	unsigned char CurrentPlayer = 0;
 	
 	bool SentinelGotALink = false;
@@ -4513,8 +4518,11 @@ void CBaseGame :: BalanceSlotsLinked(vector<BalancePlayerPair> Players)
 		
 		if (Player && Player->GetLinked())
 		{
-			CONSOLE_Print("[DEBUG: " + m_GameName + "] Linked player [" + Player->GetName() + "] with [" + Player->GetLinkedTo() + "] trying to inject.." );
-			Linked = GetPlayerFromName(Player->GetLinkedTo(), true);
+			if ( IsLinked( Player->GetName(), Player->GetLinkedTo() ) )
+			{
+				Linked = GetPlayerFromName(Player->GetLinkedTo(), true);
+				CONSOLE_Print("[DEBUG: " + m_GameName + "] Linked player [" + Player->GetName() + "] with [" + Player->GetLinkedTo() + "] trying to inject.." );
+			}
 		}
 			
 		if (Sentinel.size() > Scourge.size())
@@ -4526,12 +4534,14 @@ void CBaseGame :: BalanceSlotsLinked(vector<BalancePlayerPair> Players)
 					CONSOLE_Print("[DEBUG: " + m_GameName + "] Scourge got no linked players, injecting linked players." );
 					Scourge.push_back( (*i).first );
 					Scourge.push_back( Linked->GetPID() );
+					ScourgeGotALink = true;
 				}
 				else
 				{
 					CONSOLE_Print("[DEBUG: " + m_GameName + "] Scourge already got linked players, injecting linked players to sentinel." );
 					Sentinel.push_back( (*i).first);
 					Sentinel.push_back( Linked->GetPID() );
+					SentinelGotALink = true;
 				}
 			}
 			else
@@ -4546,12 +4556,14 @@ void CBaseGame :: BalanceSlotsLinked(vector<BalancePlayerPair> Players)
 					CONSOLE_Print("[DEBUG: " + m_GameName + "] Sentinel got no linked players, injecting linked players." );
 					Sentinel.push_back( (*i).first);
 					Sentinel.push_back( Linked->GetPID() );
+					SentinelGotALink = true;
 				}
 				else
 				{
 					CONSOLE_Print("[DEBUG: " + m_GameName + "] Sentinel already got linked players, injecting linked players to scourge." );
 					Scourge.push_back( (*i).first );
 					Scourge.push_back( Linked->GetPID() );
+					ScourgeGotALink = true;
 				}
 			}
 			else
@@ -4690,7 +4702,7 @@ void CBaseGame :: BalanceSlots( )
 								if ( LinkedTo )
 								{
 									if( LinkedTo->GetScore() < -99999.0 )
-										Score *= 2;
+										Score += m_Map->GetMapDefaultPlayerScore( );
 									else
 										Score += LinkedTo->GetScore();
 								
@@ -4753,64 +4765,6 @@ void CBaseGame :: BalanceSlots( )
 	
 	if (m_GHost->m_Debug)
 		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running Balance..." );
-		
-	/*
-	if (!AlreadyLinked.empty())
-	{
-		if (m_GHost->m_Debug)
-			CONSOLE_Print( "[DEBUG: " + m_GameName + "] Trying to restore linked-in players.." );
-		
-		vector<unsigned char> NewOrder = BestOrdering;
-		
-		int CurrentSlot = 0;
-		for( vector<unsigned char> :: iterator i = BestOrdering.begin( ); i != BestOrdering.end( ); i++ )
-		{
-			CGamePlayer *Who = GetPlayerFromPID( *i );
-			if (Who)
-			{
-				//string LinkedTo = Who->GetLinkedTo().empty()
-				if (Who->GetLinked() && !Who->GetLinkedTo().empty())
-				{
-					if (CurrentSlot == 4)
-					{
-						// we got a problem, we can't inject the linked player after here because that will break the link.
-						// Slot should never be able to get to 9
-						if (m_GHost->m_Debug)
-							SendAllChat("Linking for " + Who->GetName() + " broken by slot5, trying to fix with swap..");
-
-						NeedSwap = Who;
-					}
-			
-					CGamePlayer *Linked = GetPlayerFromName(Who->GetLinkedTo(), true);
-					if (Linked)
-					{	
-						if (m_GHost->m_Debug)
-							CONSOLE_Print( "[DEBUG: " + m_GameName + "] Injecting player in slot [" + UTIL_ToString(CurrentSlot) + "].." );			
-						//BestOrdering.insert(i, );
-						
-						NewOrder.insert(NewOrder.begin() + CurrentSlot, Linked->GetPID());
-						CurrentSlot++;
-						
-						unsigned char SID = GetSIDFromPID( Who->GetPID() );
-						TeamSizes[m_Slots[SID].GetTeam( )]++;
-						
-						LinkedGame = true;
-					}
-				}
-			}
-			CurrentSlot++;
-		}	
-		
-		if (m_GHost->m_Debug)
-		{
-			for( vector<unsigned char> :: iterator i = BestOrdering.begin( ); i != BestOrdering.end( ); i++ )
-				CONSOLE_Print( "[DEBUG: " + m_GameName + "] Best ordering: " + UTIL_ToString((unsigned int)*i) );
-			for( vector<unsigned char> :: iterator i = NewOrder.begin( ); i != NewOrder.end( ); i++ )
-				CONSOLE_Print( "[DEBUG: " + m_GameName + "] New ordering: " + UTIL_ToString((unsigned int)*i) );
-		}
-		
-		BestOrdering = NewOrder;
-	} */
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order
@@ -5356,4 +5310,23 @@ void CBaseGame :: RemoveAllLinkedPlayers( )
 	}
 	
 	m_PairedLinkedPlayers.clear();
+}
+
+bool CBaseGame :: IsLinked( string player, string player2 )
+{
+	for( vector<PairedPlayers> :: iterator i = m_PairedLinkedPlayers.begin( ); i != m_PairedLinkedPlayers.end( ); )
+	{
+		if( i->first == player || i->second == player )
+		{
+			CGamePlayer *First = GetPlayerFromName(i->first, true);
+			CGamePlayer *Second = GetPlayerFromName(i->second, true);
+			
+			if (First && Second)
+			{
+				if ( (First->GetName() == player && Second->GetName() == player2) || (First->GetName() == player2 && Second->GetName() == player) )
+					return true;
+			}
+		}
+	}
+	return false;
 }
