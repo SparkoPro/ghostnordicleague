@@ -931,16 +931,8 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	
 	
 	/*
-		NordicLeague - @begin - Expire the voteend
+		NordicLeague - @begin - Expire the voting
 	*/
-	
-	if( m_VoteEndInProgress && GetTime( ) >= m_StartedVoteEndTime + 60 )
-	{
-		CONSOLE_Print( "[GAME: " + m_GameName + "] voteend expired" );
-		SendAllChat( m_GHost->m_Language->VoteEndExpired( ) );
-		m_VoteEndInProgress = false;
-		m_StartedVoteEndTime = 0;
-	}
 	
 	// expire the FF
 	if( m_FFSucceeded == false && m_FFTeam > 0 && GetTime( ) >= m_FFStartedTime + 60 )
@@ -950,7 +942,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		m_FFStartedTime = 0;
 	}
 	
-	if (m_FFSucceeded == true && m_FFTeam > 0 && GetTime( ) >= m_FFKickTime + 5)
+	if (m_FFSucceeded == true && m_FFTeam > 0 && GetTime( ) >= m_FFKickTime + 7)
 	{
 		if (m_Players.size( ) > 0)
 		{
@@ -963,7 +955,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 					else
 						SendChat(*i, "You have won the game by forfeited, you are now beeing disconnected.");
 
-					(*i)->SetDeleteMe( true );
 					(*i)->SetLeftReason( "Team " + UTIL_ToString(m_FFTeam) + " forfeited the game." );
 					
 					if ((*i)->GetTeam() == m_FFTeam)
@@ -971,6 +962,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 					else
 						(*i)->SetLeftCode( PLAYERLEAVE_WON );
 
+					(*i)->SetDeleteMe( true );
 					m_FFKickTime = GetTime();
 					break;
 				}
@@ -1733,7 +1725,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 			for(int x = 0; x < num; x++)
 			{
 				//Approve the player if their country is approved
-				if(PlayerLocation == ApprovedLocations[x])
+				if(PlayerLocation == ApprovedLocations[x] || PlayerLocation == "??")
 					playerIsApproved = true;
 			}
 
