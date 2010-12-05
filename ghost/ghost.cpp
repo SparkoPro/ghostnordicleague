@@ -106,7 +106,8 @@ CGHost *gGHost = NULL;
 
 uint32_t GetTime( )
 {
-	return (uint32_t)( ( GetTicks( ) / 1000 ) - gStartTime );
+	return (uint32_t)( ( GetTicks( ) / 1000 ) );
+	//return (uint32_t)( ( GetTicks( ) / 1000 ) - gStartTime );
 }
 
 uint32_t GetTicks( )
@@ -416,6 +417,15 @@ CGHost :: CGHost( CConfig *CFG )
 		m_HostCounter = atoi(counter.c_str())+1;
 
     // @end
+
+	m_AutoHostMatchMaking = CFG->GetInt( "autohost_matchmaking", 0 ) ? true : false;
+	m_AutoHostMinimumScore = CFG->GetInt( "autohostmm_minscore", 0 );
+	m_AutoHostMaximumScore = CFG->GetInt( "autohostmm_maxscore", 10000);
+
+	if (m_AutoHostMatchMaking)
+		CONSOLE_Print( "[AUTOHOST] Mode: Matchmaking");
+	else
+		CONSOLE_Print( "[AUTOHOST] Mode: Standard");
 
 	m_AutoHostMaximumGames = CFG->GetInt( "autohost_maxgames", 0 );
 	m_AutoHostAutoStartPlayers = CFG->GetInt( "autohost_startplayers", 0 );
