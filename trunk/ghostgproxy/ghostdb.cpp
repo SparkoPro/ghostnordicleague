@@ -114,6 +114,16 @@ CCallableCountrySkipList *CGHostDB :: ThreadedCountrySkipList( )
 	return NULL;
 }
 
+set<VouchPair> CGHostDB :: VouchList( )
+{
+	return set<VouchPair>( );
+}
+
+CCallableVouchList *CGHostDB :: ThreadedVouchList( )
+{
+	return NULL;
+}
+
 CCallableRegisterPlayerAdd :: ~CCallableRegisterPlayerAdd( )
 {
 
@@ -140,6 +150,11 @@ CCallableSaveReplay :: ~CCallableSaveReplay( )
 }
 
 CCallableCountrySkipList :: ~CCallableCountrySkipList()
+{
+	
+}
+
+CCallableVouchList :: ~CCallableVouchList()
 {
 	
 }

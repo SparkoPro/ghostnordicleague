@@ -69,11 +69,13 @@ class CCallableUpdateGameInfo;
 class CCallableSeenPlayer;
 class CCallableSaveReplay;
 class CCallableCountrySkipList;
+class CCallableVouchList;
 
 class CPacked;
 class CReplay;
 
 typedef pair<uint32_t,string> VarP;
+typedef pair<string, string> VouchPair;
 
 class CGHostDB
 {
@@ -144,6 +146,9 @@ public:
 	
 	virtual set<string> 				CountrySkipList( );
 	virtual CCallableCountrySkipList 	*ThreadedCountrySkipList( );
+
+	virtual set<VouchPair> 				VouchList( );
+	virtual CCallableVouchList			*ThreadedVouchList( );
 
 	// threaded database functions
 
@@ -677,6 +682,19 @@ public:
 	virtual void SetResult( set<string> nResult )	{ m_Result = nResult; }
 };
 
+class CCallableVouchList : virtual public CBaseCallable
+{
+protected:
+	set<VouchPair> m_Result;
+
+public:
+	CCallableVouchList( ) : CBaseCallable( ) { }
+	virtual ~CCallableVouchList( );
+
+	virtual set<VouchPair> GetResult( )					{ return m_Result; }
+	virtual void SetResult( set<VouchPair> nResult )	{ m_Result = nResult; }
+};
+
 //
 // CDBBan
 //
@@ -839,6 +857,8 @@ public:
 	uint32_t GetMaxDuration( )			{ return m_MaxDuration; }
 	bool	 IsVouched( )				{ return m_Vouched; }
 	string	 GetVouchedBy( )			{ return m_VouchedBy; }
+	void	SetVouched(bool nVouched) 	{ m_Vouched = nVouched; }
+	void	SetVouchedBy(string nName) 	{ m_VouchedBy = nName; }
 };
 
 //
