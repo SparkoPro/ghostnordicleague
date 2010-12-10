@@ -88,6 +88,8 @@ public:
 	void SetMapGameType( uint32_t nMapGameType )			{ m_MapGameType = nMapGameType; }
 	void SetHostPID( unsigned char nHostPID )				{ m_HostPID = nHostPID; }
 	void SetHostName( string nHostName )					{ m_HostName = nHostName; }
+	void SetStatString( string nStatString )				{ m_StatString = nStatString; }
+	void SetGameName( string nGameName )					{ m_GameName = nGameName; }
 
 	void AddLeaveGame( uint32_t reason, unsigned char PID, uint32_t result );
 	void AddLeaveGameDuringLoading( uint32_t reason, unsigned char PID, uint32_t result );
@@ -96,6 +98,7 @@ public:
 	void AddChatMessage( unsigned char PID, unsigned char flags, uint32_t chatMode, string message );
 	void AddLoadingBlock( BYTEARRAY &loadingBlock );
 	void BuildReplay( string gameName, string statString, uint32_t war3Version, uint16_t buildNumber );
+	void BuildReplay( );
 
 	void ParseReplay( bool parseBlocks );
 };

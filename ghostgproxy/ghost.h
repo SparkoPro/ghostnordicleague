@@ -42,6 +42,7 @@ class CLanguage;
 class CMap;
 class CSaveGame;
 class CConfig;
+class CCallableCountrySkipList;
 
 class CGHost
 {
@@ -157,6 +158,7 @@ public:
 	bool 		m_Debug;
 	bool		m_LinkEnabled;
 
+	CCallableCountrySkipList *m_UpdateSkipList;
 	void 		LoadEnforcerSkiplist();
 
 	/*

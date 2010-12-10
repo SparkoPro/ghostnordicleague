@@ -1767,8 +1767,21 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				//
 
 				if( ( Command == "delban" || Command == "unban" ) && !Payload.empty( ) )
-					m_PairedBanRemoves.push_back( PairedBanRemove( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanRemove( Payload ) ) );
+				{
+					
+					string Player;
+					string Reason;
+					stringstream SS;
+					SS << Payload;
+					SS >> Player;
 
+					if( SS.fail( ) || Player.empty() )
+						CONSOLE_Print( "[BNET: " + m_ServerAlias + "] bad input #1 to !unban command." );
+					else
+						getline( SS, Reason );
+								
+					m_PairedBanRemoves.push_back( PairedBanRemove( Whisper ? User : string( ), m_GHost->m_DB->ThreadedBanRemove( Player, User, Reason ) ) );
+				}
 				//
 				// !DISABLE
 				//
