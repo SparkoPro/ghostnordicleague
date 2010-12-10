@@ -46,6 +46,8 @@ protected:
 	uint16_t m_BuildNumber;
 	uint16_t m_Flags;
 	uint32_t m_ReplayLength;
+	bool	m_TFT;
+	string 	m_SavePath;
 
 public:
 	CPacked( );
@@ -67,8 +69,11 @@ public:
 	virtual void SetBuildNumber( uint16_t nBuildNumber )			{ m_BuildNumber = nBuildNumber; }
 	virtual void SetFlags( uint16_t nFlags )						{ m_Flags = nFlags; }
 	virtual void SetReplayLength( uint32_t nReplayLength )			{ m_ReplayLength = nReplayLength; }
+	virtual void SetTFT( bool nTFT )								{ m_TFT = nTFT; }
+	virtual void SetSavePath( string nPath )								{ m_SavePath = nPath; }
 
 	virtual void Load( string fileName, bool allBlocks );
+	virtual bool Save( );
 	virtual bool Save( bool TFT, string fileName );
 	virtual bool Extract( string inFileName, string outFileName );
 	virtual bool Pack( bool TFT, string inFileName, string outFileName );

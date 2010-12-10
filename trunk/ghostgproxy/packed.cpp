@@ -96,6 +96,16 @@ void CPacked :: Load( string fileName, bool allBlocks )
 	Decompress( allBlocks );
 }
 
+bool CPacked :: Save( )
+{
+	if ( !m_SavePath.empty() )
+		return Save( m_TFT, m_SavePath );
+	else
+		CONSOLE_Print( "[REPLAY] Saving failed, no path is set!" );
+		
+	return false;
+}
+
 bool CPacked :: Save( bool TFT, string fileName )
 {
 	Compress( TFT );

@@ -1537,17 +1537,17 @@ CCallableBanAdd *CGHostDBSQLite :: ThreadedBanAdd( string server, string user, s
 	return Callable;
 }
 
-CCallableBanRemove *CGHostDBSQLite :: ThreadedBanRemove( string server, string user )
+CCallableBanRemove *CGHostDBSQLite :: ThreadedBanRemove( string server, string user, string admin, string reason )
 {
-	CCallableBanRemove *Callable = new CCallableBanRemove( server, user );
+	CCallableBanRemove *Callable = new CCallableBanRemove( server, user, admin, reason );
 	Callable->SetResult( BanRemove( server, user ) );
 	Callable->SetReady( true );
 	return Callable;
 }
 
-CCallableBanRemove *CGHostDBSQLite :: ThreadedBanRemove( string user )
+CCallableBanRemove *CGHostDBSQLite :: ThreadedBanRemove( string user, string admin, string reason )
 {
-	CCallableBanRemove *Callable = new CCallableBanRemove( string( ), user );
+	CCallableBanRemove *Callable = new CCallableBanRemove( string( ), user, admin, reason );
 	Callable->SetResult( BanRemove( user ) );
 	Callable->SetReady( true );
 	return Callable;

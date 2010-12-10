@@ -138,6 +138,14 @@ void CReplay :: AddLoadingBlock( BYTEARRAY &loadingBlock )
 	m_LoadingBlocks.push( loadingBlock );
 }
 
+void CReplay :: BuildReplay( )
+{
+	if (!m_GameName.empty() && !m_StatString.empty() && m_War3Version != 0 && m_BuildNumber != 0)
+		BuildReplay( m_GameName, m_StatString, m_War3Version, m_BuildNumber );
+	else
+		CONSOLE_Print( "[REPLAY] Building replay failed, invalid data somewhere." );
+}
+
 void CReplay :: BuildReplay( string gameName, string statString, uint32_t war3Version, uint16_t buildNumber )
 {
 	m_War3Version = war3Version;

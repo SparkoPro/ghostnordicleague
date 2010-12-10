@@ -23,6 +23,9 @@
 #ifndef GHOSTDBMYSQL_H
 #define GHOSTDBMYSQL_H
 
+class CPacked;
+class CReplay;
+
 /**************
  *** SCHEMA ***
  **************
@@ -196,8 +199,8 @@ public:
 	virtual CCallableBanCount 					*ThreadedBanCount( string server );
 	virtual CCallableBanCheck 					*ThreadedBanCheck( string server, string user, string ip );
 	virtual CCallableBanAdd 					*ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban);
-	virtual CCallableBanRemove 					*ThreadedBanRemove( string server, string user );
-	virtual CCallableBanRemove 					*ThreadedBanRemove( string user );
+	virtual CCallableBanRemove 					*ThreadedBanRemove( string server, string user, string admin, string reason = "" );
+	virtual CCallableBanRemove 					*ThreadedBanRemove( string user, string admin, string reason = "" );
 	virtual CCallableBanList					*ThreadedBanList( string server );
 	virtual CCallableGameAdd 					*ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver, vector<string> chatlog );
 	virtual CCallableGamePlayerAdd 				*ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
@@ -221,6 +224,8 @@ public:
 	virtual CCallableUpdateGameInfo 			*ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
 	
 	virtual CCallableLastSeenPlayer 			*ThreadedLastSeenPlayer( string name );
+	virtual CCallableSaveReplay 				*ThreadedSaveReplay( CReplay *replay );
+	virtual CCallableCountrySkipList			*ThreadedCountrySkipList( );
 
 	// other database functions
 
@@ -239,8 +244,8 @@ vector<string> 	MySQLAdminList( void *conn, string *error, uint32_t botid, strin
 uint32_t	MySQLBanCount( void *conn, string *error, uint32_t botid, string server );
 CDBBan 		*MySQLBanCheck( void *conn, string *error, uint32_t botid, string server, string user, string ip );
 bool 		MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban );
-bool 		MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, string user );
-bool 		MySQLBanRemove( void *conn, string *error, uint32_t botid, string user );
+bool 		MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, string user, string admin, string reason );
+bool 		MySQLBanRemove( void *conn, string *error, uint32_t botid, string user, string admin, string reason );
 vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string server );
 uint32_t 	MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 uint32_t 	MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
@@ -260,6 +265,9 @@ bool 		MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gam
 uint32_t 	MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
 bool 		MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic );
 CDBLastSeenPlayer 	*MySQLLastSeenPlayer( void *conn, string *error, uint32_t botid, string user );
+
+bool		SaveReplay( CReplay *replay );
+set<string> 	MySQLCountrySkipList( void *conn, string *error, uint32_t botid );
 
 //
 // MySQL Callables
@@ -377,7 +385,7 @@ public:
 class CMySQLCallableBanRemove : public CCallableBanRemove, public CMySQLCallable
 {
 public:
-	CMySQLCallableBanRemove( string nServer, string nUser, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanRemove( nServer, nUser ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableBanRemove( string nServer, string nUser, string nAdmin, string nReason, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableBanRemove( nServer, nUser, nAdmin, nReason ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableBanRemove( ) { }
 
 	virtual void operator( )( );
@@ -548,6 +556,28 @@ class CMySQLCallableLastSeenPlayer : public CCallableLastSeenPlayer, public CMyS
 public:
 	CMySQLCallableLastSeenPlayer( string nName, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableLastSeenPlayer( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableLastSeenPlayer( ) { }
+
+	virtual void operator( )( );
+	virtual void Init( ) { CMySQLCallable :: Init( ); }
+	virtual void Close( ) { CMySQLCallable :: Close( ); }
+};
+
+class CMySQLCallableSaveReplay : public CCallableSaveReplay, public CMySQLCallable
+{
+public:
+	CMySQLCallableSaveReplay( CReplay *replay, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableSaveReplay( replay ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	virtual ~CMySQLCallableSaveReplay( ) { }
+
+	virtual void operator( )( );
+	virtual void Init( ) { CMySQLCallable :: Init( ); }
+	virtual void Close( ) { CMySQLCallable :: Close( ); }
+};
+
+class CMySQLCallableCountrySkipList : public CCallableCountrySkipList, public CMySQLCallable
+{
+public:
+	CMySQLCallableCountrySkipList( void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableCountrySkipList( ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	virtual ~CMySQLCallableCountrySkipList( ) { }
 
 	virtual void operator( )( );
 	virtual void Init( ) { CMySQLCallable :: Init( ); }

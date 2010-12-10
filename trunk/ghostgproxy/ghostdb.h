@@ -21,9 +21,12 @@
 #ifndef GHOSTDB_H
 #define GHOSTDB_H
 
-#define GI_ACTIVATE_GAME 100
-#define GI_DELETE_GAME 255
 #define GI_NEW_GAME 0
+#define GI_STARTUP 200
+#define GI_CLEANUP 210
+#define GI_ACTIVATE_GAME 220
+#define GI_DELETE_GAME 255
+
 
 //
 // CGHostDB
@@ -60,12 +63,15 @@ class CDBDotAPlayerSummary;
 // nordicleague 
 class CDBLastSeenPlayer;
 class CCallableLastSeenPlayer;
-
 class CCallableRegisterPlayerAdd;
 class CCallableDotAEventAdd;
 class CCallableUpdateGameInfo;
 class CCallableSeenPlayer;
+class CCallableSaveReplay;
+class CCallableCountrySkipList;
 
+class CPacked;
+class CReplay;
 
 typedef pair<uint32_t,string> VarP;
 
@@ -97,8 +103,8 @@ public:
 	virtual uint32_t BanCount( string server );
 	virtual CDBBan *BanCheck( string server, string user, string ip );
 	virtual bool BanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0, uint32_t ipban = 0 );
-	virtual bool BanRemove( string server, string user );
-	virtual bool BanRemove( string user );
+	virtual bool BanRemove( string server, string user, string admin, string reason = "" );
+	virtual bool BanRemove( string user, string admin, string reason = "" );
 	virtual vector<CDBBan *> BanList( string server );
 	virtual uint32_t GameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 	virtual uint32_t GamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
@@ -117,7 +123,6 @@ public:
 	virtual bool W3MMDVarAdd( uint32_t gameid, map<VarP,string> var_strings );
 	
 	
-	
 	// nordicleague
 	
 	virtual uint32_t 					RegisterPlayerAdd( string name, string email, string ip );
@@ -133,6 +138,12 @@ public:
 	
 	virtual CDBLastSeenPlayer			*LastSeenPlayer( string name );
 	virtual CCallableLastSeenPlayer 	*ThreadedLastSeenPlayer( string name );
+	
+	virtual bool 						SaveReplay( CReplay *replay );
+	virtual CCallableSaveReplay 		*ThreadedSaveReplay( CReplay *replay );
+	
+	virtual set<string> 				CountrySkipList( );
+	virtual CCallableCountrySkipList 	*ThreadedCountrySkipList( );
 
 	// threaded database functions
 
@@ -145,8 +156,8 @@ public:
 	virtual CCallableBanCount *ThreadedBanCount( string server );
 	virtual CCallableBanCheck *ThreadedBanCheck( string server, string user, string ip );
 	virtual CCallableBanAdd *ThreadedBanAdd( string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime = 0, uint32_t ipban = 0 );
-	virtual CCallableBanRemove *ThreadedBanRemove( string server, string user );
-	virtual CCallableBanRemove *ThreadedBanRemove( string user );
+	virtual CCallableBanRemove *ThreadedBanRemove( string server, string user, string admin, string reason );
+	virtual CCallableBanRemove *ThreadedBanRemove( string user, string admin, string reason = "" );
 	virtual CCallableBanList *ThreadedBanList( string server );
 	virtual CCallableGameAdd *ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver, vector<string> chatlog );
 	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
@@ -356,14 +367,18 @@ class CCallableBanRemove : virtual public CBaseCallable
 protected:
 	string m_Server;
 	string m_User;
+	string m_Admin;
+	string m_Reason;
 	bool m_Result;
 
 public:
-	CCallableBanRemove( string nServer, string nUser ) : CBaseCallable( ), m_Server( nServer ), m_User( nUser ), m_Result( false ) { }
+	CCallableBanRemove( string nServer, string nUser, string nAdmin, string nReason ) : CBaseCallable( ), m_Server( nServer ), m_User( nUser ), m_Admin( nAdmin ), m_Reason( nReason ), m_Result( false ) { }
 	virtual ~CCallableBanRemove( );
 
 	virtual string GetServer( )				{ return m_Server; }
 	virtual string GetUser( )				{ return m_User; }
+	virtual string GetAdmin( )				{ return m_Admin; }
+	virtual string GetReason( )				{ return m_Reason; }
 	virtual bool GetResult( )				{ return m_Result; }
 	virtual void SetResult( bool nResult )	{ m_Result = nResult; }
 };
@@ -649,6 +664,19 @@ public:
 	virtual void SetPublic( bool ispublic ) 	{ m_Public = ispublic; }
 };
 
+class CCallableCountrySkipList : virtual public CBaseCallable
+{
+protected:
+	set<string> m_Result;
+
+public:
+	CCallableCountrySkipList( ) : CBaseCallable( ) { }
+	virtual ~CCallableCountrySkipList( );
+
+	virtual set<string> GetResult( )					{ return m_Result; }
+	virtual void SetResult( set<string> nResult )	{ m_Result = nResult; }
+};
+
 //
 // CDBBan
 //
@@ -787,9 +815,12 @@ private:
 	uint32_t m_MinDuration;			// minimum game duration in seconds
 	uint32_t m_AvgDuration;			// average game duration in seconds
 	uint32_t m_MaxDuration;			// maximum game duration in seconds
+	bool	 m_Vouched;
+	string	 m_VouchedBy;
 
 public:
 	CDBGamePlayerSummary( string nServer, string nName, string nFirstGameDateTime, string nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration );
+	CDBGamePlayerSummary( string nServer, string nName, string nFirstGameDateTime, string nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration, bool nVouched, string nVouchedBy );
 	~CDBGamePlayerSummary( );
 
 	string GetServer( )					{ return m_Server; }
@@ -806,6 +837,8 @@ public:
 	uint32_t GetMinDuration( )			{ return m_MinDuration; }
 	uint32_t GetAvgDuration( )			{ return m_AvgDuration; }
 	uint32_t GetMaxDuration( )			{ return m_MaxDuration; }
+	bool	 IsVouched( )				{ return m_Vouched; }
+	string	 GetVouchedBy( )			{ return m_VouchedBy; }
 };
 
 //
@@ -1064,6 +1097,25 @@ public:
 
 	virtual CDBLastSeenPlayer 	*GetResult( )							{ return m_Result; }
 	virtual void 				SetResult( CDBLastSeenPlayer *nResult )	{ m_Result = nResult; }
+};
+
+class CCallableSaveReplay : virtual public CBaseCallable
+{
+protected:
+	CReplay *m_Replay;
+	bool m_Result;
+
+public:
+	CCallableSaveReplay( CReplay *replay ) : CBaseCallable( ), m_Replay( replay ), m_Result( false ) { }
+	virtual ~CCallableSaveReplay( );
+
+	virtual bool GetResult( )					{ return m_Result; }
+	virtual void SetResult( bool nResult )		{ m_Result = nResult; }
+//	virtual void SetName( string name ) 		{ m_Name = name; }
+//	virtual void SetReplay( CReplay *replay )	{ m_Replay = replay; }
+//	virtual void operator( )( );
+//	virtual void Init( ) { CBaseCallable :: Init( ); }
+//	virtual void Close( ) { CBaseCallable :: Close( ); }
 };
 
 #endif

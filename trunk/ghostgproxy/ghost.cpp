@@ -712,7 +712,7 @@ CGHost :: CGHost( CConfig *CFG )
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
 
-	m_Callables.push_back( m_DB->ThreadedUpdateGameInfo( string(), 255, false) );
+	m_Callables.push_back( m_DB->ThreadedUpdateGameInfo( "", GI_STARTUP, false) );
 }
 
 CGHost :: ~CGHost( )
@@ -835,6 +835,21 @@ bool CGHost :: Update( long usecBlock )
 		}
 		else
 			i++;
+	}
+	
+	if (m_UpdateSkipList)
+	{
+		if (m_UpdateSkipList->GetReady())
+		{
+			m_BypassEnforcer.clear();
+			m_BypassEnforcer = m_UpdateSkipList->GetResult();
+			
+			CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from country skiplist." );
+			
+			m_DB->RecoverCallable( m_UpdateSkipList );
+			delete m_UpdateSkipList;
+			m_UpdateSkipList = NULL;
+		}
 	}
 
 	// create the GProxy++ reconnect listener
@@ -960,7 +975,7 @@ bool CGHost :: Update( long usecBlock )
 	{
 		if( m_CurrentGame->Update( &fd, &send_fd ) )
 		{
-			m_Callables.push_back( m_DB->ThreadedUpdateGameInfo(m_CurrentGame->GetGameName( ), 255, false) );
+			m_Callables.push_back( m_DB->ThreadedUpdateGameInfo(m_CurrentGame->GetGameName( ), GI_DELETE_GAME, false) );
 			CONSOLE_Print( "[GHOST] deleting current game [" + m_CurrentGame->GetGameName( ) + "]" );
 			delete m_CurrentGame;
 			m_CurrentGame = NULL;
@@ -1442,7 +1457,8 @@ void CGHost :: SetConfigs( CConfig *CFG )
 
 	m_Debug = CFG->GetInt( "bot_debug", 0 ) == 0 ? false : true;
 	m_LinkEnabled = CFG->GetInt( "bot_linkenabled", 0 ) == 0 ? false : true;
-
+	
+	m_UpdateSkipList = NULL;
 	LoadEnforcerSkiplist();
 
 	/*
@@ -1452,38 +1468,45 @@ void CGHost :: SetConfigs( CConfig *CFG )
 
 void CGHost :: LoadEnforcerSkiplist()
 {
-		ifstream in;
-		in.open( "skiplist.txt" );
+	if (!m_UpdateSkipList)
+		m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
+			
+	/*
+	ifstream in;
+	in.open( "skiplist.txt" );
 
-		if( in.fail( ) )
-			CONSOLE_Print( "[GHOST] error loading Skiplist file [skiplist.txt]" );
-		else
+	if( in.fail( ) )
+		CONSOLE_Print( "[GHOST] error loading Skiplist file [skiplist.txt]" );
+	else
+	{
+		m_BypassEnforcer.clear();
+
+		CONSOLE_Print( "[GHOST] loading Skiplist file [skiplist.txt]" );
+		string Line;
+
+		while( !in.eof( ) )
 		{
-			CONSOLE_Print( "[GHOST] loading Skiplist file [skiplist.txt]" );
-			string Line;
-
-			while( !in.eof( ) )
-			{
-				getline( in, Line );
+			getline( in, Line );
 
 				// ignore blank lines and comments
 
-				if( Line.empty( ) || Line[0] == '#' )
-					continue;
+			if( Line.empty( ) || Line[0] == '#' )
+				continue;
 
 				// remove newlines and partial newlines to help fix issues with Windows formatted files on Linux systems
 
-				Line.erase( remove( Line.begin( ), Line.end( ), ' ' ), Line.end( ) );
-				Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
-				Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
+			Line.erase( remove( Line.begin( ), Line.end( ), ' ' ), Line.end( ) );
+			Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
+			Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
 
-				m_BypassEnforcer.insert( Line );
-			}
-
-			in.close( );
-
-			CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from skiplist" );
+			m_BypassEnforcer.insert( Line );
 		}
+
+		in.close( );
+
+		CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from skiplist" );
+	}
+	*/
 }
 
 void CGHost :: ExtractScripts( )

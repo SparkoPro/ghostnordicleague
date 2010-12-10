@@ -41,6 +41,54 @@
 
 #include "next_combination.h"
 
+/*
+bool SaveReplay( string name, string statstring, uint32_t version, uint32_t build, bool tft, string path, CReplay *replay )
+{
+/*
+	time_t Now = time( NULL );
+	char Time[17];
+	memset( Time, 0, sizeof( char ) * 17 );
+	strftime( Time, sizeof( char ) * 17, "%Y-%m-%d %H-%M", localtime( &Now ) );
+	string MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
+	string SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
+
+	if( MinString.size( ) == 1 )
+		MinString.insert( 0, "0" );
+
+	if( SecString.size( ) == 1 )
+		SecString.insert( 0, "0" );
+		
+	replay->BuildReplay( name, statstring, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
+	replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
+/
+	replay->BuildReplay( name, statstring, version, build );
+	replay->Save( tft, path + UTIL_FileSafeName( name + ".w3g" ) );
+		
+	return true;
+}
+
+CCallableSaveReplay *CBaseGame :: ThreadedSaveReplay( string name, string statstring, uint32_t version, uint32_t build, bool tft, string path, CReplay *replay )
+{
+	CCallableSaveReplay *Callable = new CCallableSaveReplay( name, statstring, version, build, tft, path, replay );
+	m_GHost->m_DB->CreateThread( Callable );
+	return Callable;
+}
+
+void CCallableSaveReplay :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = SaveReplay( m_Name, m_StatString, m_ReplayVersion, m_ReplayBuild, m_TFT, m_ReplayPath, m_Replay );
+
+	Close( );
+}
+
+CCallableSaveReplay :: ~CCallableSaveReplay( )
+{
+
+} */
+
 //
 // CBaseGame
 //
@@ -250,6 +298,13 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 		m_Exiting = true;
 	}
 }
+/*
+CCallableSaveReplay *CBaseGame :: ThreadedSaveReplay( CReplay *replay )
+{
+	CCallableSaveReplay *Callable = new CCallableSaveReplay( replay );
+	CreateThread( Callable );
+	return Callable;
+} */
 
 CBaseGame :: ~CBaseGame( )
 {
@@ -261,21 +316,12 @@ CBaseGame :: ~CBaseGame( )
 
 	if( m_Replay && ( m_GameLoading || m_GameLoaded ) )
 	{
-		time_t Now = time( NULL );
-		char Time[17];
-		memset( Time, 0, sizeof( char ) * 17 );
-		strftime( Time, sizeof( char ) * 17, "%Y-%m-%d %H-%M", localtime( &Now ) );
-		string MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
-		string SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
-
-		if( MinString.size( ) == 1 )
-			MinString.insert( 0, "0" );
-
-		if( SecString.size( ) == 1 )
-			SecString.insert( 0, "0" );
-
-		m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
-		m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
+		
+		//ThreadedSaveReplay( string name, string statstring, uint32_t version, uint32_t build, bool tft, string path, CReplay *replay )
+		m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedSaveReplay( m_Replay ) );
+		
+		//m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
+		//m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
 	}
 
 	delete m_Socket;
@@ -457,9 +503,9 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
 				{
 					if (GamePlayerSummary)
-						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, GamePlayerSummary->GetTotalGames( ), GamePlayerSummary->GetAvgLeftPercent( ));
+						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, GamePlayerSummary->GetTotalGames( ), GamePlayerSummary->GetAvgLeftPercent( ), GamePlayerSummary->IsVouched());
 					else
-						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, 0, 0);
+						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, 0, 0, false);
 				}
 			}
 
@@ -762,15 +808,17 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	// countdown every 500 ms
 
-	if( m_CountDownStarted && GetTicks( ) - m_LastCountDownTicks >= 500 )
+	if( m_CountDownStarted && GetTicks( ) - m_LastCountDownTicks >= 800 )
 	{
-		if( m_CountDownCounter > 0 )
+		if( m_CountDownCounter > -3 )
 		{
 			// we use a countdown counter rather than a "finish countdown time" here because it might alternately round up or down the count
 			// this sometimes resulted in a countdown of e.g. "6 5 3 2 1" during my testing which looks pretty dumb
 			// doing it this way ensures it's always "5 4 3 2 1" but each interval might not be *exactly* the same length
 
-			SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
+			if ( m_CountDownCounter >= 0)
+				SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
+				
 			m_CountDownCounter--;
 		}
 		else if( !m_GameLoading && !m_GameLoaded )
@@ -2424,7 +2472,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	}
 }
 
-void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games, uint32_t staypercent )
+void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games, uint32_t staypercent, bool vouched)
 {
 	// this function is only called when matchmaking is enabled
 	// EventPlayerJoined will be called first in all cases
@@ -2456,7 +2504,11 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 
 	//if( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) )
 	//if (m_GHost->m_SafeGames && m_GHost->m_MatchMakingMethod && (score < m_MinimumScore || score > m_MaximumScore))
-	if (m_GHost->m_SafeGames && m_GHost->m_MatchMakingMethod && ( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) ) )
+	
+	if (vouched)
+		CONSOLE_Print("[GAME: " + m_GameName + "] vouched player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "]");
+	
+	if (m_GHost->m_SafeGames && m_GHost->m_MatchMakingMethod && !vouched && ( score > -99999.0 && ( score < m_MinimumScore || score > m_MaximumScore ) ) )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has a rating [" + UTIL_ToString( score, 2 ) + "] outside the limits [" + UTIL_ToString( m_MinimumScore, 2 ) + "] to [" + UTIL_ToString( m_MaximumScore, 2 ) + "]" );
 		potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
@@ -2464,16 +2516,11 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		return;
 	}
 	
-	if (m_GHost->m_SafeGames)
+	if (m_GHost->m_SafeGames && !vouched)
 	{
-		if ( score < -99999.0 || games <= 30 || staypercent < 90 || games > 5000)
-		{
-                        CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has too few games [" + UTIL_ToString( games ) + "] required [" + UTIL_ToString( m_GHost->m_GamesReq ) + "]" );
-                        potential->Send( m_Protocol->SEND_W3GS_REJECTJOIN( REJECTJOIN_FULL ) );
-                        potential->SetDeleteMe( true );
-                        return;
-		}
-		
+		if (games > 50000)
+			games = 0;
+			
 		if (games < m_GHost->m_GamesReq)
 		{
 			CONSOLE_Print( "[GAME: " + m_GameName + "] player [" + joinPlayer->GetName( ) + "|" + potential->GetExternalIPString( ) + "] is trying to join the game but has too few games [" + UTIL_ToString( games ) + "] required [" + UTIL_ToString( m_GHost->m_GamesReq ) + "]" );
@@ -3686,6 +3733,13 @@ void CBaseGame :: EventGameStarted( )
 			m_Replay->SetHostPID( m_Players[0]->GetPID( ) );
 			m_Replay->SetHostName( m_Players[0]->GetName( ) );
 		}
+		
+		m_Replay->SetGameName( m_GameName );
+		m_Replay->SetStatString( m_StatString );
+		m_Replay->SetWar3Version( m_GHost->m_ReplayWar3Version );
+		m_Replay->SetBuildNumber( m_GHost->m_ReplayBuildNumber );
+		m_Replay->SetTFT( m_GHost->m_TFT );
+		m_Replay->SetSavePath( m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
 	}
 
 	// build a stat string for use when saving the replay
@@ -3704,6 +3758,8 @@ void CBaseGame :: EventGameStarted( )
 	StatString = UTIL_EncodeStatString( StatString );
 	m_StatString = string( StatString.begin( ), StatString.end( ) );
 
+	if ( m_Replay )
+		m_Replay->SetStatString( m_StatString );
 	// delete the map data
 
 	delete m_Map;
@@ -4401,9 +4457,10 @@ void CBaseGame :: ShuffleSlots( )
 	SendAllSlotInfo( );
 }
 
+
 vector<unsigned char> CBaseGame :: BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam )
 {
-	CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running recursive balance with [" + UTIL_ToString(PlayerIDs.size()) + "] players.");
+	//CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running recursive balance with [" + UTIL_ToString(PlayerIDs.size()) + "] players.");
 	// take a brute force approach to finding the best balance by iterating through every possible combination of players
 	// 1.) since the number of teams is arbitrary this algorithm must be recursive
 	// 2.) on the first recursion step every possible combination of players into two "teams" is checked, where the first team is the correct size and the second team contains everyone else
@@ -4482,6 +4539,109 @@ vector<unsigned char> CBaseGame :: BalanceSlotsRecursive( vector<unsigned char> 
 					BestOrdering = TestOrdering;
 					BestDifference = LargestDifference;
 				}
+			}
+		}
+	}
+
+	return BestOrdering;
+}
+
+vector<unsigned char> CBaseGame :: BalanceSlotsRecursive2( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char *PlayerLinks )
+{
+	//CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running recursive balance with [" + UTIL_ToString(PlayerIDs.size()) + "] players.");
+	// take a brute force approach to finding the best balance by iterating through every possible combination of players
+	// 1.) since the number of teams is arbitrary this algorithm must be recursive
+	// 2.) on the first recursion step every possible combination of players into two "teams" is checked, where the first team is the correct size and the second team contains everyone else
+	// 3.) on the next recursion step every possible combination of the remaining players into two more "teams" is checked, continuing until all the actual teams are accounted for
+	// 4.) for every possible combination, check the largest difference in total scores between any two actual teams
+	// 5.) minimize this value by choosing the combination of players with the smallest difference
+
+	vector<unsigned char> BestOrdering = PlayerIDs;
+	double BestDifference = -1.0;
+	unsigned char Mid = TeamSizes[0];
+
+	// the base case where only one actual team worth of players was passed to this function is handled by the behaviour of next_combination
+	// in this case PlayerIDs.begin( ) + Mid will actually be equal to PlayerIDs.end( ) and next_combination will return false
+
+	while( next_combination( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ) )
+	{
+				// we're splitting the players into every possible combination of two "teams" based on the midpoint Mid
+				// the first (left) team contains the correct number of players but the second (right) "team" might or might not
+				// for example, it could contain one, two, or more actual teams worth of players
+				// so recurse using the second "team" as the full set of players to perform the balancing on
+
+				//vector<unsigned char> BestSubOrdering = BalanceSlotsRecursive( vector<unsigned char>( PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) ), TeamSizes, PlayerScores, i + 1 );
+
+				// BestSubOrdering now contains the best ordering of all the remaining players (the "right team") given this particular combination of players into two "teams"
+				// in order to calculate the largest difference in total scores we need to recombine the subordering with the first team
+
+		vector<unsigned char> TestOrdering = vector<unsigned char>( PlayerIDs.begin( ), PlayerIDs.end() );
+		//TestOrdering.insert( TestOrdering.end( ), BestSubOrdering.begin( ), BestSubOrdering.end( ) );		
+		// now calculate the team scores for all the teams that we know about (e.g. on subsequent recursion steps this will NOT be every possible team)
+		
+		//vector<unsigned char> Sentinel = vector<unsigned char>( PlayerIDs.begin( ), PlayerIDs.begin( ) + Mid );
+		//vector<unsigned char> Scourge = vector<unsigned char>( PlayerIDs.begin( ) + Mid, PlayerIDs.end( ) );
+
+		vector<unsigned char> :: iterator CurrentPID = TestOrdering.begin( );
+		double TeamScores[2];
+
+		for( unsigned char j = 0; j < 2; j++ )
+		{
+			TeamScores[j] = 0.0;
+
+			for( unsigned char k = 0; k < TeamSizes[j]; k++ )
+			{
+				TeamScores[j] += PlayerScores[*CurrentPID];
+				CurrentPID++;	
+			}
+		}
+				
+		// find the largest difference in total scores between any two teams
+
+		double LargestDifference = 0.0;
+
+		for( unsigned char j = 0; j < 2; j++ )
+		{
+			if( TeamSizes[j] > 0 )
+			{
+				for( unsigned char k = j + 1; k < 2; k++ )
+				{
+					if( TeamSizes[k] > 0 )
+					{
+						double Difference = abs( TeamScores[j] - TeamScores[k] );
+
+						if( Difference > LargestDifference )
+							LargestDifference = Difference;
+					}
+				}
+			}
+		}
+		// and minimize it
+
+		if( BestDifference < 0.0 || LargestDifference < BestDifference )
+		{
+			bool BadLinkCombination = false;
+
+			for( unsigned char i = 1; i < 13; i++ )
+			{
+				if (PlayerLinks[i] == 0)
+					continue;
+
+				if ( find( TestOrdering.begin(), TestOrdering.begin() + Mid, i ) != TestOrdering.begin() + Mid && find( TestOrdering.begin(), TestOrdering.begin() + Mid, PlayerLinks[i] ) != TestOrdering.begin() + Mid )
+					CONSOLE_Print("Linked players found in same team, sentinel.");
+				else if ( find( TestOrdering.begin() + Mid, TestOrdering.end(), i ) != TestOrdering.end() && find( TestOrdering.begin() + Mid, TestOrdering.end(), PlayerLinks[i] ) != TestOrdering.end() )
+					CONSOLE_Print("Linked players found in same team, scourge.");
+				else
+				{
+					BadLinkCombination = true;
+					CONSOLE_Print("This combination was no good.");
+				}
+			}
+			
+			if (!BadLinkCombination)
+			{
+				BestOrdering = TestOrdering;
+				BestDifference = LargestDifference;
 			}
 		}
 	}
@@ -4663,26 +4823,30 @@ void CBaseGame :: BalanceSlots( )
 
 	vector<unsigned char> PlayerIDs;
 	unsigned char TeamSizes[12];
-	double PlayerScores[13];
+	double PlayerScores[10];
+	unsigned char PlayerLinks[13];
+	
+	
 	memset( TeamSizes, 0, sizeof( unsigned char ) * 12 );
+	memset( PlayerLinks, 0, sizeof( unsigned char ) * 13 );
 	vector<string> AlreadyLinked;
 
 	vector<BalancePlayerPair> LinkedBalancePlayers;
 	
 	for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
 	{
-			unsigned char PID = (*i)->GetPID( );
+		unsigned char PID = (*i)->GetPID( );
 
-			if( PID < 13 )
+		if( PID < 13 )
+		{
+			unsigned char SID = GetSIDFromPID( PID );
+
+			if( SID < m_Slots.size( ) )
 			{
-				unsigned char SID = GetSIDFromPID( PID );
+				unsigned char Team = m_Slots[SID].GetTeam( );
 
-				if( SID < m_Slots.size( ) )
+				if( Team < 12 )
 				{
-					unsigned char Team = m_Slots[SID].GetTeam( );
-
-					if( Team < 12 )
-					{
 						// we are forced to use a default score because there's no way to balance the teams otherwise
 						double Score = (*i)->GetScore( );
 
@@ -4692,33 +4856,35 @@ void CBaseGame :: BalanceSlots( )
 						PlayerIDs.push_back( PID );
 						TeamSizes[Team]++;
 						PlayerScores[PID] = Score;
-													
-						if ( find (AlreadyLinked.begin(), AlreadyLinked.end(), (*i)->GetName( )) == AlreadyLinked.end() )
-						{
-							if ( (*i)->GetLinked() )
+
+						//IsLinked
+						if ( (*i)->GetLinked() && IsLinked( (*i)->GetName(), (*i)->GetLinkedTo() ) )
+						{					
+							CGamePlayer *LinkedTo = GetPlayerFromName((*i)->GetLinkedTo(), true);
+							if ( LinkedTo )
 							{
-								string LinkedToName = (*i)->GetLinkedTo();
-								CGamePlayer *LinkedTo = GetPlayerFromName(LinkedToName, true);
-								if ( LinkedTo )
-								{
-									if( LinkedTo->GetScore() < -99999.0 )
-										Score += m_Map->GetMapDefaultPlayerScore( );
-									else
-										Score += LinkedTo->GetScore();
+								/*if( LinkedTo->GetScore() < -99999.0 )
+									Score += m_Map->GetMapDefaultPlayerScore( );
+								else
+									Score += LinkedTo->GetScore(); */
 								
-									AlreadyLinked.push_back(LinkedTo->GetName());
+								unsigned char LPID = LinkedTo->GetPID();
 								
-									if (m_GHost->m_Debug)
-										CONSOLE_Print( "[DEBUG: " + m_GameName + "] Combining player [" + (*i)->GetName() + "] and [" + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
-								}
+								if (PID < 13 && LPID < 13)
+									PlayerLinks[PID] = LPID;
+
+								//AlreadyLinked.push_back(LinkedTo->GetName());
+
+								CONSOLE_Print( "[DEBUG: " + m_GameName + "] Linked players found [" + UTIL_ToString(PID) + " " + (*i)->GetName() + "] and [" + UTIL_ToString(LPID) + " " + LinkedTo->GetName() + "] before balance, total score [" + UTIL_ToString(Score, 2) + "]" );
 							}
-							LinkedBalancePlayers.push_back(BalancePlayerPair(PID, Score));
 						}
-						else if (m_GHost->m_Debug)
-							CONSOLE_Print( "[DEBUG: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." );
-					}
+						//LinkedBalancePlayers.push_back(BalancePlayerPair(PID, Score));
+					/*}
+					else if (m_GHost->m_Debug)
+						CONSOLE_Print( "[DEBUG: " + m_GameName + "] Removing player [" + (*i)->GetName() + "] before balance, already linked in." ); */
 				}
 			}
+		}
 	}
 
 	sort( PlayerIDs.begin( ), PlayerIDs.end( ) );
@@ -4763,8 +4929,7 @@ void CBaseGame :: BalanceSlots( )
 		return;
 	}
 	
-	if (m_GHost->m_Debug)
-		CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running Balance..." );
+	CONSOLE_Print( "[DEBUG: " + m_GameName + "] Running Balance..." );
 
 	// the BestOrdering assumes the teams are in slot order although this may not be the case
 	// so put the players on the correct teams regardless of slot order
@@ -4772,7 +4937,7 @@ void CBaseGame :: BalanceSlots( )
 	
 	bool broken = false;
 
-	if (!m_PairedLinkedPlayers.empty())
+	if (false) //m_GHost->m_LinkEnabled && !m_PairedLinkedPlayers.empty())
 	{
 		StartTicks = GetTicks( );
 		BalanceSlotsLinked(LinkedBalancePlayers);
@@ -4809,10 +4974,10 @@ void CBaseGame :: BalanceSlots( )
 		EndTicks = GetTicks( );
 	}
 	
-	if (m_PairedLinkedPlayers.empty())
+	if (true) //m_PairedLinkedPlayers.empty())
 	{
 		StartTicks = GetTicks( );
-		vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
+		vector<unsigned char> BestOrdering = BalanceSlotsRecursive2( PlayerIDs, TeamSizes, PlayerScores, PlayerLinks );
 		EndTicks = GetTicks( );
 
 		vector<unsigned char> :: iterator CurrentPID = BestOrdering.begin( );
@@ -5227,12 +5392,9 @@ void CBaseGame :: DeleteVirtualHost( )
 	SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( m_VirtualHostPID, PLAYERLEAVE_LOBBY ) );
 	m_VirtualHostPID = 255;
 }
-
+/*
 void CBaseGame :: CreateFakePlayer( )
 {
-	if( m_FakePlayerPID != 255 )
-		return;
-
 	unsigned char SID = GetEmptySlot( false );
 
 	if( SID < m_Slots.size( ) )
@@ -5247,6 +5409,35 @@ void CBaseGame :: CreateFakePlayer( )
 		IP.push_back( 0 );
 		IP.push_back( 0 );
 		SendAll( m_Protocol->SEND_W3GS_PLAYERINFO( m_FakePlayerPID, "FakePlayer", IP, IP ) );
+		m_Slots[SID] = CGameSlot( m_FakePlayerPID, 100, SLOTSTATUS_OCCUPIED, 0, m_Slots[SID].GetTeam( ), m_Slots[SID].GetColour( ), m_Slots[SID].GetRace( ) );
+		SendAllSlotInfo( );
+		
+		m_FakePlayerPIDs.push_back( m_FakePlayerPID );
+	}
+} */
+
+void CBaseGame :: CreateFakePlayer( string name )
+{
+	if ( m_FakePlayerPID != 255)
+		return;
+	
+	if ( name.empty() )
+		name = "FakePlayer";
+	
+	unsigned char SID = GetEmptySlot( false );
+
+	if( SID < m_Slots.size( ) )
+	{
+		if( GetNumPlayers( ) >= 11 )
+			DeleteVirtualHost( );
+			
+		m_FakePlayerPID = GetNewPID( );
+		BYTEARRAY IP;
+		IP.push_back( 0 );
+		IP.push_back( 0 );
+		IP.push_back( 0 );
+		IP.push_back( 0 );
+		SendAll( m_Protocol->SEND_W3GS_PLAYERINFO( m_FakePlayerPID, name, IP, IP ) );
 		m_Slots[SID] = CGameSlot( m_FakePlayerPID, 100, SLOTSTATUS_OCCUPIED, 0, m_Slots[SID].GetTeam( ), m_Slots[SID].GetColour( ), m_Slots[SID].GetRace( ) );
 		SendAllSlotInfo( );
 	}
@@ -5265,6 +5456,7 @@ void CBaseGame :: DeleteFakePlayer( )
 
 	SendAll( m_Protocol->SEND_W3GS_PLAYERLEAVE_OTHERS( m_FakePlayerPID, PLAYERLEAVE_LOBBY ) );
 	SendAllSlotInfo( );
+	
 	m_FakePlayerPID = 255;
 }
 

@@ -43,7 +43,7 @@ class CCallableGamePlayerSummaryCheck;
 
 typedef pair<string,CCallableGamePlayerSummaryCheck *> PairedGPSCheck;
 typedef pair<string,string> PairedPlayers;
-typedef std::pair<unsigned char, double> BalancePlayerPair;
+typedef pair<unsigned char, double> BalancePlayerPair;
 
 class CBaseGame
 {
@@ -72,6 +72,7 @@ protected:
 	unsigned char m_GameState;						// game state, public or private
 	unsigned char m_VirtualHostPID;					// virtual host's PID
 	unsigned char m_FakePlayerPID;					// the fake player's PID (if present)
+	vector<unsigned char> m_FakePlayerPIDs;			// multiple fakeplayers PIDS
 	unsigned char m_GProxyEmptyActions;
 	string m_GameName;								// game name
 	string m_LastGameName;							// last game name (the previous game name before it was rehosted)
@@ -101,7 +102,7 @@ protected:
 	uint32_t m_LastAutoStartTime;					// the last time we tried to auto start the game
 	uint32_t m_AutoStartPlayers;					// auto start the game when there are this many players or more
 	uint32_t m_LastCountDownTicks;					// GetTicks when the last countdown message was sent
-	uint32_t m_CountDownCounter;					// the countdown is finished when this reaches zero
+	int32_t m_CountDownCounter;						// the countdown is finished when this reaches zero
 	uint32_t m_StartedLoadingTicks;					// GetTicks when the game started loading
 	uint32_t m_StartPlayers;						// number of players when the game started
 	uint32_t m_LastLagScreenResetTime;				// GetTime when the "lag" screen was last reset
@@ -256,7 +257,7 @@ public:
 	virtual void EventPlayerDisconnectSocketError( CGamePlayer *player );
 	virtual void EventPlayerDisconnectConnectionClosed( CGamePlayer *player );
 	virtual void EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer );
-	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games = 0, uint32_t staypercent = 0);
+	virtual void EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games = 0, uint32_t staypercent = 0, bool vouched = false);
 	virtual void EventPlayerLeft( CGamePlayer *player, uint32_t reason );
 	virtual void EventPlayerLoaded( CGamePlayer *player );
 	virtual void EventPlayerAction( CGamePlayer *player, CIncomingAction *action );
@@ -301,6 +302,7 @@ public:
 	virtual void CloseAllSlots( );
 	virtual void ShuffleSlots( );
 	virtual vector<unsigned char> BalanceSlotsRecursive( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char StartTeam );
+	virtual vector<unsigned char> BalanceSlotsRecursive2( vector<unsigned char> PlayerIDs, unsigned char *TeamSizes, double *PlayerScores, unsigned char *PlayerLinks );
 	virtual void BalanceSlotsLinked(vector<BalancePlayerPair> Players);
 	virtual void BalanceSlots( );
 	virtual void AddToSpoofed( string server, string name, bool sendMessage );
@@ -316,8 +318,56 @@ public:
 	virtual void StopLaggers( string reason );
 	virtual void CreateVirtualHost( );
 	virtual void DeleteVirtualHost( );
-	virtual void CreateFakePlayer( );
-	virtual void DeleteFakePlayer( );
+	virtual void CreateFakePlayer( string name = "" );
+	virtual void DeleteFakePlayer( );	
 };
+
+/*
+
+class CCallableAdminCount : virtual public CBaseCallable
+{
+protected:
+	string m_Server;
+	uint32_t m_Result;
+
+public:
+	CCallableAdminCount( string nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
+	virtual ~CCallableAdminCount( );
+
+	virtual string GetServer( )					{ return m_Server; }
+	virtual uint32_t GetResult( )				{ return m_Result; }
+	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+}; */
+
+/*
+
+class CWriteCallableSaveReplay : public CCallableAdminCount, public CMySQLCallable
+{
+public:
+	CMySQLCallableAdminCount( string nServer, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	virtual ~CMySQLCallableAdminCount( ) { }
+
+	virtual void operator( )( );
+	virtual void Init( ) { CMySQLCallable :: Init( ); }
+	virtual void Close( ) { CMySQLCallable :: Close( ); }
+}; */
+
+/*
+class CCallableAdminCount : virtual public CBaseCallable
+{
+protected:
+	string m_Server;
+	uint32_t m_Result;
+
+public:
+	CMySQLCallableAdminCount( string nServer, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CCallableAdminCount( string nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
+	virtual ~CCallableAdminCount( );
+
+	virtual string GetServer( )					{ return m_Server; }
+	virtual uint32_t GetResult( )				{ return m_Result; }
+	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
+};
+*/
 
 #endif

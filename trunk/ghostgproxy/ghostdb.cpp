@@ -22,6 +22,9 @@
 #include "util.h"
 #include "config.h"
 #include "ghostdb.h"
+#include "packed.h"
+#include "replay.h"
+#include "gameprotocol.h"
 
 //
 // CGHostDB
@@ -71,6 +74,11 @@ bool CGHostDB :: UpdateGameInfo( string name, uint32_t players, bool ispublic )
 	return false;
 }
 
+bool CGHostDB :: SaveReplay( CReplay *replay )
+{
+	return false;
+}
+
 CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour  )
 {
 	return NULL;
@@ -87,6 +95,21 @@ CDBLastSeenPlayer *CGHostDB :: LastSeenPlayer( string name )
 }
 
 CCallableLastSeenPlayer *CGHostDB :: ThreadedLastSeenPlayer( string name )
+{
+	return NULL;
+}
+
+CCallableSaveReplay *CGHostDB :: ThreadedSaveReplay( CReplay *replay )
+{
+	return NULL;
+}
+
+set<string> CGHostDB :: CountrySkipList()
+{
+	return set<string>( );
+}
+
+CCallableCountrySkipList *CGHostDB :: ThreadedCountrySkipList( )
 {
 	return NULL;
 }
@@ -109,6 +132,16 @@ CCallableUpdateGameInfo :: ~CCallableUpdateGameInfo( )
 CCallableLastSeenPlayer :: ~CCallableLastSeenPlayer( )
 {
 
+}
+
+CCallableSaveReplay :: ~CCallableSaveReplay( )
+{
+	
+}
+
+CCallableCountrySkipList :: ~CCallableCountrySkipList()
+{
+	
 }
 
 //
@@ -157,12 +190,12 @@ bool CGHostDB :: BanAdd( string server, string user, string ip, string gamename,
 	return false;
 }
 
-bool CGHostDB :: BanRemove( string server, string user )
+bool CGHostDB :: BanRemove( string server, string user, string admin, string reason )
 {
 	return false;
 }
 
-bool CGHostDB :: BanRemove( string user )
+bool CGHostDB :: BanRemove( string user, string admin, string reason )
 {
 	return false;
 }
@@ -293,12 +326,12 @@ CCallableBanAdd *CGHostDB :: ThreadedBanAdd( string server, string user, string 
 	return NULL;
 }
 
-CCallableBanRemove *CGHostDB :: ThreadedBanRemove( string server, string user )
+CCallableBanRemove *CGHostDB :: ThreadedBanRemove( string server, string user, string admin, string reason )
 {
 	return NULL;
 }
 
-CCallableBanRemove *CGHostDB :: ThreadedBanRemove( string user )
+CCallableBanRemove *CGHostDB :: ThreadedBanRemove( string user, string admin, string reason )
 {
 	return NULL;
 }
@@ -621,6 +654,28 @@ CDBGamePlayerSummary :: CDBGamePlayerSummary( string nServer, string nName, stri
 	m_MinDuration = nMinDuration;
 	m_AvgDuration = nAvgDuration;
 	m_MaxDuration = nMaxDuration;
+	m_Vouched = false;
+	m_VouchedBy.clear();
+}
+
+CDBGamePlayerSummary :: CDBGamePlayerSummary( string nServer, string nName, string nFirstGameDateTime, string nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration, bool nVouched, string nVouchedBy )
+{
+	m_Server = nServer;
+	m_Name = nName;
+	m_FirstGameDateTime = nFirstGameDateTime;
+	m_LastGameDateTime = nLastGameDateTime;
+	m_TotalGames = nTotalGames;
+	m_MinLoadingTime = nMinLoadingTime;
+	m_AvgLoadingTime = nAvgLoadingTime;
+	m_MaxLoadingTime = nMaxLoadingTime;
+	m_MinLeftPercent = nMinLeftPercent;
+	m_AvgLeftPercent = nAvgLeftPercent;
+	m_MaxLeftPercent = nMaxLeftPercent;
+	m_MinDuration = nMinDuration;
+	m_AvgDuration = nAvgDuration;
+	m_MaxDuration = nMaxDuration;
+	m_Vouched = nVouched;
+	m_VouchedBy = nVouchedBy;
 }
 
 CDBGamePlayerSummary :: ~CDBGamePlayerSummary( )
