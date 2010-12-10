@@ -226,6 +226,7 @@ public:
 	virtual CCallableLastSeenPlayer 			*ThreadedLastSeenPlayer( string name );
 	virtual CCallableSaveReplay 				*ThreadedSaveReplay( CReplay *replay );
 	virtual CCallableCountrySkipList			*ThreadedCountrySkipList( );
+	virtual CCallableVouchList					*ThreadedVouchList( );
 
 	// other database functions
 
@@ -236,38 +237,37 @@ public:
 // global helper functions
 //
 
-uint32_t 	MySQLAdminCount( void *conn, string *error, uint32_t botid, string server );
-bool 		MySQLAdminCheck( void *conn, string *error, uint32_t botid, string server, string user );
-bool 		MySQLAdminAdd( void *conn, string *error, uint32_t botid, string server, string user );
-bool 		MySQLAdminRemove( void *conn, string *error, uint32_t botid, string server, string user );
-vector<string> 	MySQLAdminList( void *conn, string *error, uint32_t botid, string server );
-uint32_t	MySQLBanCount( void *conn, string *error, uint32_t botid, string server );
-CDBBan 		*MySQLBanCheck( void *conn, string *error, uint32_t botid, string server, string user, string ip );
-bool 		MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban );
-bool 		MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, string user, string admin, string reason );
-bool 		MySQLBanRemove( void *conn, string *error, uint32_t botid, string user, string admin, string reason );
-vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string server );
-uint32_t 	MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
-uint32_t 	MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
-uint32_t	MySQLRegisterPlayerAdd( void *conn, string *error, string name, string email, string ip );
-CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
-CDBGamePlayerSummary *MySQLReducedGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
-uint32_t 	MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
-uint32_t 	MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, string name, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
-CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
-bool 		MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
-double 		MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server );
-uint32_t 	MySQLW3MMDPlayerAdd( void *conn, string *error, uint32_t botid, string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
-bool 		MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints );
-bool 		MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals );
-bool 		MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,string> var_strings );
-
-uint32_t 	MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
-bool 		MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic );
-CDBLastSeenPlayer 	*MySQLLastSeenPlayer( void *conn, string *error, uint32_t botid, string user );
-
-bool		SaveReplay( CReplay *replay );
-set<string> 	MySQLCountrySkipList( void *conn, string *error, uint32_t botid );
+uint32_t 					MySQLAdminCount( void *conn, string *error, uint32_t botid, string server );
+bool 						MySQLAdminCheck( void *conn, string *error, uint32_t botid, string server, string user );
+bool 						MySQLAdminAdd( void *conn, string *error, uint32_t botid, string server, string user );
+bool 						MySQLAdminRemove( void *conn, string *error, uint32_t botid, string server, string user );
+vector<string> 				MySQLAdminList( void *conn, string *error, uint32_t botid, string server );
+uint32_t					MySQLBanCount( void *conn, string *error, uint32_t botid, string server );
+CDBBan 			  		   	*MySQLBanCheck( void *conn, string *error, uint32_t botid, string server, string user, string ip );
+bool 						MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, string user, string ip, string gamename, string admin, string reason, uint32_t bantime, uint32_t ipban );
+bool 						MySQLBanRemove( void *conn, string *error, uint32_t botid, string server, string user, string admin, string reason );
+bool 						MySQLBanRemove( void *conn, string *error, uint32_t botid, string user, string admin, string reason );
+vector<CDBBan *> 			MySQLBanList( void *conn, string *error, uint32_t botid, string server );
+uint32_t 					MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
+uint32_t 					MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
+uint32_t					MySQLRegisterPlayerAdd( void *conn, string *error, string name, string email, string ip );
+CDBGamePlayerSummary 		*MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
+CDBGamePlayerSummary 		*MySQLReducedGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
+uint32_t 					MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
+uint32_t 					MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, string name, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
+CDBDotAPlayerSummary 		*MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
+bool 						MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
+double 						MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server );
+uint32_t 					MySQLW3MMDPlayerAdd( void *conn, string *error, uint32_t botid, string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
+bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints );
+bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals );
+bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,string> var_strings );
+uint32_t 					MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
+bool 						MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic );
+CDBLastSeenPlayer 			*MySQLLastSeenPlayer( void *conn, string *error, uint32_t botid, string user );
+bool						SaveReplay( CReplay *replay );
+set<string> 				MySQLCountrySkipList( void *conn, string *error, uint32_t botid );
+set<VouchPair> 				MySQLVouchList( void *conn, string *error, uint32_t botid );
 
 //
 // MySQL Callables
@@ -578,6 +578,17 @@ class CMySQLCallableCountrySkipList : public CCallableCountrySkipList, public CM
 public:
 	CMySQLCallableCountrySkipList( void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableCountrySkipList( ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableCountrySkipList( ) { }
+
+	virtual void operator( )( );
+	virtual void Init( ) { CMySQLCallable :: Init( ); }
+	virtual void Close( ) { CMySQLCallable :: Close( ); }
+};
+
+class CMySQLCallableVouchList : public CCallableVouchList, public CMySQLCallable
+{
+public:
+	CMySQLCallableVouchList( void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableVouchList( ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	virtual ~CMySQLCallableVouchList( ) { }
 
 	virtual void operator( )( );
 	virtual void Init( ) { CMySQLCallable :: Init( ); }

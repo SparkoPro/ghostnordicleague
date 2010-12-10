@@ -525,6 +525,19 @@ CCallableCountrySkipList *CGHostDBMySQL :: ThreadedCountrySkipList( )
 	return Callable;
 }
 
+CCallableVouchList *CGHostDBMySQL :: ThreadedVouchList( )
+{
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableVouchList *Callable = new CMySQLCallableVouchList( Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CreateThread( Callable );
+	m_OutstandingCallables++;
+	return Callable;
+}
+
 
 
 void *CGHostDBMySQL :: GetIdleConnection( )
@@ -1067,48 +1080,50 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 					if (TotalGames > 50000)
 						TotalGames = 0;
 					
-					if (botid == 1 && TotalGames < 30)
-					{
-						string VouchCheck = "SELECT name, voucher FROM vouches WHERE name = '" + name + "'";
-						
-						if( mysql_real_query( (MYSQL *)conn, VouchCheck.c_str( ), VouchCheck.size( ) ) != 0 )
-							*error = mysql_error( (MYSQL *)conn );
-						else
-						{
-							MYSQL_RES *VouchResult = mysql_store_result( (MYSQL *)conn );
-
-							if( VouchResult )
-							{
-								if (mysql_num_rows(VouchResult) == 1)
-								{
-									vector<string> VRow = MySQLFetchRow( Result );
-
-									if( VRow.size( ) == 2 )
-									{
-										Vouched = true;
-										VouchedBy = Row[1];
-										CONSOLE_Print( "[VOUCH] Vouched player [" + Row[0] + "] vouched by [" + Row[1] + "]");
-									}
-								}
-								mysql_free_result( VouchResult );
-							}	
-						}
-					}
-					
-					if (Vouched)
-						GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration, Vouched, VouchedBy );
-					else
-						GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration);
+					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration, Vouched, VouchedBy );
+					GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration);
 					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string(), string(), TotalGames, 0, AvgLoadingTime, 0, 0, AvgLeftPercent, 0, 0, 0, 0 );
 				}
 				else
+				{
+					GamePlayerSummary = new CDBGamePlayerSummary( string(), name, string(), string(), 0, 0, 0, 0, 100, 100, 100, 0, 0, 0);
 					*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
+				}
 			}
 
 			mysql_free_result( Result );
 		}
 		else
 			*error = mysql_error( (MYSQL *)conn );
+	}
+	
+	if (GamePlayerSummary->GetTotalGames() < 30)
+	{
+		CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
+		string VouchCheck = "SELECT name, voucher FROM vouches WHERE name LIKE '" + name + "'";
+		
+		if( mysql_real_query( (MYSQL *)conn, VouchCheck.c_str( ), VouchCheck.size( ) ) != 0 )
+			*error = mysql_error( (MYSQL *)conn );
+		else
+		{
+			MYSQL_RES *VouchResult = mysql_store_result( (MYSQL *)conn );
+
+			if( VouchResult )
+			{
+				if (mysql_num_rows(VouchResult) == 1)
+				{
+					vector<string> VRow = MySQLFetchRow( VouchResult );
+
+					if( VRow.size( ) == 2 )
+					{
+						GamePlayerSummary->SetVouched(true);
+						GamePlayerSummary->SetVouchedBy(VRow[1]);
+						CONSOLE_Print( "[VOUCH] Found vouch for player [" + VRow[0] + "] vouched by [" + VRow[1] + "]");
+					}
+				}
+				mysql_free_result( VouchResult );
+			}	
+		}
 	}
 
 	return GamePlayerSummary;
@@ -1585,6 +1600,36 @@ set<string> MySQLCountrySkipList( void *conn, string *error, uint32_t botid )
 	return SkipList;
 }
 
+set<VouchPair> MySQLVouchList( void *conn, string *error, uint32_t botid )
+{
+	set<VouchPair> VouchList;
+	string Query = "SELECT name, voucher FROM vouches";
+
+	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+		*error = mysql_error( (MYSQL *)conn );
+	else
+	{
+		MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
+
+		if( Result )
+		{
+			vector<string> Row = MySQLFetchRow( Result );
+
+			while( !Row.empty( ) )
+			{
+				VouchList.insert( VouchPair(Row[0], Row[1]) );
+				Row = MySQLFetchRow( Result );
+			}
+
+			mysql_free_result( Result );
+		}
+		else
+			*error = mysql_error( (MYSQL *)conn );
+	}
+
+	return VouchList;
+}
+
 //
 // MySQL Callables
 //
@@ -1894,6 +1939,16 @@ void CMySQLCallableCountrySkipList :: operator( )( )
 
 	if( m_Error.empty( ) )
 		m_Result = MySQLCountrySkipList( m_Connection, &m_Error, m_SQLBotID );
+
+	Close( );
+}
+
+void CMySQLCallableVouchList :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLVouchList( m_Connection, &m_Error, m_SQLBotID );
 
 	Close( );
 }
