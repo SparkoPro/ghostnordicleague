@@ -712,11 +712,23 @@ CGHost :: CGHost( CConfig *CFG )
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
 
+
+	// create the listening socket to accept connections
+	
+	m_BroadcastListener = new CTCPServer( );
+	m_BroadcastListener->Listen( string( ), m_BroadcastPort );
+	CONSOLE_Print( "[BROADCASTER] Listening for clients on port [" + UTIL_ToString( m_BroadcastPort ) +"]" );
+
 	m_Callables.push_back( m_DB->ThreadedUpdateGameInfo( "", GI_STARTUP, false) );
 }
 
 CGHost :: ~CGHost( )
 {
+	delete m_BroadcastListener;
+	
+	for( vector<CTCPSocket * > :: iterator i = m_Broadcaster.begin( ); i != m_Broadcaster.end( ); i++ )
+		delete *i;
+	
 	delete m_UDPSocket;
 	delete m_ReconnectSocket;
 
@@ -841,14 +853,12 @@ bool CGHost :: Update( long usecBlock )
 	{
 		if (m_UpdateSkipList->GetReady())
 		{
-			m_BypassEnforcer.clear();
-			m_BypassEnforcer = m_UpdateSkipList->GetResult();
-			
-			CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from country skiplist." );
-			
+			m_BypassEnforcer = m_UpdateSkipList->GetResult();			
 			m_DB->RecoverCallable( m_UpdateSkipList );
 			delete m_UpdateSkipList;
 			m_UpdateSkipList = NULL;
+			
+			CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from country skiplist." );
 		}
 	}
 
@@ -920,6 +930,25 @@ bool CGHost :: Update( long usecBlock )
 	for( vector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); i++ )
 	{
 		(*i)->SetFD( &fd, &send_fd, &nfds );
+		NumFDs++;
+	}
+	
+	// 6. the Game Broadcaster
+	
+	for(vector<CTCPSocket * >::iterator i = m_Broadcaster.begin( ); i!= m_Broadcaster.end( ); i++ )
+	{
+		if ( (*i)->GetConnected( ) && !(*i)->HasError( ) )
+		{	
+			(*i)->SetFD( &fd, &send_fd, &nfds );
+			NumFDs++;
+		}
+	}
+
+	// 7. the listener for broadcastconnections
+	
+	if (m_BroadcastListener)
+	{
+		m_BroadcastListener->SetFD( &fd, &send_fd, &nfds );
 		NumFDs++;
 	}
 
@@ -1208,6 +1237,30 @@ bool CGHost :: Update( long usecBlock )
 
 		m_LastAutoHostTime = GetTime( );
 	}
+	
+	CTCPSocket *NewSocket = m_BroadcastListener->Accept( &fd );
+	if ( NewSocket )
+	{
+		m_Broadcaster.push_back( NewSocket );
+		CONSOLE_Print("[BROADCAST] New client listening from [" + NewSocket->GetIPString( ) +"]" );
+		//BYTEARRAY info;
+		//UTIL_AppendByteArray( info, m_AdminGamePort,false );
+		//UTIL_AppendByteArray( info, m_HostPort, false );
+		//NewSocket->PutBytes( info );
+	}
+	
+	for ( vector<CTCPSocket * > :: iterator i = m_Broadcaster.begin( ); i != m_Broadcaster.end( ); )
+	{
+		if ( (*i)->HasError( ) || !(*i)->GetConnected( ) )
+		{
+			CONSOLE_Print("[BROADCAST] Client [" + (*i)->GetIPString( ) +"] disconnected.");
+			delete *i;
+			i = m_Broadcaster.erase( i );
+			continue;
+		}
+		(*i)->DoSend( &send_fd );
+		i++;
+	}
 
 	return m_Exiting || AdminExit || BNETExit;
 }
@@ -1459,6 +1512,8 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_LinkEnabled = CFG->GetInt( "bot_linkenabled", 0 ) == 0 ? false : true;
 	
 	m_UpdateSkipList = NULL;
+	m_BroadcastPort = CFG->GetInt("bot_broadcastport", 6969 );
+	
 	LoadEnforcerSkiplist();
 
 	/*

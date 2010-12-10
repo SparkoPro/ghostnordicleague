@@ -303,29 +303,6 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		else
 			i++;
 	}
-	
-/*
-
-	for( vector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
-	{
-		if( i->second->GetReady( ) )
-		{
-			if( i->second->GetResult( ) )
-			{
-				AddBan( i->second->GetUser( ), i->second->GetIP( ), i->second->GetGameName( ), i->second->GetAdmin( ), i->second->GetReason( ) );
-				QueueChatCommand( m_GHost->m_Language->BannedUser( i->second->GetServer( ), i->second->GetUser( ) ), i->first, !i->first.empty( ) );
-			}
-			else
-				QueueChatCommand( m_GHost->m_Language->ErrorBanningUser( i->second->GetServer( ), i->second->GetUser( ) ), i->first, !i->first.empty( ) );
-
-			m_GHost->m_DB->RecoverCallable( i->second );
-			delete i->second;
-			i = m_PairedBanAdds.erase( i );
-		}
-		else
-			i++;
-	}
-*/
 
 	for( vector<PairedBanAdd> :: iterator i = m_PairedBanAdds.begin( ); i != m_PairedBanAdds.end( ); )
 	{
@@ -471,30 +448,26 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			i++;
 	}
 	
+	/*
+	bool 		Seen( )				{ return m_Seen; }
+	string 		GetName( )			{ return m_Name; }
+	string 		GetDate( )			{ return m_Date; }
+	string 		GetLastGame( )		{ return m_LastGame; }
+	string 		GetLastHero( )		{ return m_LastHero; }
+	uint32_t 	GetLastTeam( )		{ return m_LastTeam; }
+	uint32_t 	GetLastOutcome( )	{ return m_LastOutcome; }
+	double 		GetLastGain( )		{ return m_LastGain; }
+	uint32_t 	GetKills( )			{ return m_Kills; }
+	uint32_t 	GetDeaths( )		{ return m_Deaths; }
+	uint32_t 	GetAssists( )		{ return m_Assists; }
+	string		GetKDA()			{ return UTIL_ToString(m_Kills) + "/" + UTIL_ToString(m_Deaths) + "/" + UTIL_ToString(m_Assists); }
+	*/
 	
 	for( vector<PairedSeenCheck> :: iterator i = m_PairedSeenChecks.begin( ); i != m_PairedSeenChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
 			CDBLastSeenPlayer *Player = i->second->GetResult( );
-
-/*
-
-bool 		Seen( )				{ return m_Seen; }
-string 		GetName( )			{ return m_Name; }
-string 		GetDate( )			{ return m_Date; }
-string 		GetLastGame( )		{ return m_LastGame; }
-string 		GetLastHero( )		{ return m_LastHero; }
-uint32_t 	GetLastTeam( )		{ return m_LastTeam; }
-uint32_t 	GetLastOutcome( )	{ return m_LastOutcome; }
-double 		GetLastGain( )		{ return m_LastGain; }
-uint32_t 	GetKills( )			{ return m_Kills; }
-uint32_t 	GetDeaths( )		{ return m_Deaths; }
-uint32_t 	GetAssists( )		{ return m_Assists; }
-string		GetKDA()			{ return UTIL_ToString(m_Kills) + "/" + UTIL_ToString(m_Deaths) + "/" + UTIL_ToString(m_Assists); }
-
-*/
-
 			if( Player && Player->Seen() )
 				QueueChatCommand( m_GHost->m_Language->WasLastSeenPlaying( i->second->GetName( ), Player->GetDate(), Player->GetLastGame( ), Player->GetLastHero( ), Player->GetLastTeam( ), Player->GetLastOutcome( ), Player->GetLastGain( ), Player->GetKills( ), Player->GetDeaths( ), Player->GetAssists( ) ), i->first, !i->first.empty( ) );
 			else
@@ -1112,13 +1085,10 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				/*****************
 				* ADMIN COMMANDS *
 				******************/
-				
-				
+
 				/**
 				NordicLeague commands
 				**/
-				
-				
 				if ( Command == "debugon" )
 				{
 					if( IsRootAdmin( User ) )
@@ -1277,7 +1247,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 					}
 				}
 				
-				
 				//
 				// !CHECKBAN
 				//
@@ -1356,8 +1325,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 				 End NordicLeague Commands
 				**/
 				
-	
-
 				//
 				// !ADDADMIN
 				//
@@ -1672,9 +1639,6 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 						QueueChatCommand( m_GHost->m_Language->UserIsNotBanned( m_Server, Payload ), User, Whisper );
 				}
 */
-
-
-
 				//
 				// !CLOSE (close slot)
 				//
