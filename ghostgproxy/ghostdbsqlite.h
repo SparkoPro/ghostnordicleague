@@ -154,6 +154,8 @@ CREATE INDEX idx_gameid_colour ON dotaplayers ( gameid, colour )
  *** SCHEMA ***
  **************/
 
+class CGameSlot;
+
 //
 // CSQLITE3 (wrapper class)
 //

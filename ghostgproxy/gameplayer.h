@@ -140,6 +140,8 @@ private:
 	uint32_t	m_Stay;
 	bool		m_IsLinked;
 	string		m_LinkedTo;
+	bool		m_Vouched;
+	string		m_VouchedBy;
 
 public:
 	CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved );

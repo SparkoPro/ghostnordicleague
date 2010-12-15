@@ -69,7 +69,7 @@ uint32_t CGHostDB :: DotAEventAdd( uint32_t gameid, string gamename, string kill
 	return 0;
 }
 
-bool CGHostDB :: UpdateGameInfo( string name, uint32_t players, bool ispublic )
+bool CGHostDB :: UpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots )
 {
 	return false;
 }
@@ -84,7 +84,7 @@ CCallableDotAEventAdd *CGHostDB :: ThreadedDotAEventAdd( uint32_t gameid, string
 	return NULL;
 }
 
-CCallableUpdateGameInfo *CGHostDB :: ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic)
+CCallableUpdateGameInfo *CGHostDB :: ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots)
 {
 	return NULL;
 }

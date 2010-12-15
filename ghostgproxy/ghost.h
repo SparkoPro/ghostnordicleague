@@ -43,6 +43,9 @@ class CMap;
 class CSaveGame;
 class CConfig;
 class CCallableCountrySkipList;
+class CCallableVouchList;
+
+typedef pair<string, string> VouchPair;
 
 class CGHost
 {
@@ -149,21 +152,25 @@ public:
 	bool		m_EnforceBalance;				// config value: force balance before gamestart?
 	bool		m_VoteEndAllowed;				// config value: do we allow !voteend ?
 	uint32_t 	m_VoteEndPercentage;			// config value: percentage of players required to vote yes for a voteend to pass
-	
-	bool 		m_SafeGames;					// are we hosting safe games?
 	uint32_t 	m_GamesReq;						// minimum amount of games required to be able to join safe games
 	uint32_t 	m_StayReq;						// minimum amount of stay % to be able to join
+	bool 		m_SafeGames;					// are we hosting safe games?
 	bool 		m_EnableFF;
-	set<string> m_BypassEnforcer;
 	bool 		m_Debug;
 	bool		m_LinkEnabled;
+	
+	set<string> 				m_BypassEnforcer;
+	set<VouchPair> 				m_VouchPairs;
 
 	CCallableCountrySkipList 	*m_UpdateSkipList;
 	void 						LoadEnforcerSkiplist();
+	CCallableVouchList			*m_UpdateVouchList;
+	uint32_t					m_NextListUpdateTime;	// keep track of perodical updates for country skiplist/vouched player list.
 	
-	CTCPServer 					*m_BroadcastListener; 	// listening socket for game broadcasters
-	uint32_t					m_BroadcastPort;
-	vector<CTCPSocket *> 		m_Broadcaster;		// vector of connected broadcasters
+	CTCPServer 					*m_BroadcastListener; 	// listening socket for connecting broadcasters
+	vector<CTCPSocket *> 		m_Broadcaster;			// vector of connected broadcasters
+	uint16_t					m_BroadcastPort;		// port to listen on, set by config bot_broadcasterport
+	
 
 	/*
 		NordicLeague - @end - define our config variables

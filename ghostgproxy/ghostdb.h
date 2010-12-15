@@ -75,7 +75,6 @@ class CPacked;
 class CReplay;
 
 typedef pair<uint32_t,string> VarP;
-typedef pair<string, string> VouchPair;
 
 class CGHostDB
 {
@@ -134,9 +133,9 @@ public:
 	virtual CCallableDotAEventAdd 		*ThreadedDotAEventAdd( uint32_t gameid, string gamename, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
 	
 	// Keep track of current games in database for channel/website info
-		
-	virtual bool 						UpdateGameInfo( string name, uint32_t players, bool ispublic);
-	virtual CCallableUpdateGameInfo 	*ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
+	
+	virtual bool 						UpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots);
+	virtual CCallableUpdateGameInfo 	*ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots );
 	
 	virtual CDBLastSeenPlayer			*LastSeenPlayer( string name );
 	virtual CCallableLastSeenPlayer 	*ThreadedLastSeenPlayer( string name );
@@ -657,9 +656,10 @@ protected:
 	uint32_t m_Players;
 	bool m_Public;
 	bool m_Result;
+	vector<string> m_Slots;
 
 public:
-	CCallableUpdateGameInfo( string name, uint32_t players, bool ispublic ) : CBaseCallable( ), m_Name( name ), m_Players( players ), m_Public( ispublic ), m_Result( false ) { }
+	CCallableUpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> slots ) : CBaseCallable( ), m_Name( name ), m_Players( players ), m_Public( ispublic ), m_Slots( slots ),  m_Result( false ) { }
 	virtual ~CCallableUpdateGameInfo( );
 
 	virtual bool GetResult( )					{ return m_Result; }
