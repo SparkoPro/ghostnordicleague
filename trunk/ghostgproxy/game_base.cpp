@@ -199,6 +199,10 @@ CBaseGame :: CBaseGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16
 	m_GameIsInHouse = false;
 	m_ChatLog.clear();
 	
+	m_StartTime = 0;
+	m_AutoCloseTime = 0;
+	m_AutoClose = false;
+	
 	/*
 		NordicLeague - @begin - Keep track of autohost #, quick and dirty way.
 	*/
@@ -308,8 +312,8 @@ CCallableSaveReplay *CBaseGame :: ThreadedSaveReplay( CReplay *replay )
 
 CBaseGame :: ~CBaseGame( )
 {
-	
-	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, GI_DELETE_GAME, (m_GameState == GAME_PUBLIC) ? true : false) );
+	UpdateGameInfo(GI_DELETE_GAME);
+	//m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, GI_DELETE_GAME, (m_GameState == GAME_PUBLIC) ? true : false, vector<CGameSlot>() ) );
 	
 	// save replay
 	// todotodo: put this in a thread
@@ -318,10 +322,10 @@ CBaseGame :: ~CBaseGame( )
 	{
 		
 		//ThreadedSaveReplay( string name, string statstring, uint32_t version, uint32_t build, bool tft, string path, CReplay *replay )
-		m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedSaveReplay( m_Replay ) );
+		//m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedSaveReplay( m_Replay ) );
 		
-		//m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
-		//m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
+		m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
+		m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
 	}
 
 	delete m_Socket;
@@ -774,8 +778,9 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	{		
 		if (m_LastGameInfoPlayers != m_Players.size())
 		{
-			m_LastGameInfoPlayers = m_Players.size();			
-			m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, (m_GameState == GAME_PUBLIC) ? true : false) );
+			m_LastGameInfoPlayers = m_Players.size();
+			UpdateGameInfo(m_LastGameInfoPlayers);
+			//m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, m_LastGameInfoPlayers, (m_GameState == GAME_PUBLIC) ? true : false, m_Slots ) );
 		}
 		
 		m_LastGameInfoUpdateTime = GetTime( );
@@ -1200,6 +1205,12 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] gameover timer started (one player left)" );
 		m_GameOverTime = GetTime( );
+	}
+	
+	if (m_AutoClose && GetTime() > m_AutoCloseTime )
+	{
+		CONSOLE_Print( "[GAME: " + m_GameName + "] is over (Drawed because of leaver.)" );
+		StopPlayers( "Leaver detected, game drawed." );		
 	}
 
 	// finish the gameover timer
@@ -1700,7 +1711,7 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 			}
 		}
 	}
-
+	
 	m_LastPlayerLeaveTicks = GetTicks( );
 
 	// in some cases we're forced to send the left message early so don't send it again
@@ -1710,8 +1721,17 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 
 	if( m_GameLoaded )
 	{
+		
 		player->SetLeft( true );
 		SendAllChat( player->GetName( ) + " " + player->GetLeftReason( ) + "." );
+		
+		if (GetTime() <= m_AutoCloseTime)
+		{
+			SendAllChat( "[!!!] Leaver detected before 5 minutes, game is automatically drawed." );
+			SendAllChat( "[!!!] Shutting down in 10 seconds." );
+			m_AutoClose = true;
+			m_AutoCloseTime = GetTime() + 10;
+		}
 	}
 
 	if( player->GetLagging( ) )
@@ -3584,7 +3604,8 @@ void CBaseGame :: EventGameRefreshed( string server )
 void CBaseGame :: EventGameStarted( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] started loading with " + UTIL_ToString( GetNumHumanPlayers( ) ) + " players" );
-	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, GI_ACTIVATE_GAME, (m_GameState == GAME_PUBLIC) ? true : false) );
+	UpdateGameInfo(GI_ACTIVATE_GAME);
+	//m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, GI_ACTIVATE_GAME, (m_GameState == GAME_PUBLIC) ? true : false, m_Slots ) );
 	
 	for( unsigned char i = 0; i < 12; i++ )
     {
@@ -3863,6 +3884,8 @@ void CBaseGame :: EventGameLoaded( )
 	}
 	
 	m_ForfeitDelayTime = GetTime() + 1680;
+	m_StartTime = GetTime();
+	m_AutoCloseTime = GetTime() + 300;
 }
 
 unsigned char CBaseGame :: GetSIDFromPID( unsigned char PID )
@@ -4990,7 +5013,7 @@ void CBaseGame :: BalanceSlots( )
 	if (true) //m_PairedLinkedPlayers.empty())
 	{
 		StartTicks = GetTicks( );
-		vector<unsigned char> BestOrdering = BalanceSlotsRecursive2( PlayerIDs, TeamSizes, PlayerScores, PlayerLinks );
+		vector<unsigned char> BestOrdering = BalanceSlotsRecursive( PlayerIDs, TeamSizes, PlayerScores, 0 );
 		EndTicks = GetTicks( );
 
 		vector<unsigned char> :: iterator CurrentPID = BestOrdering.begin( );
@@ -5534,4 +5557,39 @@ bool CBaseGame :: IsLinked( string player, string player2 )
 		}
 	}
 	return false;
+}
+
+/*
+#define GI_NEW_GAME 0
+#define GI_STARTUP 200
+#define GI_CLEANUP 210
+#define GI_ACTIVATE_GAME 220
+#define GI_DELETE_GAME 255
+*/
+
+void CBaseGame :: UpdateGameInfo(uint32_t players)
+{
+	vector<string> Slots;
+	
+	if (players != GI_DELETE_GAME)
+	{
+		for( vector<CGameSlot> :: iterator i = m_Slots.begin( ); i != m_Slots.end( ); i++ )
+		{
+			if( (*i).GetSlotStatus( ) != SLOTSTATUS_OCCUPIED )
+			{
+				Slots.push_back(string());
+			}
+			else
+			{
+				CGamePlayer *player = GetPlayerFromPID( (*i).GetPID( ) );
+			
+				if (player)
+					Slots.push_back(player->GetName());
+				else
+					Slots.push_back(string());
+			}
+		}
+	}
+	
+	m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedUpdateGameInfo(m_GameName, players, (m_GameState == GAME_PUBLIC) ? true : false, Slots ) );
 }

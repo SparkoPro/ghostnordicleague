@@ -239,6 +239,7 @@ CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSock
 	m_EndVote = false;
 	m_FFVote = false;
 	m_IsLinked = false;
+	m_Vouched = false;
 }
 
 CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
@@ -294,13 +295,14 @@ CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, str
 	
 	// nordicleague
 	
-	m_Team = 0;	
-	m_Admin = false;
+	m_Team 		= 0;	
+	m_Admin 	= false;
 	m_Moderator = false;
-	m_HasLeft = false;
-	m_EndVote = false;
-	m_FFVote = false;
-	m_IsLinked = false;
+	m_HasLeft 	= false;
+	m_EndVote	= false;
+	m_FFVote 	= false;
+	m_IsLinked 	= false;
+	m_Vouched 	= false;
 }
 
 CGamePlayer :: ~CGamePlayer( )

@@ -477,15 +477,14 @@ CCallableW3MMDVarAdd *CGHostDBMySQL :: ThreadedW3MMDVarAdd( uint32_t gameid, map
 	return Callable;
 }
 
-
-CCallableUpdateGameInfo *CGHostDBMySQL :: ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic )
+CCallableUpdateGameInfo *CGHostDBMySQL :: ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableUpdateGameInfo *Callable = new CMySQLCallableUpdateGameInfo( name, players, ispublic, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableUpdateGameInfo *Callable = new CMySQLCallableUpdateGameInfo( name, players, ispublic, m_Slots, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -1447,7 +1446,7 @@ bool MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gamei
 #define GI_DELETE_GAME 255
 */
 
-bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic )
+bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic, vector<string> m_Slots )
 {
 	string Query, Cleanup, GC;
 	string EscName = MySQLEscapeString( conn, name );
@@ -1494,7 +1493,14 @@ bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name
 			break;
 		case GI_NEW_GAME:
 		default:
-			Query = "INSERT INTO gameinfo (name, players, botid, public) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ") ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ";";
+			string EscPlayers = m_Slots.front();
+			for( vector<string> :: iterator i = m_Slots.begin( ) + 1; i != m_Slots.end( ); i++ )
+				EscPlayers += "|" + (*i);
+				
+			EscPlayers = MySQLEscapeString( conn, EscPlayers );
+			
+			CONSOLE_Print("[MYSQL] We got [" + UTIL_ToString(m_Slots.size()) + "] slots, wat to do. [" + EscPlayers + "]");
+			Query = "INSERT INTO gameinfo (name, players, botid, public, slots) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ", '" + EscPlayers + "') ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ", slots = '" + EscPlayers + "';";
 			break;
 	}
 	
@@ -1908,7 +1914,7 @@ void CMySQLCallableUpdateGameInfo :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLUpdateGameInfo( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Players, m_Public );
+		m_Result = MySQLUpdateGameInfo( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Players, m_Public, m_Slots );
 
 	Close( );
 }

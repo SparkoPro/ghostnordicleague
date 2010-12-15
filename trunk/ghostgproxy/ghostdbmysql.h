@@ -221,7 +221,7 @@ public:
 //
 
 	virtual CCallableDotAEventAdd 				*ThreadedDotAEventAdd( uint32_t gameid, string gamename, string Killer, string Victim, uint32_t kcolour, uint32_t vcolour );
-	virtual CCallableUpdateGameInfo 			*ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic );
+	virtual CCallableUpdateGameInfo 			*ThreadedUpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots );
 	
 	virtual CCallableLastSeenPlayer 			*ThreadedLastSeenPlayer( string name );
 	virtual CCallableSaveReplay 				*ThreadedSaveReplay( CReplay *replay );
@@ -263,7 +263,7 @@ bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t
 bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals );
 bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,string> var_strings );
 uint32_t 					MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
-bool 						MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic );
+bool 						MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic, vector<string> m_Slots );
 CDBLastSeenPlayer 			*MySQLLastSeenPlayer( void *conn, string *error, uint32_t botid, string user );
 bool						SaveReplay( CReplay *replay );
 set<string> 				MySQLCountrySkipList( void *conn, string *error, uint32_t botid );
@@ -532,7 +532,7 @@ public:
 class CMySQLCallableUpdateGameInfo : public CCallableUpdateGameInfo, public CMySQLCallable
 {
 public:
-	CMySQLCallableUpdateGameInfo( string name, uint32_t players, bool ispublic, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableUpdateGameInfo( name, players, ispublic ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableUpdateGameInfo( string name, uint32_t players, bool ispublic, vector<string> m_Slots, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableUpdateGameInfo( name, players, ispublic, m_Slots ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableUpdateGameInfo( ) { }
 
 	virtual void operator( )( );

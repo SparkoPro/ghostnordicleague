@@ -163,6 +163,10 @@ protected:
 	bool			m_GameIsInHouse;					// inhouse game.
 	vector<PairedPlayers> m_PairedLinkedPlayers;
 	vector<string>		m_ChatLog;
+	
+	uint32_t		m_StartTime;
+	uint32_t		m_AutoCloseTime;
+	bool			m_AutoClose;
 
 	/*
 		NordicLeague - @end - Some added custom variables
@@ -208,6 +212,7 @@ public:
 	virtual void RemoveLinkedPlayers( string player );
 	virtual void RemoveAllLinkedPlayers( );
 	virtual bool IsLinked( string player, string player2 );
+	virtual void UpdateGameInfo(uint32_t players);
 
 	virtual uint32_t GetNextTimedActionTicks( );
 	virtual uint32_t GetSlotsOccupied( );
@@ -322,52 +327,5 @@ public:
 	virtual void DeleteFakePlayer( );	
 };
 
-/*
-
-class CCallableAdminCount : virtual public CBaseCallable
-{
-protected:
-	string m_Server;
-	uint32_t m_Result;
-
-public:
-	CCallableAdminCount( string nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
-	virtual ~CCallableAdminCount( );
-
-	virtual string GetServer( )					{ return m_Server; }
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
-}; */
-
-/*
-
-class CWriteCallableSaveReplay : public CCallableAdminCount, public CMySQLCallable
-{
-public:
-	CMySQLCallableAdminCount( string nServer, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
-	virtual ~CMySQLCallableAdminCount( ) { }
-
-	virtual void operator( )( );
-	virtual void Init( ) { CMySQLCallable :: Init( ); }
-	virtual void Close( ) { CMySQLCallable :: Close( ); }
-}; */
-
-/*
-class CCallableAdminCount : virtual public CBaseCallable
-{
-protected:
-	string m_Server;
-	uint32_t m_Result;
-
-public:
-	CMySQLCallableAdminCount( string nServer, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableAdminCount( nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
-	CCallableAdminCount( string nServer ) : CBaseCallable( ), m_Server( nServer ), m_Result( 0 ) { }
-	virtual ~CCallableAdminCount( );
-
-	virtual string GetServer( )					{ return m_Server; }
-	virtual uint32_t GetResult( )				{ return m_Result; }
-	virtual void SetResult( uint32_t nResult )	{ m_Result = nResult; }
-};
-*/
 
 #endif

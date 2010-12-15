@@ -719,7 +719,7 @@ CGHost :: CGHost( CConfig *CFG )
 	m_BroadcastListener->Listen( string( ), m_BroadcastPort );
 	CONSOLE_Print( "[BROADCASTER] Listening for clients on port [" + UTIL_ToString( m_BroadcastPort ) +"]" );
 
-	m_Callables.push_back( m_DB->ThreadedUpdateGameInfo( "", GI_STARTUP, false) );
+	m_Callables.push_back( m_DB->ThreadedUpdateGameInfo( string( ), GI_STARTUP, false, vector<string>() ) );
 }
 
 CGHost :: ~CGHost( )
@@ -857,9 +857,27 @@ bool CGHost :: Update( long usecBlock )
 			m_DB->RecoverCallable( m_UpdateSkipList );
 			delete m_UpdateSkipList;
 			m_UpdateSkipList = NULL;
-			
-			CONSOLE_Print( "[GHOST] loaded " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names from country skiplist." );
+			CONSOLE_Print( "[SKIPLIST] Found " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names in the country skiplist." );
 		}
+	}
+	
+	if (m_UpdateVouchList)
+	{
+		if (m_UpdateVouchList->GetReady())
+		{
+			m_VouchPairs = m_UpdateVouchList->GetResult();			
+			m_DB->RecoverCallable( m_UpdateVouchList );
+			delete m_UpdateVouchList;
+			m_UpdateVouchList = NULL;
+			CONSOLE_Print( "[VOUCH] Found " + UTIL_ToString( m_VouchPairs.size( ) ) + " vouched player pairs." );
+		}
+	}
+
+	if (GetTime() >= m_NextListUpdateTime)
+	{
+		m_UpdateVouchList = m_DB->ThreadedVouchList( );
+		m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
+		m_NextListUpdateTime = GetTime( ) + 3600;
 	}
 
 	// create the GProxy++ reconnect listener
@@ -1004,7 +1022,7 @@ bool CGHost :: Update( long usecBlock )
 	{
 		if( m_CurrentGame->Update( &fd, &send_fd ) )
 		{
-			m_Callables.push_back( m_DB->ThreadedUpdateGameInfo(m_CurrentGame->GetGameName( ), GI_DELETE_GAME, false) );
+			m_CurrentGame->UpdateGameInfo(GI_DELETE_GAME);
 			CONSOLE_Print( "[GHOST] deleting current game [" + m_CurrentGame->GetGameName( ) + "]" );
 			delete m_CurrentGame;
 			m_CurrentGame = NULL;
@@ -1512,9 +1530,10 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_LinkEnabled = CFG->GetInt( "bot_linkenabled", 0 ) == 0 ? false : true;
 	
 	m_UpdateSkipList = NULL;
+	m_UpdateVouchList = NULL;
 	m_BroadcastPort = CFG->GetInt("bot_broadcastport", 6969 );
 	
-	LoadEnforcerSkiplist();
+	//LoadEnforcerSkiplist();
 
 	/*
 		NordicLeague - @end - read our config variables
