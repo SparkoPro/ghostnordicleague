@@ -849,7 +849,7 @@ bool CGHost :: Update( long usecBlock )
 			i++;
 	}
 	
-	if (m_UpdateSkipList)
+	if (m_UpdateSkipList != NULL)
 	{
 		if (m_UpdateSkipList->GetReady())
 		{
@@ -863,10 +863,12 @@ bool CGHost :: Update( long usecBlock )
 			{
 				CONSOLE_Print( "[SKIPLIST] " + (*i) );
 			}
+			
+			m_NextListUpdateTime = GetTime( ) + 3600;
 		}
 	}
 	
-	if (m_UpdateVouchList)
+	if (m_UpdateVouchList != NULL)
 	{
 		if (m_UpdateVouchList->GetReady())
 		{
@@ -880,10 +882,12 @@ bool CGHost :: Update( long usecBlock )
 			{
 				CONSOLE_Print( "[VOUCH] " + (*i).first );
 			}
+			
+			m_NextListUpdateTime = GetTime( ) + 3600;
 		}
 	}
 
-	if (m_NextListUpdateTime > GetTime())
+	if (GetTime() > m_NextListUpdateTime)
 	{
 		m_UpdateVouchList = m_DB->ThreadedVouchList( );
 		m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
