@@ -1579,7 +1579,7 @@ bool SaveReplay( CReplay *replay )
 set<string> MySQLCountrySkipList( void *conn, string *error, uint32_t botid )
 {
 	set<string> SkipList;
-	string Query = "SELECT name FROM skiplist";
+	string Query = "SELECT LOWER(name) FROM skiplist";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );

@@ -858,6 +858,11 @@ bool CGHost :: Update( long usecBlock )
 			delete m_UpdateSkipList;
 			m_UpdateSkipList = NULL;
 			CONSOLE_Print( "[SKIPLIST] Found " + UTIL_ToString( m_BypassEnforcer.size( ) ) + " names in the country skiplist." );
+			
+			for( set<string> :: iterator i = m_BypassEnforcer.begin( ); i != m_BypassEnforcer.end( ); i++ )
+			{
+				CONSOLE_Print( "[SKIPLIST] " + (*i) );
+			}
 		}
 	}
 	
@@ -870,10 +875,15 @@ bool CGHost :: Update( long usecBlock )
 			delete m_UpdateVouchList;
 			m_UpdateVouchList = NULL;
 			CONSOLE_Print( "[VOUCH] Found " + UTIL_ToString( m_VouchPairs.size( ) ) + " vouched player pairs." );
+			
+			for( set<VouchPair> :: iterator i = m_VouchPairs.begin( ); i != m_VouchPairs.end( ); i++ )
+			{
+				CONSOLE_Print( "[VOUCH] " + (*i).first );
+			}
 		}
 	}
 
-	if (GetTime() >= m_NextListUpdateTime)
+	if (m_NextListUpdateTime > GetTime())
 	{
 		m_UpdateVouchList = m_DB->ThreadedVouchList( );
 		m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
@@ -1533,7 +1543,7 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_UpdateVouchList = NULL;
 	m_BroadcastPort = CFG->GetInt("bot_broadcastport", 6969 );
 	
-	//LoadEnforcerSkiplist();
+	LoadEnforcerSkiplist();
 
 	/*
 		NordicLeague - @end - read our config variables
@@ -1542,8 +1552,14 @@ void CGHost :: SetConfigs( CConfig *CFG )
 
 void CGHost :: LoadEnforcerSkiplist()
 {
+	
+	m_NextListUpdateTime = GetTime() + 3600;
+	
 	if (!m_UpdateSkipList)
 		m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
+		
+	if (!m_UpdateVouchList)
+		m_UpdateVouchList = m_DB->ThreadedVouchList( );
 			
 	/*
 	ifstream in;
