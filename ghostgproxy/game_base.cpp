@@ -806,6 +806,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	if( !m_CountDownStarted && m_AutoStartPlayers != 0 && GetTime( ) - m_LastAutoStartTime >= 10 )
 	{
+		/*
 		if (m_GHost->m_SafeGames)
 		{
 			for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
@@ -819,6 +820,7 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				}
 			}
 		}
+		*/
 
 		StartCountDownAuto( m_GHost->m_RequireSpoofChecks );
 		m_LastAutoStartTime = GetTime( );
@@ -1207,10 +1209,11 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		m_GameOverTime = GetTime( );
 	}
 	
-	if (m_AutoClose && GetTime() > m_AutoCloseTime )
+	if (m_AutoClose)
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] is over (Drawed because of leaver.)" );
-		StopPlayers( "Leaver detected, game drawed." );		
+		m_GameOverTime = GetTime() - 45;
+		StopPlayers( "Leaver detected, game drawed." );
 	}
 
 	// finish the gameover timer
@@ -1383,6 +1386,7 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, string message )
 
 	if( GetNumHumanPlayers( ) > 0 )
 	{
+
 		CONSOLE_Print( "[GAME: " + m_GameName + "] [Local]: " + message );
 
 		if( !m_GameLoading && !m_GameLoaded )
@@ -1391,13 +1395,24 @@ void CBaseGame :: SendAllChat( unsigned char fromPID, string message )
 				message = message.substr( 0, 254 );
 
 			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 16, BYTEARRAY( ), message ) );
+			m_ChatLog.push_back( "[Lobby] " + message );
 		}
 		else
 		{
+			string MinString = UTIL_ToString( ( m_GameTicks / 1000 ) / 60 );
+			string SecString = UTIL_ToString( ( m_GameTicks / 1000 ) % 60 );
+
+			if( MinString.size( ) == 1 )
+				MinString.insert( 0, "0" );
+
+			if( SecString.size( ) == 1 )
+				SecString.insert( 0, "0" );
+
 			if( message.size( ) > 127 )
 				message = message.substr( 0, 127 );
 
 			SendAll( m_Protocol->SEND_W3GS_CHAT_FROM_HOST( fromPID, GetPIDs( ), 32, UTIL_CreateByteArray( (uint32_t)0, false ), message ) );
+			m_ChatLog.push_back( "(" + MinString + ":" + SecString + "): " + message );
 
 			if( m_Replay )
 				m_Replay->AddChatMessage( fromPID, 32, 0, message );
@@ -1725,12 +1740,11 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 		player->SetLeft( true );
 		SendAllChat( player->GetName( ) + " " + player->GetLeftReason( ) + "." );
 		
-		if (GetTime() <= m_AutoCloseTime)
+		if (m_AutoCloseTime > GetTime())
 		{
-			SendAllChat( "[!!!] Leaver detected before 5 minutes, game is automatically drawed." );
-			SendAllChat( "[!!!] Shutting down in 10 seconds." );
+			SendAllChat( "[!!!] Leaver detected before 10 minutes, game is automatically drawed." );
+			SendAllChat( "[!!!] Shutting down in 15 seconds." );
 			m_AutoClose = true;
-			m_AutoCloseTime = GetTime() + 10;
 		}
 	}
 
@@ -3885,7 +3899,8 @@ void CBaseGame :: EventGameLoaded( )
 	
 	m_ForfeitDelayTime = GetTime() + 1680;
 	m_StartTime = GetTime();
-	m_AutoCloseTime = GetTime() + 300;
+	m_AutoCloseTime = GetTime() + 780;
+	m_AutoClose = false;
 }
 
 unsigned char CBaseGame :: GetSIDFromPID( unsigned char PID )
