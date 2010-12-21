@@ -107,7 +107,7 @@ bool CGameProtocol :: RECEIVE_W3GS_GAMELOADED_SELF( BYTEARRAY data )
 
 CIncomingAction *CGameProtocol :: RECEIVE_W3GS_OUTGOING_ACTION( BYTEARRAY data, unsigned char PID )
 {
-	// DEBUG_Print( "RECEIVED W3GS_OUTGOING_ACTION" );
+	DEBUG_Print( "RECEIVED W3GS_OUTGOING_ACTION" );
 	// DEBUG_Print( data );
 
 	// 2 bytes					-> Header
@@ -119,6 +119,9 @@ CIncomingAction *CGameProtocol :: RECEIVE_W3GS_OUTGOING_ACTION( BYTEARRAY data, 
 	{
 		BYTEARRAY CRC = BYTEARRAY( data.begin( ) + 4, data.begin( ) + 8 );
 		BYTEARRAY Action = BYTEARRAY( data.begin( ) + 8, data.end( ) );
+		
+		DEBUG_Print( Action );
+
 		return new CIncomingAction( PID, CRC, Action );
 	}
 

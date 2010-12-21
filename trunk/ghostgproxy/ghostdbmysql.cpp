@@ -1098,7 +1098,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	
 	if (GamePlayerSummary->GetTotalGames() < 30)
 	{
-		CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
+		//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
 		string VouchCheck = "SELECT name, voucher FROM vouches WHERE name LIKE '" + name + "'";
 		
 		if( mysql_real_query( (MYSQL *)conn, VouchCheck.c_str( ), VouchCheck.size( ) ) != 0 )
