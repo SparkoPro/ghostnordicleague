@@ -548,6 +548,15 @@ void *CGHostDBMySQL :: GetIdleConnection( )
 		Connection = m_IdleConnections.front( );
 		m_IdleConnections.pop( );
 	}
+	
+	if ( Connection )
+	{
+ 		if ( mysql_ping( (MYSQL *) Connection ) != 0 )
+		{
+			mysql_close( (MYSQL *) Connection );
+			Connection = NULL;
+		}
+	}
 
 	return Connection;
 }
@@ -1096,7 +1105,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 			*error = mysql_error( (MYSQL *)conn );
 	}
 	
-	if (GamePlayerSummary->GetTotalGames() < 30)
+	if (GamePlayerSummary->GetTotalGames() < 30 && botid == 1)
 	{
 		//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
 		string VouchCheck = "SELECT name, voucher FROM vouches WHERE name LIKE '" + name + "'";
@@ -1652,6 +1661,15 @@ void CMySQLCallable :: Init( )
 #endif
 
 	mysql_thread_init( );
+	
+	if ( m_Connection )
+	{
+		if( mysql_ping( (MYSQL *)m_Connection ) != 0 )
+		{
+			mysql_close( (MYSQL *)m_Connection );
+			m_Connection = NULL;
+		}
+	}
 
 	if( !m_Connection )
 	{
@@ -1664,8 +1682,6 @@ void CMySQLCallable :: Init( )
 		if( !( mysql_real_connect( (MYSQL *)m_Connection, m_SQLServer.c_str( ), m_SQLUser.c_str( ), m_SQLPassword.c_str( ), m_SQLDatabase.c_str( ), m_SQLPort, NULL, 0 ) ) )
 			m_Error = mysql_error( (MYSQL *)m_Connection );
 	}
-	else if( mysql_ping( (MYSQL *)m_Connection ) != 0 )
-		m_Error = mysql_error( (MYSQL *)m_Connection );
 }
 
 void CMySQLCallable :: Close( )

@@ -876,12 +876,12 @@ bool CGHost :: Update( long usecBlock )
 			m_DB->RecoverCallable( m_UpdateVouchList );
 			delete m_UpdateVouchList;
 			m_UpdateVouchList = NULL;
-			CONSOLE_Print( "[VOUCH] Found " + UTIL_ToString( m_VouchPairs.size( ) ) + " vouched player pairs." );
+			/*CONSOLE_Print( "[VOUCH] Found " + UTIL_ToString( m_VouchPairs.size( ) ) + " vouched player pairs." );
 			
 			for( set<VouchPair> :: iterator i = m_VouchPairs.begin( ); i != m_VouchPairs.end( ); i++ )
 			{
 				CONSOLE_Print( "[VOUCH] " + (*i).first );
-			}
+			}*/
 			
 			m_NextListUpdateTime = GetTime( ) + 3600;
 		}
@@ -889,8 +889,12 @@ bool CGHost :: Update( long usecBlock )
 
 	if (GetTime() > m_NextListUpdateTime)
 	{
-		m_UpdateVouchList = m_DB->ThreadedVouchList( );
-		m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
+		if (!m_UpdateVouchList)
+			m_UpdateVouchList = m_DB->ThreadedVouchList( );
+		
+		if (!m_UpdateSkipList)
+			m_UpdateSkipList = m_DB->ThreadedCountrySkipList( );
+			
 		m_NextListUpdateTime = GetTime( ) + 3600;
 	}
 
@@ -1036,7 +1040,6 @@ bool CGHost :: Update( long usecBlock )
 	{
 		if( m_CurrentGame->Update( &fd, &send_fd ) )
 		{
-			m_CurrentGame->UpdateGameInfo(GI_DELETE_GAME);
 			CONSOLE_Print( "[GHOST] deleting current game [" + m_CurrentGame->GetGameName( ) + "]" );
 			delete m_CurrentGame;
 			m_CurrentGame = NULL;
@@ -1546,6 +1549,9 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	m_UpdateSkipList = NULL;
 	m_UpdateVouchList = NULL;
 	m_BroadcastPort = CFG->GetInt("bot_broadcastport", 6969 );
+	
+	m_AutoCloseAfterLeave = CFG->GetInt( "bot_autocloseafterleave", 0 ) == 0 ? false : true;
+	m_AutoCloseTime = CFG->GetInt( "bot_autoclosetime", 380 );
 	
 	LoadEnforcerSkiplist();
 

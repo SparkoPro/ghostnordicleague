@@ -838,6 +838,9 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 			if ( m_CountDownCounter >= 0)
 				SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
+			else if ( m_CountDownCounter < 0 && !m_MuteAll )
+				m_MuteAll = true;
+			
 				
 			m_CountDownCounter--;
 		}
@@ -1209,11 +1212,13 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 		m_GameOverTime = GetTime( );
 	}
 	
-	if (m_AutoClose)
+	if (m_GHost->m_AutoCloseAfterLeave && m_AutoClose)
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] is over (Drawed because of leaver.)" );
 		m_GameOverTime = GetTime() - 45;
-		StopPlayers( "Leaver detected, game drawed." );
+		//StopPlayers( "Leaver detected, game drawed." );
+		m_AutoClose = false;
+		m_AutoCloseTime = 0;
 	}
 
 	// finish the gameover timer
@@ -1740,10 +1745,11 @@ void CBaseGame :: EventPlayerDeleted( CGamePlayer *player )
 		player->SetLeft( true );
 		SendAllChat( player->GetName( ) + " " + player->GetLeftReason( ) + "." );
 		
-		if (m_AutoCloseTime > GetTime())
+		
+		if (m_GHost->m_AutoCloseAfterLeave && m_AutoCloseTime > GetTime())
 		{
-			SendAllChat( "[!!!] Leaver detected before 10 minutes, game is automatically drawed." );
-			SendAllChat( "[!!!] Shutting down in 15 seconds." );
+			SendAllChat( "[!!!] Leaver detected before 5 minutes, game is automatically drawed." );
+			//SendAllChat( "[!!!] Shutting down in 15 seconds." );
 			m_AutoClose = true;
 		}
 	}
@@ -3899,7 +3905,7 @@ void CBaseGame :: EventGameLoaded( )
 	
 	m_ForfeitDelayTime = GetTime() + 1680;
 	m_StartTime = GetTime();
-	m_AutoCloseTime = GetTime() + 780;
+	m_AutoCloseTime = GetTime() + m_GHost->m_AutoCloseTime;
 	m_AutoClose = false;
 }
 
