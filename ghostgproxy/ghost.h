@@ -171,7 +171,8 @@ public:
 	vector<CTCPSocket *> 		m_Broadcaster;			// vector of connected broadcasters
 	uint16_t					m_BroadcastPort;		// port to listen on, set by config bot_broadcasterport
 	
-
+	bool						m_AutoCloseAfterLeave;
+	uint32_t					m_AutoCloseTime;
 	/*
 		NordicLeague - @end - define our config variables
 	*/
