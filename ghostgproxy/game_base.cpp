@@ -828,9 +828,9 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 
 	// countdown every 500 ms
 
-	if( m_CountDownStarted && GetTicks( ) - m_LastCountDownTicks >= 800 )
+	if( m_CountDownStarted && GetTicks( ) - m_LastCountDownTicks >= 700 )
 	{
-		if( m_CountDownCounter > -3 )
+		if( m_CountDownCounter > -2 )
 		{
 			// we use a countdown counter rather than a "finish countdown time" here because it might alternately round up or down the count
 			// this sometimes resulted in a countdown of e.g. "6 5 3 2 1" during my testing which looks pretty dumb
@@ -839,13 +839,16 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 			if ( m_CountDownCounter >= 0)
 				SendAllChat( UTIL_ToString( m_CountDownCounter ) + ". . ." );
 			else if ( m_CountDownCounter < 0 && !m_MuteAll )
-				m_MuteAll = true;
+				m_MuteLobby = true;
 			
 				
 			m_CountDownCounter--;
 		}
 		else if( !m_GameLoading && !m_GameLoaded )
+		{
+			m_MuteLobby = false;
 			EventGameStarted( );
+		}
 
 		m_LastCountDownTicks = GetTicks( );
 	}
