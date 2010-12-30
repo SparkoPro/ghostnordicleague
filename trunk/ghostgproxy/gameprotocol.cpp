@@ -107,7 +107,7 @@ bool CGameProtocol :: RECEIVE_W3GS_GAMELOADED_SELF( BYTEARRAY data )
 
 CIncomingAction *CGameProtocol :: RECEIVE_W3GS_OUTGOING_ACTION( BYTEARRAY data, unsigned char PID )
 {
-	DEBUG_Print( "RECEIVED W3GS_OUTGOING_ACTION" );
+	//DEBUG_Print( "RECEIVED W3GS_OUTGOING_ACTION" );
 	// DEBUG_Print( data );
 
 	// 2 bytes					-> Header
