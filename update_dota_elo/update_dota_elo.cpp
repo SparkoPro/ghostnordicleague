@@ -1,20 +1,20 @@
 /*
 
-   Copyright [2008] [Trevor Hogan]
+Copyright [2008] [Trevor Hogan]
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
-   CODE PORTED FROM THE ORIGINAL GHOST PROJECT: http://ghost.pwner.org/
+CODE PORTED FROM THE ORIGINAL GHOST PROJECT: http://ghost.pwner.org/
 
 */
 
@@ -30,9 +30,9 @@
 using namespace std;
 
 #ifdef WIN32
- #include "ms_stdint.h"
+#include "ms_stdint.h"
 #else
- #include <stdint.h>
+#include <stdint.h>
 #endif
 
 #include "config.h"
@@ -41,7 +41,7 @@ using namespace std;
 #include <string.h>
 
 #ifdef WIN32
- #include <winsock.h>
+#include <winsock.h>
 #endif
 
 #include <mysql/mysql.h>
@@ -134,7 +134,6 @@ int main( int argc, char **argv )
 	string Password = CFG.GetString( "db_mysql_password", string( ) );
 	int Port = CFG.GetInt( "db_mysql_port", 0 );
 
-	cout << "connecting to database server" << endl;
 	MYSQL *Connection = NULL;
 
 	if( !( Connection = mysql_init( NULL ) ) )
@@ -152,9 +151,6 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	cout << "connected" << endl;
-	cout << "beginning transaction" << endl;
-
 	string QBegin = "BEGIN";
 
 	if( mysql_real_query( Connection, QBegin.c_str( ), QBegin.size( ) ) != 0 )
@@ -162,8 +158,6 @@ int main( int argc, char **argv )
 		cout << "error: " << mysql_error( Connection ) << endl;
 		return 1;
 	}
-
-	cout << "creating tables" << endl;
 
 	string QCreate1 = "CREATE TABLE IF NOT EXISTS dota_elo_scores ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(15) NOT NULL, server VARCHAR(100) NOT NULL, score REAL NOT NULL )";
 	string QCreate2 = "CREATE TABLE IF NOT EXISTS dota_elo_games_scored ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, gameid INT NOT NULL )";
@@ -180,7 +174,6 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	cout << "getting unscored games" << endl;
 	queue<uint32_t> UnscoredGames;
 
 	string QSelectUnscored = "SELECT id FROM games WHERE id NOT IN ( SELECT gameid FROM dota_elo_games_scored ) ORDER BY id";
@@ -213,8 +206,6 @@ int main( int argc, char **argv )
 		}
 	}
 
-	cout << "found " << UnscoredGames.size( ) << " unscored games" << endl;
-	
 	while( !UnscoredGames.empty( ) )
 	{
 		uint32_t GameID = UnscoredGames.front( );
@@ -252,17 +243,17 @@ int main( int argc, char **argv )
 				team_numplayers[0] = 0;
 				team_numplayers[1] = 0;
 				string gametime;
-				
+
 				int		team_leavers[2];
 				float 	team_bonus[2];
 				bool	player_isleaver[10];
 				float	player_left[10];
 				float	player_scale[10];
-				
+
 				team_leavers[0] = 0;
 				team_leavers[1] = 0;
-				
-				
+
+
 				team_bonus[0] = 0;
 				team_bonus[1] = 0;
 
@@ -336,14 +327,13 @@ int main( int argc, char **argv )
 						ignore = true;
 						break;
 					}
-					
+
 					float game_duration = UTIL_ToFloat(Row[8]);
-					
+
 					player_left[num_players] = UTIL_ToUInt32(Row[7]);
-					
+
 					if ((game_duration - (60 * 5)) > player_left[num_players])
 					{
-						cout << "We got a premature leaver." << endl;
 						player_isleaver[num_players] = true;
 						team_leavers[player_teams[num_players]]++;
 					}
@@ -359,7 +349,7 @@ int main( int argc, char **argv )
 				mysql_free_result( Result );
 
 				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
-								
+
 				if (team_leavers[0] > team_leavers[1])
 					team_bonus[0] = team_leavers[0] - team_leavers[1];
 				else if (team_leavers[1] > team_leavers[0])
@@ -382,7 +372,7 @@ int main( int argc, char **argv )
 						team_ratings[0] /= team_numplayers[0];
 						team_ratings[1] /= team_numplayers[1];
 						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners );
-							
+
 						for( int i = 0; i < num_players; i++ )
 						{
 							float gain = fabs(player_ratings[i] - old_player_ratings[i]);
@@ -399,13 +389,13 @@ int main( int argc, char **argv )
 								player_ratings[i] += bonus;	
 								cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString(bonus, 2) << endl;
 							}
-							
+
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
 
-                            string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
+							string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
 
-                            if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
-                            	cout << "error: " << mysql_error( Connection ) << endl;
+							if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
+								cout << "error: " << mysql_error( Connection ) << endl;
 
 							if( exists[i] )
 							{
@@ -448,21 +438,21 @@ int main( int argc, char **argv )
 			return 1;
 		}
 	}
-	
+
 	string QLastDecay = "SELECT UNIX_TIMESTAMP() - UNIX_TIMESTAMP(last_update) FROM dota_score_decay";
 
-        if( mysql_real_query( Connection, QLastDecay.c_str( ), QLastDecay.size( ) ) != 0 )
-        {
-                cout << "error: " << mysql_error( Connection ) << endl;
-        }
-        else
-        {
+	if( mysql_real_query( Connection, QLastDecay.c_str( ), QLastDecay.size( ) ) != 0 )
+	{
+		cout << "error: " << mysql_error( Connection ) << endl;
+	}
+	else
+	{
 
-			MYSQL_RES *dResult = mysql_store_result( Connection );
-		
-			if ( dResult )
-			{
-			
+		MYSQL_RES *dResult = mysql_store_result( Connection );
+
+		if ( dResult )
+		{
+
 			vector<string> dRow = MySQLFetchRow( dResult );
 
 			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > (60 * 60 * 24))
@@ -474,10 +464,10 @@ int main( int argc, char **argv )
 				cout << "Executing score decay algorithm..." << endl;
 				string QFindScoreDecays = "select name, score from dota_elo_scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND score > 1010";
 				//string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
-	
+
 				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
 				{
-        				cout << "error: " << mysql_error( Connection ) << endl;
+					cout << "error: " << mysql_error( Connection ) << endl;
 				}
 				else
 				{
@@ -486,25 +476,25 @@ int main( int argc, char **argv )
 					if( Result )
 					{
 						vector<string> Row = MySQLFetchRow( Result );
-			
+
 						while( !Row.empty( ) )
 						{
-                                                        float score = UTIL_ToFloat(Row[1]);
-                                                        float gain = (score * 0.01) * -1;
-                                                        string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + UTIL_ToString(score + gain, 2) + ", " + UTIL_ToString(gain, 2) + ")";
+							float score = UTIL_ToFloat(Row[1]);
+							float gain = (score * 0.01) * -1;
+							string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + UTIL_ToString(score + gain, 2) + ", " + UTIL_ToString(gain, 2) + ")";
 
 							//string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
-				
+
 							if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
-	        					{
-               							cout << "error: " << mysql_error( Connection ) << endl;
-               							return 1;
-        						}
+							{
+								cout << "error: " << mysql_error( Connection ) << endl;
+								return 1;
+							}
 							else
 							{
 								cout << "Score decay for " + Row[0] + " added (" + UTIL_ToString(gain, 2) + ")" << endl;
 							}
-	
+
 							Row = MySQLFetchRow( Result );
 						}
 
@@ -513,13 +503,12 @@ int main( int argc, char **argv )
 						string QSetLastUpdate = "UPDATE dota_score_decay SET last_update = NOW()";
 
 						if( mysql_real_query( Connection, QSetLastUpdate.c_str( ), QSetLastUpdate.size( ) ) != 0 )
-                                                {
-                                                	cout << "error: " << mysql_error( Connection ) << endl;
-                                                        return 1;
-                                                }
+						{
+							cout << "error: " << mysql_error( Connection ) << endl;
+							return 1;
+						}
 						else
 							cout << "Updating score decay last_update to current time." << endl;
-					
 
 					}
 					else
@@ -527,12 +516,11 @@ int main( int argc, char **argv )
 						cout << "error: " << mysql_error( Connection ) << endl;
 					}
 
-
 					/*
-					 * Update herostats bonus system
-					 */
+					* Update herostats bonus system
+					*/
 
-					string QHeroStatsClean = "DELETE FROM herostats";
+						string QHeroStatsClean = "DELETE FROM herostats";
 					string QHeroStats = "INSERT INTO herostats (count, name, hero, result) SELECT count(dota_entitys.name) as ncount, dota_entitys.name, hero, SUM(IF(winner > 0, IF((newcolour <= 5 && dotagames.winner = 1) || (newcolour >= 7 && dotagames.winner=2), 1, -1), 0)) as nresult FROM `dotaplayers` LEFT JOIN dotagames on dotagames.gameid = dotaplayers.gameid LEFT JOIN dota_entitys on dota_entitys.entity_id = hero WHERE name NOT LIKE '' group by name";
 
 					if ( mysql_real_query( Connection, QHeroStatsClean.c_str( ), QHeroStatsClean.size( ) ) != 0 )
@@ -551,12 +539,10 @@ int main( int argc, char **argv )
 
 				}
 			}
-			else
-				cout << "Score decay not ready to run yet." << endl;
+
 		}
 	}
-	
-	cout << "committing transaction" << endl;
+
 	string QCommit = "COMMIT";
 
 	if( mysql_real_query( Connection, QCommit.c_str( ), QCommit.size( ) ) != 0 )
@@ -564,6 +550,5 @@ int main( int argc, char **argv )
 		cout << "error: " << mysql_error( Connection ) << endl;
 	}
 
-	cout << "done" << endl;
 	return 0;
 }
