@@ -20,7 +20,7 @@ public:
 	CPlugin(string nName, void *nHandle);
 	~CPlugin();
 	
-	void Execute(string function, CGHost *GHost, CBaseGame *Game);
+	void Execute(string function);
 	string GetName() { return m_Name; }
 };
 
@@ -30,11 +30,12 @@ public:
 	CPluginMgr();
 	~CPluginMgr();
 	
+	void ReloadPlugins( );
 	void FindPlugins( const path & directory, bool recurse_into_subdirs = false );
 	void LoadPlugin( string filename );
 	void UnloadPlugins( );
 	
-	void Execute(string function, CGHost *GHost, CBaseGame *Game);
+	void Execute(string function);
 
 private:
 	vector<CPlugin *> m_LoadedPlugins;
