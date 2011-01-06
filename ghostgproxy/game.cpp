@@ -2412,7 +2412,10 @@ void CGame :: EventGameStarted( )
 
 bool CGame :: IsGameDataSaved( )
 {
-	return m_CallableGameAdd && m_CallableGameAdd->GetReady( ) && m_CallableReplaySave && m_CallableReplaySave->GetReady( );
+	if (m_Replay)
+		return (m_CallableGameAdd && m_CallableGameAdd->GetReady( )) && (m_CallableReplaySave && m_CallableReplaySave->GetReady( ));
+	
+	return m_CallableGameAdd && m_CallableGameAdd->GetReady( );
 }
 
 void CGame :: SaveGameData( )
