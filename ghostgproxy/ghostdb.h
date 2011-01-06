@@ -1131,11 +1131,6 @@ public:
 
 	virtual bool GetResult( )					{ return m_Result; }
 	virtual void SetResult( bool nResult )		{ m_Result = nResult; }
-//	virtual void SetName( string name ) 		{ m_Name = name; }
-//	virtual void SetReplay( CReplay *replay )	{ m_Replay = replay; }
-//	virtual void operator( )( );
-//	virtual void Init( ) { CBaseCallable :: Init( ); }
-//	virtual void Close( ) { CBaseCallable :: Close( ); }
 };
 
 #endif

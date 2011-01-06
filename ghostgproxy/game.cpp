@@ -79,6 +79,7 @@ CGame :: CGame( CGHost *nGHost, CMap *nMap, CSaveGame *nSaveGame, uint16_t nHost
 		m_Stats = NULL;
 
 	m_CallableGameAdd = NULL;
+	m_CallableReplaySave = NULL;
 }
 
 CGame :: ~CGame( )
@@ -115,6 +116,18 @@ CGame :: ~CGame( )
 		delete m_CallableGameAdd;
 		m_CallableGameAdd = NULL;
 	}
+	
+	if( m_CallableReplaySave && m_CallableReplaySave->GetReady( ) )
+	{
+		if( m_CallableReplaySave->GetResult( ) )
+			CONSOLE_Print( "[GAME: " + m_GameName + "] replay saved." );
+		else
+			CONSOLE_Print( "[GAME: " + m_GameName + "] unable to save replay." );
+
+		m_GHost->m_DB->RecoverCallable( m_CallableReplaySave );
+		delete m_CallableReplaySave;
+		m_CallableReplaySave = NULL;
+	}
 
 	for( vector<PairedBanCheck> :: iterator i = m_PairedBanChecks.begin( ); i != m_PairedBanChecks.end( ); i++ )
 		m_GHost->m_Callables.push_back( i->second );
@@ -150,6 +163,12 @@ CGame :: ~CGame( )
 	{
 		CONSOLE_Print( "[GAME: " + m_GameName + "] game is being deleted before all game data was saved, game data has been lost" );
 		m_GHost->m_Callables.push_back( m_CallableGameAdd );
+	}
+	
+	if ( m_CallableReplaySave )
+	{
+		CONSOLE_Print( "[GAME: " + m_GameName + "] game is being deleted before replay was saved." );
+		m_GHost->m_Callables.push_back( m_CallableReplaySave );
 	}
 }
 
@@ -407,6 +426,11 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			if ( Command == "checklog" )
 			{
 				SendChat( player, "Chatlog contains [" + UTIL_ToString(m_ChatLog.size()) + "] lines." );
+			}
+			
+			if ( Command == "joke" )
+			{
+				SendChat( player, m_GHost->m_Language->RandomJoke() );
 			}
 
 			//
@@ -2388,11 +2412,14 @@ void CGame :: EventGameStarted( )
 
 bool CGame :: IsGameDataSaved( )
 {
-	return m_CallableGameAdd && m_CallableGameAdd->GetReady( );
+	return m_CallableGameAdd && m_CallableGameAdd->GetReady( ) && m_CallableReplaySave && m_CallableReplaySave->GetReady( );
 }
 
 void CGame :: SaveGameData( )
 {
 	CONSOLE_Print( "[GAME: " + m_GameName + "] saving game data to database" );
 	m_CallableGameAdd = m_GHost->m_DB->ThreadedGameAdd( m_GHost->m_BNETs.size( ) == 1 ? m_GHost->m_BNETs[0]->GetServer( ) : string( ), m_DBGame->GetMap( ), m_GameName, m_OwnerName, m_GameTicks / 1000, m_GameState, m_CreatorName, m_CreatorServer, m_ChatLog );
+	
+	if (m_Replay)
+		m_CallableReplaySave = m_GHost->m_DB->ThreadedSaveReplay( m_Replay );
 }

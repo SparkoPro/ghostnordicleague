@@ -25,10 +25,12 @@
 // CLanguage
 //
 
+
 class CLanguage
 {
 private:
 	CConfig *m_CFG;
+	vector<string> m_Jokes;
 
 public:
 	CLanguage( string nCFGFile );
@@ -37,6 +39,7 @@ public:
 /*
 	NordicLeague - @begin - Custom language functions for VoteEnd
 */
+	string RandomJoke();
 	string StartedVoteEnd( string user, string votesneeded );
 	string VoteEndAcceptedNeedMoreVotes( string user, string votes );
 	string VoteEndExpired( );

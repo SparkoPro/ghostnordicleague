@@ -505,7 +505,12 @@ CCallableLastSeenPlayer *CGHostDBMySQL :: ThreadedLastSeenPlayer( string name )
 
 CCallableSaveReplay *CGHostDBMySQL :: ThreadedSaveReplay( CReplay *replay )
 {
-	CCallableSaveReplay *Callable = new CMySQLCallableSaveReplay( replay, NULL, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	void *Connection = GetIdleConnection( );
+
+	if( !Connection )
+		m_NumConnections++;
+
+	CCallableSaveReplay *Callable = new CMySQLCallableSaveReplay( replay, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -1560,7 +1565,7 @@ CDBLastSeenPlayer *MySQLLastSeenPlayer( void *conn, string *error, uint32_t boti
 	return Player;
 }
 
-bool SaveReplay( CReplay *replay )
+bool MySQLSaveReplay( CReplay *replay )
 {
 	/*
 	time_t Now = time( NULL );
@@ -1580,9 +1585,13 @@ bool SaveReplay( CReplay *replay )
 	replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) ); */
 	
 	CONSOLE_Print( "[SAVEREPLAY] Saving replay, threaded." );
-
-	replay->BuildReplay( );
-	return replay->Save( );
+	
+	if (replay)
+	{
+		replay->BuildReplay( );
+		return replay->Save( );
+	}
+	return false;
 }
 
 set<string> MySQLCountrySkipList( void *conn, string *error, uint32_t botid )
@@ -1950,7 +1959,7 @@ void CMySQLCallableSaveReplay :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = SaveReplay( m_Replay );
+		m_Result = MySQLSaveReplay( m_Replay );
 
 	Close( );
 }
