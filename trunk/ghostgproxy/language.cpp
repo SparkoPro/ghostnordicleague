@@ -31,6 +31,41 @@ CLanguage :: CLanguage( string nCFGFile )
 {
 	m_CFG = new CConfig( );
 	m_CFG->Read( nCFGFile );
+	
+	ifstream in;
+	in.open( "jokes.txt" );
+
+	if( in.fail( ) )
+		CONSOLE_Print( "[JOKES] error loading jokes from [jokes.txt]" );
+	else
+	{
+		CONSOLE_Print( "[JOKES] loading jokes from [jokes.txt]" );
+		m_Jokes.clear();
+		
+		string Line;
+
+		while( !in.eof( ) )
+		{
+			getline( in, Line );
+
+			// ignore blank lines and comments
+
+			if( Line.empty( ) || Line[0] == '#' )
+				continue;
+
+			// remove newlines and partial newlines to help fix issues with Windows formatted files on Linux systems
+
+			//Line.erase( remove( Line.begin( ), Line.end( ), ' ' ), Line.end( ) );
+			Line.erase( remove( Line.begin( ), Line.end( ), '\r' ), Line.end( ) );
+			Line.erase( remove( Line.begin( ), Line.end( ), '\n' ), Line.end( ) );
+
+			m_Jokes.push_back( Line );
+		}
+
+		in.close( );
+
+		CONSOLE_Print( "[JOKES] loaded " + UTIL_ToString( m_Jokes.size( ) ) + " jokes." );
+	}
 }
 
 CLanguage :: ~CLanguage( )
@@ -41,6 +76,12 @@ CLanguage :: ~CLanguage( )
 /*
 	NordicLeague - @begin - Custom language functions for VoteKick
 */
+
+string CLanguage :: RandomJoke( )
+{
+	random_shuffle ( m_Jokes.begin(), m_Jokes.end() );
+	return m_Jokes.front();
+}
 
 string CLanguage :: UnableToStatsMoreThanOneMatch( string victim )
 {

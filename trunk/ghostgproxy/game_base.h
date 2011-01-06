@@ -167,6 +167,9 @@ protected:
 	uint32_t		m_StartTime;
 	uint32_t		m_AutoCloseTime;
 	bool			m_AutoClose;
+	
+	uint32_t		m_AutoStartPlayersTime;
+	uint32_t		m_LobbyJokeTime;
 
 	/*
 		NordicLeague - @end - Some added custom variables

@@ -265,7 +265,7 @@ bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t
 uint32_t 					MySQLDotAEventAdd( void *conn, string *error, uint32_t gameid, string gamename, string killer, string victim, uint32_t kcolour, uint32_t vcolour );
 bool 						MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name, uint32_t players, bool ispublic, vector<string> m_Slots );
 CDBLastSeenPlayer 			*MySQLLastSeenPlayer( void *conn, string *error, uint32_t botid, string user );
-bool						SaveReplay( CReplay *replay );
+bool						MySQLSaveReplay( CReplay *replay );
 set<string> 				MySQLCountrySkipList( void *conn, string *error, uint32_t botid );
 set<VouchPair> 				MySQLVouchList( void *conn, string *error, uint32_t botid );
 

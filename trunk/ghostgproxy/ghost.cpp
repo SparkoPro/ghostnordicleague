@@ -39,6 +39,7 @@
 #include "game_base.h"
 #include "game.h"
 #include "game_admin.h"
+#include "pluginmgr.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -350,14 +351,14 @@ int main( int argc, char **argv )
 
 	gGHost = new CGHost( &CFG );
 
-	while( 1 )
+/*	while( 1 )
 	{
 		// block for 50ms on all sockets - if you intend to perform any timed actions more frequently you should change this
 		// that said it's likely we'll loop more often than this due to there being data waiting on one of the sockets but there aren't any guarantees
 
 		if( gGHost->Update( 50000 ) )
 			break;
-	}
+	}*/
 
 	// shutdown ghost
 
@@ -393,6 +394,7 @@ int main( int argc, char **argv )
 
 CGHost :: CGHost( CConfig *CFG )
 {
+	m_PluginMgr = new CPluginMgr( );
 	m_UDPSocket = new CUDPSocket( );
 	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", string( ) ) );
 	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
@@ -763,6 +765,7 @@ CGHost :: ~CGHost( )
 	delete m_AdminMap;
 	delete m_AutoHostMap;
 	delete m_SaveGame;
+	delete m_PluginMgr;
 }
 
 bool CGHost :: Update( long usecBlock )
@@ -1209,7 +1212,7 @@ bool CGHost :: Update( long usecBlock )
 
 	// autohost
 
-	if( !m_AutoHostGameName.empty( ) && m_AutoHostMaximumGames != 0 && m_AutoHostAutoStartPlayers != 0 && GetTime( ) - m_LastAutoHostTime >= 30 )
+	if( !m_AutoHostGameName.empty( ) && m_AutoHostMaximumGames != 0 && m_AutoHostAutoStartPlayers != 0 && GetTime( ) - m_LastAutoHostTime >= m_AutoHostWaitTime )
 	{
 		// copy all the checks from CGHost :: CreateGame here because we don't want to spam the chat when there's an error
 		// instead we fail silently and try again soon
@@ -1552,6 +1555,9 @@ void CGHost :: SetConfigs( CConfig *CFG )
 	
 	m_AutoCloseAfterLeave = CFG->GetInt( "bot_autocloseafterleave", 0 ) == 0 ? false : true;
 	m_AutoCloseTime = CFG->GetInt( "bot_autoclosetime", 380 );
+	
+	m_AutoHostWaitTime = CFG->GetInt( "bot_autohostdelay", 30 );
+	m_EntertainLobby = CFG->GetInt( "bot_entertainlobby", 0 ) == 0 ? false : true;
 	
 	LoadEnforcerSkiplist();
 
