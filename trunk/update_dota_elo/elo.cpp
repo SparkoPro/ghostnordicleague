@@ -443,7 +443,7 @@ void elo_recalculate_ratings(int num_players, float *player_ratings,
 			K = 10.0;
 		else
 			K = 130.0 - player_ratings[i] / 20.0;
-
+			
 		diff = K * (team_winners[team] - team_probs[team]);
 		player_ratings[i] += diff;
 		/* dbg_msg(GGZ_DBG_STATS,

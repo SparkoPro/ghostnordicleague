@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -214,11 +215,6 @@ int main( int argc, char **argv )
 
 	cout << "found " << UnscoredGames.size( ) << " unscored games" << endl;
 	
-	bool CopyScores = false;
-	
-	if (UnscoredGames.size( ) > 0)
-		CopyScores = true;
-
 	while( !UnscoredGames.empty( ) )
 	{
 		uint32_t GameID = UnscoredGames.front( );
@@ -258,14 +254,17 @@ int main( int argc, char **argv )
 				string gametime;
 				
 				int		team_leavers[2];
+				float 	team_bonus[2];
 				bool	player_isleaver[10];
 				float	player_left[10];
-
 				float	player_scale[10];
 				
 				team_leavers[0] = 0;
 				team_leavers[1] = 0;
-
+				
+				
+				team_bonus[0] = 0;
+				team_bonus[1] = 0;
 
 				vector<string> Row = MySQLFetchRow( Result );
 
@@ -349,32 +348,22 @@ int main( int argc, char **argv )
 						team_leavers[player_teams[num_players]]++;
 					}
 					else
-					{
 						player_isleaver[num_players] = false;
-					}
-
-					if (player_left[num_players] >= game_duration)
-						player_scale[num_players] = 1.0;
-					else if (player_left[num_players] > 0)
-					{
-						player_scale[num_players] = player_left[num_players] / game_duration;
-						if (player_scale[num_players] > 0.99)
-							player_scale[num_players] = 1.0;
-					}
-					else
-						player_scale[num_players] = 0;
 
 					gametime = Row[6];
 
 					num_players++;
 					Row = MySQLFetchRow( Result );
 				}
-				
-				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
 
 				mysql_free_result( Result );
-				
-				float team_bonus[2];
+
+				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
+								
+				if (team_leavers[0] > team_leavers[1])
+					team_bonus[0] = team_leavers[0] - team_leavers[1];
+				else if (team_leavers[1] > team_leavers[0])
+					team_bonus[1] = team_leavers[1] - team_leavers[0];
 
 				if( !ignore )
 				{
@@ -393,76 +382,30 @@ int main( int argc, char **argv )
 						team_ratings[0] /= team_numplayers[0];
 						team_ratings[1] /= team_numplayers[1];
 						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners );
-
-						team_bonus[0] = 0;
-						team_bonus[1] = 0;
+							
 						for( int i = 0; i < num_players; i++ )
 						{
+							float gain = fabs(player_ratings[i] - old_player_ratings[i]);
 							if (player_isleaver[i])
 							{
 								cout << "Player [" << names[i] << "] is a leaver, removing his score..";
-								if (player_ratings[i] > old_player_ratings[i])
-								{
-									team_bonus[player_teams[i]] += player_ratings[i] - old_player_ratings[i];
-									player_ratings[i] = old_player_ratings[i];
-								}
-								else
-								{
-									// give the leavers score
-									float add_bonus = (old_player_ratings[i] - player_ratings[i]) * 1.5;
 
-									if (add_bonus > 30)
-										add_bonus = 30;
-
-									team_bonus[player_teams[i]] += add_bonus;
-								}
-								
-								cout << " gave team " << player_teams[i] << " total bonus of " << team_bonus[player_teams[i]] << endl;
+								player_ratings[i] = old_player_ratings[i];
+								player_ratings[i] -= gain/2;
 							}				
-						}
-							
-						for( int i = 0; i < num_players; i++ )
-						{
-							
-							if (!player_isleaver[i] && (team_leavers[0] != team_leavers[1]))
+							else if (!player_isleaver[i] && team_bonus[player_teams[i]] > 0)
 							{
-								if ((player_teams[i] == 0 && team_leavers[1] <= 4) || (player_teams[i] == 1 && team_leavers[0] <= 4))
-								{
-									float bonus = team_bonus[player_teams[i]] / (5 - team_leavers[player_teams[i]]);
-									float diff = player_ratings[i] - old_player_ratings[i];
-									
-									if (bonus > 30)
-										bonus = 30;
-
-									if (diff < 0 && bonus > (diff * -1))
-										bonus = diff * -1;
-
-									
-									if (diff > 0 && bonus > diff)
-										bonus = diff;
-
-									//if (bonus > diff)
-									//	bonus = diff;
-										
-									player_ratings[i] += bonus;
-
-									// handle it in some more efficient way
-									// this is kinda quick and dirty and gives strange amounts of bonuses from time to time.
-									
-									cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString(bonus, 2) << endl;
-								}
+								float bonus = (team_bonus[player_teams[i]] == 1) ? gain/2 : gain;
+								player_ratings[i] += bonus;	
+								cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString(bonus, 2) << endl;
 							}
 							
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
 
                             string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
-                            //cout << QAddToGaintable << endl;
 
                             if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
-                            {
                             	cout << "error: " << mysql_error( Connection ) << endl;
-                            	//return 1;
-                            }
 
 							if( exists[i] )
 							{
@@ -505,44 +448,12 @@ int main( int argc, char **argv )
 			return 1;
 		}
 	}
-
-	if (CopyScores)
-	{
-
-		cout << "copying dota elo scores to scores table" << endl;
-
-		string QCopyScores1 = "DELETE FROM scores WHERE category='dota_elo'";
-		string QCopyScores2 = "INSERT INTO scores ( category, name, server, score ) SELECT 'dota_elo', name, server, score FROM dota_elo_scores";
-
-		if( mysql_real_query( Connection, QCopyScores1.c_str( ), QCopyScores1.size( ) ) != 0 )
-		{
-			cout << "error: " << mysql_error( Connection ) << endl;
-			return 1;
-		}
-
-		if( mysql_real_query( Connection, QCopyScores2.c_str( ), QCopyScores2.size( ) ) != 0 )
-		{
-			cout << "error: " << mysql_error( Connection ) << endl;
-			return 1;
-		}
-	}
-
-	cout << "committing transaction" << endl;
-
-	string QCommit = "COMMIT";
-
-	if( mysql_real_query( Connection, QCommit.c_str( ), QCommit.size( ) ) != 0 )
-	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
-	}
 	
 	string QLastDecay = "SELECT UNIX_TIMESTAMP() - UNIX_TIMESTAMP(last_update) FROM dota_score_decay";
 
         if( mysql_real_query( Connection, QLastDecay.c_str( ), QLastDecay.size( ) ) != 0 )
         {
                 cout << "error: " << mysql_error( Connection ) << endl;
-                return 1;
         }
         else
         {
@@ -561,14 +472,13 @@ int main( int argc, char **argv )
 				mysql_real_query( Connection, TruncateDotaEvents.c_str(), TruncateDotaEvents.size() );
 
 				cout << "Executing score decay algorithm..." << endl;
-				string QFindScoreDecays = "select name, score from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo' AND score > 1010";
+				string QFindScoreDecays = "select name, score from dota_elo_scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND score > 1010";
 				//string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
 	
 				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
-			        {
+				{
         				cout << "error: " << mysql_error( Connection ) << endl;
-                			return 1;
-			        }
+				}
 				else
 				{
 					MYSQL_RES *Result = mysql_store_result( Connection );
@@ -615,7 +525,6 @@ int main( int argc, char **argv )
 					else
 					{
 						cout << "error: " << mysql_error( Connection ) << endl;
-						return 1;
 					}
 
 
@@ -627,18 +536,16 @@ int main( int argc, char **argv )
 					string QHeroStats = "INSERT INTO herostats (count, name, hero, result) SELECT count(dota_entitys.name) as ncount, dota_entitys.name, hero, SUM(IF(winner > 0, IF((newcolour <= 5 && dotagames.winner = 1) || (newcolour >= 7 && dotagames.winner=2), 1, -1), 0)) as nresult FROM `dotaplayers` LEFT JOIN dotagames on dotagames.gameid = dotaplayers.gameid LEFT JOIN dota_entitys on dota_entitys.entity_id = hero WHERE name NOT LIKE '' group by name";
 
 					if ( mysql_real_query( Connection, QHeroStatsClean.c_str( ), QHeroStatsClean.size( ) ) != 0 )
-                                        {
-                                                cout << "error: " << mysql_error( Connection ) << endl;
-   						return 1;
-                                        }
+					{
+						cout << "error: " << mysql_error( Connection ) << endl;
+					}
 					else
 						cout << "Cleaned herostats, trying to repopulate... ";
 
 					if ( mysql_real_query( Connection, QHeroStats.c_str( ), QHeroStats.size( ) ) != 0 )
-                                        {
-                                                cout << "error: " << mysql_error( Connection ) << endl;
-   						return 1;
-                                        }
+					{
+						cout << "error: " << mysql_error( Connection ) << endl;
+					}
 					else
 						cout << "success!" << endl;
 
@@ -647,6 +554,14 @@ int main( int argc, char **argv )
 			else
 				cout << "Score decay not ready to run yet." << endl;
 		}
+	}
+	
+	cout << "committing transaction" << endl;
+	string QCommit = "COMMIT";
+
+	if( mysql_real_query( Connection, QCommit.c_str( ), QCommit.size( ) ) != 0 )
+	{
+		cout << "error: " << mysql_error( Connection ) << endl;
 	}
 
 	cout << "done" << endl;
