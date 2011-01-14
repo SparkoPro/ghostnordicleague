@@ -1157,10 +1157,16 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 
 						if( VRow.size( ) == 1 )
 						{
-							
-							GamePlayerSummary->SetVouched(true);
-							GamePlayerSummary->SetVouchedBy( "Autovvouch" );
-							CONSOLE_Print( "[VOUCH] Found vouch for player [" + VRow[0] + "] vouched by [Autovouch (" + VRow[0] + " games)]");
+							uint32_t games = UTIL_ToUInt32(VRow[0]);
+							if (games > 50000)
+								games = 0;
+								
+							if (games >= 30)
+							{
+								GamePlayerSummary->SetVouched(true);
+								GamePlayerSummary->SetVouchedBy( "Autovvouch" );
+								CONSOLE_Print( "[VOUCH] Found vouch for player [" + EscName + "] vouched by [Autovouch (" + VRow[0] + " games)]");
+							}
 						}
 					}
 					mysql_free_result( TResult );
