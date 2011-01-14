@@ -165,12 +165,12 @@ public:
 	virtual CCallableBanList *ThreadedBanList( string server );
 	virtual CCallableGameAdd *ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver, vector<string> chatlog );
 	virtual CCallableGamePlayerAdd *ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
-	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name );
+	virtual CCallableGamePlayerSummaryCheck *ThreadedGamePlayerSummaryCheck( string name, uint32_t season = 2 );
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
-	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
+	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name, uint32_t season = 2);
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
-	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server );
+	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server, uint32_t season = 2 );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
 	virtual CCallableW3MMDVarAdd *ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
@@ -452,14 +452,17 @@ class CCallableGamePlayerSummaryCheck : virtual public CBaseCallable
 protected:
 	string m_Name;
 	CDBGamePlayerSummary *m_Result;
+	uint32_t m_Season;
 
 public:
-	CCallableGamePlayerSummaryCheck( string nName ) : CBaseCallable( ), m_Name( nName ), m_Result( NULL ) { }
+	CCallableGamePlayerSummaryCheck( string nName, uint32_t nSeason ) : CBaseCallable( ), m_Season( nSeason ), m_Name( nName ), m_Result( NULL ) { }
 	virtual ~CCallableGamePlayerSummaryCheck( );
 
 	virtual string GetName( )								{ return m_Name; }
+	virtual string SetName( string nName )					{ m_Name = nName; }
 	virtual CDBGamePlayerSummary *GetResult( )				{ return m_Result; }
 	virtual void SetResult( CDBGamePlayerSummary *nResult )	{ m_Result = nResult; }
+	virtual uint32_t GetSeason()								{ return m_Season; }
 };
 
 class CCallableDotAGameAdd : virtual public CBaseCallable
@@ -543,15 +546,18 @@ class CCallableDotAPlayerSummaryCheck : virtual public CBaseCallable
 {
 protected:
 	string m_Name;
+	uint32_t m_Season;
 	CDBDotAPlayerSummary *m_Result;
 
 public:
-	CCallableDotAPlayerSummaryCheck( string nName ) : CBaseCallable( ), m_Name( nName ), m_Result( NULL ) { }
+	CCallableDotAPlayerSummaryCheck( string nName, uint32_t nSeason ) : CBaseCallable( ), m_Name( nName ), m_Season( nSeason ), m_Result( NULL ) { }
 	virtual ~CCallableDotAPlayerSummaryCheck( );
 
-	virtual string GetName( )								{ return m_Name; }
+	virtual string GetName( )						{ return m_Name; }
+	virtual string SetName( string nName )					{ m_Name = nName; }
 	virtual CDBDotAPlayerSummary *GetResult( )				{ return m_Result; }
-	virtual void SetResult( CDBDotAPlayerSummary *nResult )	{ m_Result = nResult; }
+	virtual void SetResult( CDBDotAPlayerSummary *nResult )			{ m_Result = nResult; }
+	virtual uint32_t GetSeason()								{ return m_Season; }
 };
 
 class CCallableDownloadAdd : virtual public CBaseCallable
@@ -581,18 +587,20 @@ protected:
 	string m_Name;
 	string m_Server;
 	double m_Result;
+	uint32_t m_Season;
 	
 	// nordicleague
 	
 	CDBGamePlayerSummary *m_GamePlayer;
 
 public:
-	CCallableScoreCheck( string nCategory, string nName, string nServer ) : CBaseCallable( ), m_Category( nCategory ), m_Name( nName ), m_Server( nServer ), m_Result( 0.0 ), m_GamePlayer( NULL ) { }
+	CCallableScoreCheck( string nCategory, string nName, string nServer, uint32_t nSeason ) : CBaseCallable( ), m_Season( nSeason ), m_Category( nCategory ), m_Name( nName ), m_Server( nServer ), m_Result( 0.0 ), m_GamePlayer( NULL ) { }
 	virtual ~CCallableScoreCheck( );
 
 	virtual string GetName( )										{ return m_Name; }
 	virtual double GetResult( )										{ return m_Result; }
 	virtual void SetResult( double nResult )						{ m_Result = nResult; }
+	virtual uint32_t GetSeason()									{ return m_Season; }
 	
 	// nordicleague
 	
@@ -835,30 +843,41 @@ private:
 	uint32_t m_MaxDuration;			// maximum game duration in seconds
 	bool	 m_Vouched;
 	string	 m_VouchedBy;
+	string	m_AliasName;
+	bool	m_HasAlias;
+	uint32_t m_Season;
+	uint32_t m_AllTotalGames;			// total number of games played all season
 
 public:
 	CDBGamePlayerSummary( string nServer, string nName, string nFirstGameDateTime, string nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration );
 	CDBGamePlayerSummary( string nServer, string nName, string nFirstGameDateTime, string nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration, bool nVouched, string nVouchedBy );
 	~CDBGamePlayerSummary( );
 
-	string GetServer( )					{ return m_Server; }
-	string GetName( )					{ return m_Name; }
+	string GetServer( )			{ return m_Server; }
+	string GetName( )			{ return m_Name; }
+	string GetAlias( )			{ return m_AliasName; }
 	string GetFirstGameDateTime( )		{ return m_FirstGameDateTime; }
 	string GetLastGameDateTime( )		{ return m_LastGameDateTime; }
-	uint32_t GetTotalGames( )			{ return m_TotalGames; }
+	uint32_t GetTotalGames( )		{ return m_TotalGames; }
 	uint32_t GetMinLoadingTime( )		{ return m_MinLoadingTime; }
 	uint32_t GetAvgLoadingTime( )		{ return m_AvgLoadingTime; }
 	uint32_t GetMaxLoadingTime( )		{ return m_MaxLoadingTime; }
 	uint32_t GetMinLeftPercent( )		{ return m_MinLeftPercent; }
 	uint32_t GetAvgLeftPercent( )		{ return m_AvgLeftPercent; }
 	uint32_t GetMaxLeftPercent( )		{ return m_MaxLeftPercent; }
-	uint32_t GetMinDuration( )			{ return m_MinDuration; }
-	uint32_t GetAvgDuration( )			{ return m_AvgDuration; }
-	uint32_t GetMaxDuration( )			{ return m_MaxDuration; }
-	bool	 IsVouched( )				{ return m_Vouched; }
-	string	 GetVouchedBy( )			{ return m_VouchedBy; }
+	uint32_t GetMinDuration( )		{ return m_MinDuration; }
+	uint32_t GetAvgDuration( )		{ return m_AvgDuration; }
+	uint32_t GetMaxDuration( )		{ return m_MaxDuration; }
+	bool	 IsVouched( )			{ return m_Vouched; }
+	string	 GetVouchedBy( )		{ return m_VouchedBy; }
 	void	SetVouched(bool nVouched) 	{ m_Vouched = nVouched; }
 	void	SetVouchedBy(string nName) 	{ m_VouchedBy = nName; }
+	void SetAlias( string nName )		{ m_AliasName = nName; }
+	bool HasAlias( )			{ return m_HasAlias; }
+	bool HasAlias( bool nHasAlias )			{ m_HasAlias = nHasAlias; }
+	
+	uint32_t GetAllTotalGames( )		{ return m_AllTotalGames; }
+	void SetAllTotalGames( uint32_t nGames )		{ m_AllTotalGames = nGames; }
 };
 
 //

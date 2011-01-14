@@ -224,6 +224,10 @@ bool CGame :: Update( void *fd, void *send_fd )
 		{
 			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
 
+			CGamePlayer *StatPlayer = GetPlayerFromName( i->second->GetName(), true );
+			if (StatPlayer)
+				i->second->SetName(StatPlayer->GetNameWithAlias());
+
 			if( GamePlayerSummary )
 			{
 				if( i->first.empty( ) )
@@ -262,6 +266,10 @@ bool CGame :: Update( void *fd, void *send_fd )
 		if( i->second->GetReady( ) )
 		{
 			CDBDotAPlayerSummary *DotAPlayerSummary = i->second->GetResult( );
+			CGamePlayer *StatPlayer = GetPlayerFromName( i->second->GetName(), true );
+			if (StatPlayer)
+				i->second->SetName(StatPlayer->GetNameWithAlias());
+
 
 			if( DotAPlayerSummary )
 			{
@@ -2156,7 +2164,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			}
 		}
 	}
-	
+/*	
 	if ( Command == "checklinked" || Command == "cl" )
 	{
 		if (!m_PairedLinkedPlayers.empty())
@@ -2234,7 +2242,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 		}
 		player->RemoveLink();
 	}
-
+*/
 
 	//
 	// !STATS

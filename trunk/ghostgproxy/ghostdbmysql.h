@@ -205,12 +205,12 @@ public:
 	virtual CCallableGameAdd 					*ThreadedGameAdd( string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver, vector<string> chatlog );
 	virtual CCallableGamePlayerAdd 				*ThreadedGamePlayerAdd( uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
 	virtual CCallableRegisterPlayerAdd			*ThreadedRegisterPlayerAdd( string name, string email, string ip );
-	virtual CCallableGamePlayerSummaryCheck 	*ThreadedGamePlayerSummaryCheck( string name );
+	virtual CCallableGamePlayerSummaryCheck 	*ThreadedGamePlayerSummaryCheck( string name, uint32_t season = 2 );
 	virtual CCallableDotAGameAdd 				*ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerAdd 				*ThreadedDotAPlayerAdd( uint32_t gameid, string name, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
-	virtual CCallableDotAPlayerSummaryCheck 	*ThreadedDotAPlayerSummaryCheck( string name );
+	virtual CCallableDotAPlayerSummaryCheck 	*ThreadedDotAPlayerSummaryCheck( string name, uint32_t season = 2 );
 	virtual CCallableDownloadAdd 				*ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
-	virtual CCallableScoreCheck 				*ThreadedScoreCheck( string category, string name, string server );
+	virtual CCallableScoreCheck 				*ThreadedScoreCheck( string category, string name, string server, uint32_t season );
 	virtual CCallableW3MMDPlayerAdd 			*ThreadedW3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
 	virtual CCallableW3MMDVarAdd 				*ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,int32_t> var_ints );
 	virtual CCallableW3MMDVarAdd 				*ThreadedW3MMDVarAdd( uint32_t gameid, map<VarP,double> var_reals );
@@ -251,13 +251,13 @@ vector<CDBBan *> 			MySQLBanList( void *conn, string *error, uint32_t botid, str
 uint32_t 					MySQLGameAdd( void *conn, string *error, uint32_t botid, string server, string map, string gamename, string ownername, uint32_t duration, uint32_t gamestate, string creatorname, string creatorserver );
 uint32_t 					MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t reserved, uint32_t loadingtime, uint32_t left, string leftreason, uint32_t team, uint32_t colour );
 uint32_t					MySQLRegisterPlayerAdd( void *conn, string *error, string name, string email, string ip );
-CDBGamePlayerSummary 		*MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
+CDBGamePlayerSummary 		*MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name, uint32_t season );
 CDBGamePlayerSummary 		*MySQLReducedGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
 uint32_t 					MySQLDotAGameAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 uint32_t 					MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, string name, uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills, uint32_t outcome, uint32_t level, uint32_t apm );
-CDBDotAPlayerSummary 		*MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name );
+CDBDotAPlayerSummary 		*MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name, uint32_t season );
 bool 						MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
-double 						MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server );
+double 						MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server, uint32_t season );
 uint32_t 					MySQLW3MMDPlayerAdd( void *conn, string *error, uint32_t botid, string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
 bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,int32_t> var_ints );
 bool 						MySQLW3MMDVarAdd( void *conn, string *error, uint32_t botid, uint32_t gameid, map<VarP,double> var_reals );
@@ -429,7 +429,7 @@ public:
 class CMySQLCallableGamePlayerSummaryCheck : public CCallableGamePlayerSummaryCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableGamePlayerSummaryCheck( string nName, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableGamePlayerSummaryCheck( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableGamePlayerSummaryCheck( string nName, uint32_t nSeason, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableGamePlayerSummaryCheck( nName, nSeason ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableGamePlayerSummaryCheck( ) { }
 
 	virtual void operator( )( );
@@ -475,7 +475,7 @@ public:
 class CMySQLCallableDotAPlayerSummaryCheck : public CCallableDotAPlayerSummaryCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableDotAPlayerSummaryCheck( string nName, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerSummaryCheck( nName ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableDotAPlayerSummaryCheck( string nName, uint32_t nSeason, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableDotAPlayerSummaryCheck( nName, nSeason ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableDotAPlayerSummaryCheck( ) { }
 
 	virtual void operator( )( );
@@ -497,7 +497,7 @@ public:
 class CMySQLCallableScoreCheck : public CCallableScoreCheck, public CMySQLCallable
 {
 public:
-	CMySQLCallableScoreCheck( string nCategory, string nName, string nServer, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableScoreCheck( nCategory, nName, nServer ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
+	CMySQLCallableScoreCheck( string nCategory, string nName, string nServer, uint32_t nSeason, void *nConnection, uint32_t nSQLBotID, string nSQLServer, string nSQLDatabase, string nSQLUser, string nSQLPassword, uint16_t nSQLPort ) : CBaseCallable( ), CCallableScoreCheck( nCategory, nName, nServer, nSeason ), CMySQLCallable( nConnection, nSQLBotID, nSQLServer, nSQLDatabase, nSQLUser, nSQLPassword, nSQLPort ) { }
 	virtual ~CMySQLCallableScoreCheck( ) { }
 
 	virtual void operator( )( );

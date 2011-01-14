@@ -334,14 +334,14 @@ CCallableGamePlayerAdd *CGHostDBMySQL :: ThreadedGamePlayerAdd( uint32_t gameid,
 	return Callable;
 }
 
-CCallableGamePlayerSummaryCheck *CGHostDBMySQL :: ThreadedGamePlayerSummaryCheck( string name )
+CCallableGamePlayerSummaryCheck *CGHostDBMySQL :: ThreadedGamePlayerSummaryCheck( string name, uint32_t season )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableGamePlayerSummaryCheck *Callable = new CMySQLCallableGamePlayerSummaryCheck( name, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableGamePlayerSummaryCheck *Callable = new CMySQLCallableGamePlayerSummaryCheck( name, season, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -386,14 +386,14 @@ CCallableDotAPlayerAdd *CGHostDBMySQL :: ThreadedDotAPlayerAdd( uint32_t gameid,
 	return Callable;
 }
 
-CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck( string name )
+CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck( string name, uint32_t season )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableDotAPlayerSummaryCheck *Callable = new CMySQLCallableDotAPlayerSummaryCheck( name, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableDotAPlayerSummaryCheck *Callable = new CMySQLCallableDotAPlayerSummaryCheck( name, season, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -412,14 +412,14 @@ CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( string map, uint32_t
 	return Callable;
 }
 
-CCallableScoreCheck *CGHostDBMySQL :: ThreadedScoreCheck( string category, string name, string server )
+CCallableScoreCheck *CGHostDBMySQL :: ThreadedScoreCheck( string category, string name, string server, uint32_t season )
 {
 	void *Connection = GetIdleConnection( );
 
 	if( !Connection )
 		m_NumConnections++;
 
-	CCallableScoreCheck *Callable = new CMySQLCallableScoreCheck( category, name, server, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+	CCallableScoreCheck *Callable = new CMySQLCallableScoreCheck( category, name, server, season, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
 	CreateThread( Callable );
 	m_OutstandingCallables++;
 	return Callable;
@@ -1052,13 +1052,13 @@ uint32_t MySQLGamePlayerAdd( void *conn, string *error, uint32_t botid, uint32_t
 	return RowID;
 }
 
-CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name )
+CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name, uint32_t season )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	string EscName = MySQLEscapeString( conn, name );
 	CDBGamePlayerSummary *GamePlayerSummary = NULL;
 //	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
-	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on dotastats.player_name=gameplayers.name WHERE gameplayers.name='" + EscName + "'";
+	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on dotastats.player_name=gameplayers.name WHERE dotastats.season = " + UTIL_ToString(season) + " AND gameplayers.name='" + EscName + "'";
 //	string Query = "SELECT (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), AVG(loadingtime), AVG(`left`/duration)*100 FROM gameplayers LEFT JOIN games ON games.id=gameid LEFT JOIN dotastats on dotastats.player_name=name WHERE name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
@@ -1110,8 +1110,9 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 			*error = mysql_error( (MYSQL *)conn );
 	}
 	
-	if (GamePlayerSummary->GetTotalGames() < 30 && botid == 1)
+	if (GamePlayerSummary && GamePlayerSummary->GetTotalGames() < 30 && botid == 1)
 	{
+		GamePlayerSummary->SetVouched(false);
 		//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
 		string VouchCheck = "SELECT name, voucher FROM vouches WHERE name LIKE '" + name + "'";
 		
@@ -1135,6 +1136,68 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 					}
 				}
 				mysql_free_result( VouchResult );
+			}	
+		}
+		
+		if (!GamePlayerSummary->IsVouched())
+		{
+			string QTotal = "SELECT SUM(dotastats.total_wins + dotastats.total_losses + dotastats.total_draws) FROM dotastats WHERE player_name LIKE '" + EscName + "'";
+			
+			if( mysql_real_query( (MYSQL *)conn, QTotal.c_str( ), QTotal.size( ) ) != 0 )
+				*error = mysql_error( (MYSQL *)conn );
+			else
+			{
+				MYSQL_RES *TResult = mysql_store_result( (MYSQL *)conn );
+
+				if( TResult )
+				{
+					if (mysql_num_rows(TResult) == 1)
+					{
+						vector<string> VRow = MySQLFetchRow( TResult );
+
+						if( VRow.size( ) == 1 )
+						{
+							
+							GamePlayerSummary->SetVouched(true);
+							GamePlayerSummary->SetVouchedBy( "Autovvouch" );
+							CONSOLE_Print( "[VOUCH] Found vouch for player [" + VRow[0] + "] vouched by [Autovouch (" + VRow[0] + " games)]");
+						}
+					}
+					mysql_free_result( TResult );
+				}	
+			}
+		}
+	}
+
+	if (GamePlayerSummary)
+	{
+		GamePlayerSummary->HasAlias(false);
+
+		//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
+		string AliasCheck = "SELECT oldname FROM namechanges WHERE name LIKE '" + name + "'";
+		//CONSOLE_Print(AliasCheck);
+		
+		if( mysql_real_query( (MYSQL *)conn, AliasCheck.c_str( ), AliasCheck.size( ) ) != 0 )
+			*error = mysql_error( (MYSQL *)conn );
+		else
+		{
+			MYSQL_RES *AliasResult = mysql_store_result( (MYSQL *)conn );
+
+			if( AliasResult )
+			{
+				if (mysql_num_rows(AliasResult) == 1)
+				{
+					vector<string> VRow = MySQLFetchRow( AliasResult );
+
+					if( VRow.size( ) == 1 )
+					{
+						GamePlayerSummary->HasAlias(true);
+						GamePlayerSummary->SetAlias(VRow[0]);
+						CONSOLE_Print( "[ALIAS] Found old name for player [" + name + "] Old name [" + VRow[0] + "]");
+					}
+				}
+
+				mysql_free_result( AliasResult );
 			}	
 		}
 	}
@@ -1196,14 +1259,14 @@ uint32_t MySQLDotAPlayerAdd( void *conn, string *error, uint32_t botid, string n
 	return AffectedRows;
 }
 
-CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name )
+CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name, uint32_t season )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	string EscName = MySQLEscapeString( conn, name );
 	CDBDotAPlayerSummary *DotAPlayerSummary = NULL;
 	//string Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
 
-	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills, streak FROM dotastats WHERE player_name='" + EscName + "'";
+	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills, streak FROM dotastats WHERE season = " + UTIL_ToString(season) + " AND player_name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1239,8 +1302,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 					uint32_t Rank = 0;
 					
 					// calculate score and rank
-
-					string Query4 = "SELECT score FROM dota_elo_scores WHERE name='" + EscName + "'";
+					string Query4 = "SELECT score FROM dota_elo_scores WHERE season = " + UTIL_ToString(season) + " AND name='" + EscName + "'";
 					
 					//CONSOLE_Print( "[MYSQL] statsdota: " + Query4 );
 
@@ -1267,7 +1329,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 
 					// calculate rank
 
-					string Query5 = "select COUNT(score) from dota_elo_scores where score >= " + UTIL_ToString(Score, 2);
+					string Query5 = "select COUNT(score) from dota_elo_scores where season = " + UTIL_ToString(season) + " AND score >= " + UTIL_ToString(Score, 2);
 
 					if( mysql_real_query( (MYSQL *)conn, Query5.c_str( ), Query5.size( ) ) != 0 )
 						*error = mysql_error( (MYSQL *)conn );
@@ -1322,7 +1384,7 @@ bool MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, ui
 	return Success;
 }
 
-double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server )
+double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string category, string name, string server, uint32_t season )
 {
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	string EscCategory = MySQLEscapeString( conn, category );
@@ -1330,7 +1392,7 @@ double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string catego
 	string EscServer = MySQLEscapeString( conn, server );
 	double Score = -100000.0;
 	//string Query = "SELECT score FROM scores WHERE category='" + EscCategory + "' AND name='" + EscName + "' AND server='" + EscServer + "'";
-	string Query = "SELECT score FROM dota_elo_scores WHERE name='" + EscName + "'";
+	string Query = "SELECT score FROM dota_elo_scores WHERE season = " + UTIL_ToString(season) + " AND name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1340,12 +1402,15 @@ double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string catego
 
 		if( Result )
 		{
-			vector<string> Row = MySQLFetchRow( Result );
+			if (mysql_num_rows(Result) == 1)
+			{
+				vector<string> Row = MySQLFetchRow( Result );
 
-			if( Row.size( ) == 1 )
-				Score = UTIL_ToDouble( Row[0] );
-			/* else
-				*error = "error checking score [" + category + " : " + name + " : " + server + "] - row doesn't have 1 column"; */
+				if( Row.size( ) == 1 )
+					Score = UTIL_ToDouble( Row[0] );
+				else
+					*error = "error checking score [" + category + " : " + name + " : " + server + "] - row doesn't have 1 column";
+			}
 
 			mysql_free_result( Result );
 		}
@@ -1513,14 +1578,14 @@ bool MySQLUpdateGameInfo( void *conn, string *error, uint32_t botid, string name
 				
 			EscPlayers = MySQLEscapeString( conn, EscPlayers );
 			
-			CONSOLE_Print("[MYSQL] We got [" + UTIL_ToString(m_Slots.size()) + "] slots, wat to do. [" + EscPlayers + "]");
+			//CONSOLE_Print("[MYSQL] We got [" + UTIL_ToString(m_Slots.size()) + "] slots, wat to do. [" + EscPlayers + "]");
 			Query = "INSERT INTO gameinfo (name, players, botid, public, slots) VALUES ('" + EscName + "', " + UTIL_ToString( players ) + ", " + UTIL_ToString( botid ) + ", " + UTIL_ToString( IsPublic ) + ", '" + EscPlayers + "') ON DUPLICATE KEY UPDATE players=" + UTIL_ToString( players ) + ", public=" + UTIL_ToString( IsPublic ) + ", slots = '" + EscPlayers + "';";
 			break;
 	}
 	
 	if (Query.empty())
 		return false;
-
+		
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 	{
 		*error = mysql_error( (MYSQL *)conn );
@@ -1830,7 +1895,7 @@ void CMySQLCallableGamePlayerSummaryCheck :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
+		m_Result = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Season );
 
 	Close( );
 }
@@ -1870,7 +1935,7 @@ void CMySQLCallableDotAPlayerSummaryCheck :: operator( )( )
 	Init( );
 
 	if( m_Error.empty( ) )
-		m_Result = MySQLDotAPlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
+		m_Result = MySQLDotAPlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Season );
 
 	Close( );
 }
@@ -1891,8 +1956,8 @@ void CMySQLCallableScoreCheck :: operator( )( )
 
 	if( m_Error.empty( ) )
 	{
-		m_GamePlayer = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
-		m_Result = MySQLScoreCheck( m_Connection, &m_Error, m_SQLBotID, m_Category, m_Name, m_Server );
+		m_GamePlayer = MySQLGamePlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name, m_Season );
+		m_Result = MySQLScoreCheck( m_Connection, &m_Error, m_SQLBotID, m_Category, m_Name, m_Server, m_Season );
 	}
 	Close( );
 }
