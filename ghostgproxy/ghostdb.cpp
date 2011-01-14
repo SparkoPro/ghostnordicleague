@@ -366,7 +366,7 @@ CCallableGamePlayerAdd *CGHostDB :: ThreadedGamePlayerAdd( uint32_t gameid, stri
 	return NULL;
 }
 
-CCallableGamePlayerSummaryCheck *CGHostDB :: ThreadedGamePlayerSummaryCheck( string name )
+CCallableGamePlayerSummaryCheck *CGHostDB :: ThreadedGamePlayerSummaryCheck( string name, uint32_t season )
 {
 	return NULL;
 }
@@ -381,7 +381,7 @@ CCallableDotAPlayerAdd *CGHostDB :: ThreadedDotAPlayerAdd( uint32_t gameid, stri
 	return NULL;
 }
 
-CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( string name )
+CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( string name, uint32_t season )
 {
 	return NULL;
 }
@@ -391,7 +391,7 @@ CCallableDownloadAdd *CGHostDB :: ThreadedDownloadAdd( string map, uint32_t maps
 	return NULL;
 }
 
-CCallableScoreCheck *CGHostDB :: ThreadedScoreCheck( string category, string name, string server )
+CCallableScoreCheck *CGHostDB :: ThreadedScoreCheck( string category, string name, string server, uint32_t season )
 {
 	return NULL;
 }
@@ -671,6 +671,7 @@ CDBGamePlayerSummary :: CDBGamePlayerSummary( string nServer, string nName, stri
 	m_MaxDuration = nMaxDuration;
 	m_Vouched = false;
 	m_VouchedBy.clear();
+	m_AllTotalGames = 0;
 }
 
 CDBGamePlayerSummary :: CDBGamePlayerSummary( string nServer, string nName, string nFirstGameDateTime, string nLastGameDateTime, uint32_t nTotalGames, uint32_t nMinLoadingTime, uint32_t nAvgLoadingTime, uint32_t nMaxLoadingTime, uint32_t nMinLeftPercent, uint32_t nAvgLeftPercent, uint32_t nMaxLeftPercent, uint32_t nMinDuration, uint32_t nAvgDuration, uint32_t nMaxDuration, bool nVouched, string nVouchedBy )
@@ -691,6 +692,7 @@ CDBGamePlayerSummary :: CDBGamePlayerSummary( string nServer, string nName, stri
 	m_MaxDuration = nMaxDuration;
 	m_Vouched = nVouched;
 	m_VouchedBy = nVouchedBy;
+	m_AllTotalGames = 0;
 }
 
 CDBGamePlayerSummary :: ~CDBGamePlayerSummary( )

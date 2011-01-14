@@ -34,14 +34,9 @@
 // CPotentialPlayer
 //
 
-CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket )
+CPotentialPlayer :: CPotentialPlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket ) : m_Protocol( nProtocol ), m_Game( nGame ), m_Socket( nSocket ), m_DeleteMe( false ), m_Error( false ), m_IncomingJoinPlayer( NULL )
 {
-	m_Protocol = nProtocol;
-	m_Game = nGame;
-	m_Socket = nSocket;
-	m_DeleteMe = false;
-	m_Error = false;
-	m_IncomingJoinPlayer = NULL;
+
 }
 
 CPotentialPlayer :: ~CPotentialPlayer( )
@@ -189,120 +184,30 @@ void CPotentialPlayer :: Send( BYTEARRAY data )
 // CGamePlayer
 //
 
-CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket )
+CGamePlayer :: CGamePlayer( CGameProtocol *nProtocol, CBaseGame *nGame, CTCPSocket *nSocket, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( nProtocol, nGame, nSocket ),
+m_PID( nPID ), m_Name( nName ), m_InternalIP( nInternalIP ), m_JoinedRealm( nJoinedRealm ), m_TotalPacketsSent( 0 ), m_TotalPacketsReceived( 0 ), m_LeftCode( PLAYERLEAVE_LOBBY ), m_LoginAttempts( 0 ), m_SyncCounter( 0 ), m_JoinTime( GetTime( ) ),
+m_LastMapPartSent( 0 ), m_LastMapPartAcked( 0 ), m_StartedDownloadingTicks( 0 ), m_FinishedLoadingTicks( 0 ), m_StartedLaggingTicks( 0 ), m_StatsSentTime( 0 ), m_StatsDotASentTime( 0 ), m_LastGProxyWaitNoticeSentTime( 0 ), m_Score( -100000.0 ),
+m_LoggedIn( false ), m_Spoofed( false ), m_Reserved( nReserved ), m_WhoisShouldBeSent( false ), m_WhoisSent( false ), m_DownloadAllowed( false ), m_DownloadStarted( false ), m_DownloadFinished( false ), m_FinishedLoading( false ), m_Lagging( false ),
+m_DropVote( false ), m_KickVote( false ), m_Muted( false ), m_LeftMessageSent( false ), m_GProxy( false ), m_GProxyDisconnectNoticeSent( false ), m_GProxyReconnectKey( GetTicks( ) ), m_LastGProxyAckTime( 0 )
 {
-	m_PID = nPID;
-	m_Name = nName;
-	m_InternalIP = nInternalIP;
-	m_JoinedRealm = nJoinedRealm;
-	m_TotalPacketsSent = 0;
-	m_TotalPacketsReceived = 0;
-	m_LeftCode = PLAYERLEAVE_LOBBY;
-	m_LoginAttempts = 0;
-	m_SyncCounter = 0;
-	m_JoinTime = GetTime( );
-	m_LastMapPartSent = 0;
-	m_LastMapPartAcked = 0;
-	m_StartedDownloadingTicks = 0;
-	m_FinishedDownloadingTime = 0;
-	m_FinishedLoadingTicks = 0;
-	m_StartedLaggingTicks = 0;
-	m_StatsSentTime = 0;
-	m_StatsDotASentTime = 0;
-	m_LastGProxyWaitNoticeSentTime = 0;
-	m_Score = -100000.0;
-	m_LoggedIn = false;
-	m_Spoofed = false;
-	m_Reserved = nReserved;
-	m_WhoisShouldBeSent = false;
-	m_WhoisSent = false;
-	m_DownloadAllowed = false;
-	m_DownloadStarted = false;
-	m_DownloadFinished = false;
-	m_FinishedLoading = false;
-	m_Lagging = false;
-	m_DropVote = false;
-	m_KickVote = false;
-	m_Muted = false;
-	m_LeftMessageSent = false;
-	m_GProxy = false;
-	m_GProxyDisconnectNoticeSent = false;
-	m_GProxyReconnectKey = GetTicks( );
-	m_LastGProxyAckTime = 0;
-	
-	// nordicleague
-	
-	m_Team = 0;	
-	m_Admin = false;
-	m_Moderator = false;
-	m_HasLeft = false;
-	m_EndVote = false;
-	m_FFVote = false;
-	m_IsLinked = false;
-	m_Vouched = false;
+
 }
 
-CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) )
+CGamePlayer :: CGamePlayer( CPotentialPlayer *potential, unsigned char nPID, string nJoinedRealm, string nName, BYTEARRAY nInternalIP, bool nReserved ) : CPotentialPlayer( potential->m_Protocol, potential->m_Game, potential->GetSocket( ) ),
+m_PID( nPID ), m_Name( nName ), m_InternalIP( nInternalIP ), m_JoinedRealm( nJoinedRealm ), m_TotalPacketsSent( 0 ), m_TotalPacketsReceived( 1 ), m_LeftCode( PLAYERLEAVE_LOBBY ), m_LoginAttempts( 0 ), m_SyncCounter( 0 ), m_JoinTime( GetTime( ) ),
+m_LastMapPartSent( 0 ), m_LastMapPartAcked( 0 ), m_StartedDownloadingTicks( 0 ), m_FinishedLoadingTicks( 0 ), m_StartedLaggingTicks( 0 ), m_StatsSentTime( 0 ), m_StatsDotASentTime( 0 ), m_LastGProxyWaitNoticeSentTime( 0 ), m_Score( -100000.0 ),
+m_LoggedIn( false ), m_Spoofed( false ), m_Reserved( nReserved ), m_WhoisShouldBeSent( false ), m_WhoisSent( false ), m_DownloadAllowed( false ), m_DownloadStarted( false ), m_DownloadFinished( false ), m_FinishedLoading( false ), m_Lagging( false ),
+m_DropVote( false ), m_KickVote( false ), m_Muted( false ), m_LeftMessageSent( false ), m_GProxy( false ), m_GProxyDisconnectNoticeSent( false ), m_GProxyReconnectKey( GetTicks( ) ), m_LastGProxyAckTime( 0 )
 {
 	// todotodo: properly copy queued packets to the new player, this just discards them
 	// this isn't a big problem because official Warcraft III clients don't send any packets after the join request until they receive a response
-
 	// m_Packets = potential->GetPackets( );
-	m_PID = nPID;
-	m_Name = nName;
-	m_InternalIP = nInternalIP;
-	m_JoinedRealm = nJoinedRealm;
-	m_TotalPacketsSent = 0;
 
-	// hackhack: we initialize this to 1 because the CPotentialPlayer must have received a W3GS_REQJOIN before this class was created
+
+        // hackhack: we initialize m_TotalPacketsReceived to 1 because the CPotentialPlayer must have received a W3GS_REQJOIN before this class was created
 	// to fix this we could move the packet counters to CPotentialPlayer and copy them here
 	// note: we must make sure we never send a packet to a CPotentialPlayer otherwise the send counter will be incorrect too! what a mess this is...
 	// that said, the packet counters are only used for managing GProxy++ reconnections
-
-	m_TotalPacketsReceived = 1;
-	m_LeftCode = PLAYERLEAVE_LOBBY;
-	m_LoginAttempts = 0;
-	m_SyncCounter = 0;
-	m_JoinTime = GetTime( );
-	m_LastMapPartSent = 0;
-	m_LastMapPartAcked = 0;
-	m_StartedDownloadingTicks = 0;
-	m_FinishedDownloadingTime = 0;
-	m_FinishedLoadingTicks = 0;
-	m_StartedLaggingTicks = 0;
-	m_StatsSentTime = 0;
-	m_StatsDotASentTime = 0;
-	m_LastGProxyWaitNoticeSentTime = 0;
-	m_Score = -100000.0;
-	m_LoggedIn = false;
-	m_Spoofed = false;
-	m_Reserved = nReserved;
-	m_WhoisShouldBeSent = false;
-	m_WhoisSent = false;
-	m_DownloadAllowed = false;
-	m_DownloadStarted = false;
-	m_DownloadFinished = false;
-	m_FinishedLoading = false;
-	m_Lagging = false;
-	m_DropVote = false;
-	m_KickVote = false;
-	m_Muted = false;
-	m_LeftMessageSent = false;
-	m_GProxy = false;
-	m_GProxyDisconnectNoticeSent = false;
-	m_GProxyReconnectKey = GetTicks( );
-	m_LastGProxyAckTime = 0;
-	
-	// nordicleague
-	
-	m_Team 		= 0;	
-	m_Admin 	= false;
-	m_Moderator = false;
-	m_HasLeft 	= false;
-	m_EndVote	= false;
-	m_FFVote 	= false;
-	m_IsLinked 	= false;
-	m_Vouched 	= false;
 }
 
 CGamePlayer :: ~CGamePlayer( )
@@ -335,7 +240,7 @@ uint32_t CGamePlayer :: GetPing( bool LCPing )
 
 	uint32_t AvgPing = 0;
 
-	for( unsigned int i = 0; i < m_Pings.size( ); i++ )
+        for( unsigned int i = 0; i < m_Pings.size( ); ++i )
 		AvgPing += m_Pings[i];
 
 	AvgPing /= m_Pings.size( );
@@ -355,7 +260,7 @@ bool CGamePlayer :: Update( void *fd )
 	{
 		// todotodo: we could get kicked from battle.net for sending a command with invalid characters, do some basic checking
 
-		for( vector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); i++ )
+                for( vector<CBNET *> :: iterator i = m_Game->m_GHost->m_BNETs.begin( ); i != m_Game->m_GHost->m_BNETs.end( ); ++i )
 		{
 			if( (*i)->GetServer( ) == m_JoinedRealm )
 			{
@@ -404,22 +309,7 @@ bool CGamePlayer :: Update( void *fd )
 
 	// try to find out why we're requesting deletion
 	// in cases other than the ones covered here m_LeftReason should have been set when m_DeleteMe was set
-
-
-/*
-	if( m_Error )
-		m_Game->EventPlayerDisconnectPlayerError( this );
-
-	if( m_Socket )
-	{
-		if( m_Socket->HasError( ) )
-			m_Game->EventPlayerDisconnectSocketError( this );
-
-		if( !m_Socket->GetConnected( ) )
-			m_Game->EventPlayerDisconnectConnectionClosed( this );
-	} */
 	
-
 	if( m_Error )
 	{
 		m_Game->EventPlayerDisconnectPlayerError( this );
@@ -471,7 +361,7 @@ void CGamePlayer :: ExtractPackets( )
 					m_Packets.push( new CCommandPacket( Bytes[0], Bytes[1], BYTEARRAY( Bytes.begin( ), Bytes.begin( ) + Length ) ) );
 
 					if( Bytes[0] == W3GS_HEADER_CONSTANT )
-						m_TotalPacketsReceived++;
+                                                ++m_TotalPacketsReceived;
 
 					*RecvBuffer = RecvBuffer->substr( Length );
 					Bytes = BYTEARRAY( Bytes.begin( ) + Length, Bytes.end( ) );
@@ -520,7 +410,6 @@ void CGamePlayer :: ProcessPackets( )
 			{
 			case CGameProtocol :: W3GS_LEAVEGAME:
 				m_Game->EventPlayerLeft( this, m_Protocol->RECEIVE_W3GS_LEAVEGAME( Packet->GetData( ) ) );
-				m_HasLeft = true;
 				break;
 
 			case CGameProtocol :: W3GS_GAMELOADED_SELF:
@@ -553,7 +442,7 @@ void CGamePlayer :: ProcessPackets( )
 			case CGameProtocol :: W3GS_OUTGOING_KEEPALIVE:
 				CheckSum = m_Protocol->RECEIVE_W3GS_OUTGOING_KEEPALIVE( Packet->GetData( ) );
 				m_CheckSums.push( CheckSum );
-				m_SyncCounter++;
+                                ++m_SyncCounter;
 				m_Game->EventPlayerKeepAlive( this, CheckSum );
 				break;
 
@@ -655,7 +544,7 @@ void CGamePlayer :: ProcessPackets( )
 					while( PacketsToUnqueue > 0 )
 					{
 						m_GProxyBuffer.pop( );
-						PacketsToUnqueue--;
+                                                --PacketsToUnqueue;
 					}
 				}
 			}
@@ -671,7 +560,7 @@ void CGamePlayer :: Send( BYTEARRAY data )
 	// but we can avoid buffering packets until we know the client is using GProxy++ since that'll be determined before the game starts
 	// this prevents us from buffering packets for non-GProxy++ clients
 
-	m_TotalPacketsSent++;
+        ++m_TotalPacketsSent;
 
 	if( m_GProxy && m_Game->GetGameLoaded( ) )
 		m_GProxyBuffer.push( data );
@@ -697,7 +586,7 @@ void CGamePlayer :: EventGProxyReconnect( CTCPSocket *NewSocket, uint32_t LastPa
 		while( PacketsToUnqueue > 0 )
 		{
 			m_GProxyBuffer.pop( );
-			PacketsToUnqueue--;
+                        --PacketsToUnqueue;
 		}
 	}
 

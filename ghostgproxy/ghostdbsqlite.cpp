@@ -963,7 +963,7 @@ uint32_t CGHostDBSQLite :: GamePlayerCount( string name )
 	return Count;
 }
 
-CDBGamePlayerSummary *CGHostDBSQLite :: GamePlayerSummaryCheck( string name )
+CDBGamePlayerSummary *CGHostDBSQLite :: GamePlayerSummaryCheck( string name, uint32_t season )
 {
 	if( GamePlayerCount( name ) == 0 )
 		return NULL;
@@ -1118,7 +1118,7 @@ uint32_t CGHostDBSQLite :: DotAPlayerCount( string name )
 	return Count;
 }
 
-CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( string name )
+CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( string name, uint32_t season )
 {
 	if( DotAPlayerCount( name ) == 0 )
 		return NULL;
@@ -1577,10 +1577,10 @@ CCallableGamePlayerAdd *CGHostDBSQLite :: ThreadedGamePlayerAdd( uint32_t gameid
 	return Callable;
 }
 
-CCallableGamePlayerSummaryCheck *CGHostDBSQLite :: ThreadedGamePlayerSummaryCheck( string name )
+CCallableGamePlayerSummaryCheck *CGHostDBSQLite :: ThreadedGamePlayerSummaryCheck( string name, uint32_t season )
 {
-	CCallableGamePlayerSummaryCheck *Callable = new CCallableGamePlayerSummaryCheck( name );
-	Callable->SetResult( GamePlayerSummaryCheck( name ) );
+	CCallableGamePlayerSummaryCheck *Callable = new CCallableGamePlayerSummaryCheck( name, 0 );
+	Callable->SetResult( GamePlayerSummaryCheck( name, 0 ) );
 	Callable->SetReady( true );
 	return Callable;
 }
@@ -1606,10 +1606,10 @@ raxkills, courierkills, outcome, level, apm ) );
 	return Callable;
 }
 
-CCallableDotAPlayerSummaryCheck *CGHostDBSQLite :: ThreadedDotAPlayerSummaryCheck( string name )
+CCallableDotAPlayerSummaryCheck *CGHostDBSQLite :: ThreadedDotAPlayerSummaryCheck( string name, uint32_t season )
 {
-	CCallableDotAPlayerSummaryCheck *Callable = new CCallableDotAPlayerSummaryCheck( name );
-	Callable->SetResult( DotAPlayerSummaryCheck( name ) );
+	CCallableDotAPlayerSummaryCheck *Callable = new CCallableDotAPlayerSummaryCheck( name, 0 );
+	Callable->SetResult( DotAPlayerSummaryCheck( name, 0 ) );
 	Callable->SetReady( true );
 	return Callable;
 }

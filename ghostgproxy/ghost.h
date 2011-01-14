@@ -161,6 +161,8 @@ public:
 	bool 		m_Debug;
 	bool		m_LinkEnabled;
 	
+	bool 		m_SuffleInsteadOfBalance;
+	
 	set<string> 				m_BypassEnforcer;
 	set<VouchPair> 				m_VouchPairs;
 

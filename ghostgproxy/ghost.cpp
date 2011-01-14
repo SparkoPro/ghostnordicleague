@@ -394,7 +394,7 @@ int main( int argc, char **argv )
 
 CGHost :: CGHost( CConfig *CFG )
 {
-	m_PluginMgr = new CPluginMgr( );
+	//m_PluginMgr = new CPluginMgr( );
 	m_UDPSocket = new CUDPSocket( );
 	m_UDPSocket->SetBroadcastTarget( CFG->GetString( "udp_broadcasttarget", string( ) ) );
 	m_UDPSocket->SetDontRoute( CFG->GetInt( "udp_dontroute", 0 ) == 0 ? false : true );
@@ -765,7 +765,7 @@ CGHost :: ~CGHost( )
 	delete m_AdminMap;
 	delete m_AutoHostMap;
 	delete m_SaveGame;
-	delete m_PluginMgr;
+	//delete m_PluginMgr;
 }
 
 bool CGHost :: Update( long usecBlock )
@@ -1539,6 +1539,8 @@ void CGHost :: SetConfigs( CConfig *CFG )
 
 	m_AdminCanAlwaysJoin = CFG->GetInt( "bot_admincanalwaysjoin", 0 ) == 0 ? false : true;
 	m_EnforceBalance = CFG->GetInt( "bot_enforcebalance", 0 ) == 0 ? false : true;
+	m_SuffleInsteadOfBalance = CFG->GetInt( "bot_shuffleinstead", 0 ) == 0 ? false : true;
+	
 	m_VoteEndAllowed = CFG->GetInt( "bot_voteendallowed", 0 ) == 0 ? false : true;
 	m_VoteEndPercentage = CFG->GetInt( "bot_voteendpercentage", 90 );
 

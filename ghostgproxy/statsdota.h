@@ -45,6 +45,7 @@ public:
 
 	virtual bool ProcessAction( CIncomingAction *Action, CGHostDB *DB, CGHost *GHost );
 	virtual void Save( CGHost *GHost, vector<CDBGamePlayer *>& DBGamePlayers, CGHostDB *DB, uint32_t GameID );
+	
 };
 
 #endif

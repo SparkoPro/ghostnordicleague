@@ -509,15 +509,13 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				if( (*j)->GetJoinPlayer( ) && (*j)->GetJoinPlayer( )->GetName( ) == (*i)->GetName( ) )
 				{
 					if (GamePlayerSummary)
-					{
-						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, GamePlayerSummary->GetTotalGames( ), GamePlayerSummary->GetAvgLeftPercent( ), GamePlayerSummary->IsVouched());
-						delete GamePlayerSummary;
-					}
+						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, GamePlayerSummary->GetTotalGames( ), GamePlayerSummary->GetAvgLeftPercent( ), GamePlayerSummary->IsVouched(), GamePlayerSummary->GetAlias());
 					else
 						EventPlayerJoinedWithScore( *j, (*j)->GetJoinPlayer( ), Score, 0, 0, false);
 				}
 			}
 
+			delete GamePlayerSummary;
 			m_GHost->m_DB->RecoverCallable( *i );
 			delete *i;
 			i = m_ScoreChecks.erase( i );
@@ -2533,7 +2531,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	}
 }
 
-void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games, uint32_t staypercent, bool vouched)
+void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score, uint32_t games, uint32_t staypercent, bool vouched, string alias)
 {
 	// this function is only called when matchmaking is enabled
 	// EventPlayerJoined will be called first in all cases
@@ -2816,6 +2814,8 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	Player->SetGames(games);
 	Player->SetStay(staypercent);
 	Player->SetLinked(false);
+	if (!alias.empty())
+		Player->SetAlias(alias);
 
 	// consider LAN players to have already spoof checked since they can't
 	// since so many people have trouble with this feature we now use the JoinedRealm to determine LAN status
@@ -2900,12 +2900,15 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		}
 	}
 
-	if( score < -99999.0 )
-		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), "N/A" ) );
-	else
-		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) + " Games: " + UTIL_ToString(games) + " (" + UTIL_ToString(staypercent) + "% stay)");
+	string joinName = joinPlayer->GetName();
+	if (Player->HasAlias())
+		joinName += " (" + Player->GetAlias() + ")";
 
-//		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinPlayer->GetName( ), UTIL_ToString( score, 2 ) ) );
+	if( score < -99999.0 )
+		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinName, "N/A" ) );
+	else
+		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinName, UTIL_ToString( score, 2 ) ) + " Games: " + UTIL_ToString(games) + " (" + UTIL_ToString(staypercent) + "% stay)");
+//		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinName, UTIL_ToString( score, 2 ) ) );
 
 	uint32_t PlayersScored = 0;
 	uint32_t PlayersNotScored = 0;
@@ -2957,7 +2960,7 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 		}
 
 		if( !Others.empty( ) )
-			SendAllChat( m_GHost->m_Language->MultipleIPAddressUsageDetected( joinPlayer->GetName( ), Others ) );
+			SendAllChat( m_GHost->m_Language->MultipleIPAddressUsageDetected( joinName, Others ) );
 	}
 
 	// abort the countdown if there was one in progress
@@ -5376,17 +5379,6 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 
 		// check if everyone has been pinged enough (3 times) that the autokicker would have kicked them by now
 		// see function EventPlayerPongToHost for the autokicker code
-		
-		// balance the slots
-		if (m_MatchMaking && m_GHost->m_EnforceBalance)
-		{
-			if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
-			{
-				m_BalanceSlotsTime = GetTime();
-				//SendAllChat( m_GHost->m_Language->GameFull( joinPlayer->GetName( ), Others ) );
-				BalanceSlots( );
-			}
-		}
 
 		string NotPinged;
 
@@ -5413,6 +5405,21 @@ void CBaseGame :: StartCountDownAuto( bool requireSpoofChecks )
 		{
 			m_CountDownStarted = true;
 			m_CountDownCounter = 10;
+		}
+		
+		// balance the slots
+		if (m_MatchMaking && m_GHost->m_EnforceBalance)
+		{
+			if( m_AutoStartPlayers != 0 && GetNumHumanPlayers( ) == m_AutoStartPlayers )
+			{
+				m_BalanceSlotsTime = GetTime();
+				//SendAllChat( m_GHost->m_Language->GameFull( joinPlayer->GetName( ), Others ) );
+				
+				if (m_GHost->m_SuffleInsteadOfBalance)
+					ShuffleSlots( );
+				else
+					BalanceSlots( );
+			}
 		}
 		
 	}
