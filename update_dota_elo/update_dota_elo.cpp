@@ -18,6 +18,12 @@ CODE PORTED FROM THE ORIGINAL GHOST PROJECT: http://ghost.pwner.org/
 
 */
 
+/*
+Table definition ---
+string QCreate1 = "CREATE TABLE IF NOT EXISTS dota_elo_scores ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(15) NOT NULL, server VARCHAR(100) NOT NULL, score REAL NOT NULL )";
+string QCreate2 = "CREATE TABLE IF NOT EXISTS dota_elo_games_scored ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, gameid INT NOT NULL )";
+*/
+
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -25,6 +31,7 @@ CODE PORTED FROM THE ORIGINAL GHOST PROJECT: http://ghost.pwner.org/
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdlib.h>
 #include <math.h>
 
 using namespace std;
@@ -46,10 +53,7 @@ using namespace std;
 
 #include <mysql/mysql.h>
 
-void CONSOLE_Print( string message )
-{
-	cout << message << endl;
-}
+void CONSOLE_Print( string message ) { cout << message << endl; }
 
 string MySQLEscapeString( MYSQL *conn, string str )
 {
@@ -63,9 +67,7 @@ string MySQLEscapeString( MYSQL *conn, string str )
 vector<string> MySQLFetchRow( MYSQL_RES *res )
 {
 	vector<string> Result;
-
 	MYSQL_ROW Row = mysql_fetch_row( res );
-
 	if( Row )
 	{
 		unsigned long *Lengths;
@@ -79,7 +81,6 @@ vector<string> MySQLFetchRow( MYSQL_RES *res )
 				Result.push_back( string( ) );
 		}
 	}
-
 	return Result;
 }
 
@@ -159,24 +160,10 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	string QCreate1 = "CREATE TABLE IF NOT EXISTS dota_elo_scores ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(15) NOT NULL, server VARCHAR(100) NOT NULL, score REAL NOT NULL )";
-	string QCreate2 = "CREATE TABLE IF NOT EXISTS dota_elo_games_scored ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, gameid INT NOT NULL )";
-
-	if( mysql_real_query( Connection, QCreate1.c_str( ), QCreate1.size( ) ) != 0 )
-	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
-	}
-
-	if( mysql_real_query( Connection, QCreate2.c_str( ), QCreate2.size( ) ) != 0 )
-	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-		return 1;
-	}
-
 	queue<uint32_t> UnscoredGames;
 
-	string QSelectUnscored = "SELECT id FROM games WHERE id NOT IN ( SELECT gameid FROM dota_elo_games_scored ) ORDER BY id";
+	//string QSelectUnscored = "SELECT id FROM games WHERE id NOT IN ( SELECT gameid FROM dota_elo_games_scored ) ORDER BY id LIMIT 1";
+	string QSelectUnscored = "SELECT id FROM games WHERE scored = 0 ORDER BY id";
 
 	if( mysql_real_query( Connection, QSelectUnscored.c_str( ), QSelectUnscored.size( ) ) != 0 )
 	{
@@ -211,7 +198,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime, gameplayers.left, games.duration FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON dota_elo_scores.name=gameplayers.name LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime, gameplayers.left, games.duration, gameplayers.leftreason, gameplayers.ip, games.gamename FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON (dota_elo_scores.name=gameplayers.name AND dota_elo_scores.season = 2) LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -226,40 +213,34 @@ int main( int argc, char **argv )
 			{
 				cout << "gameid " << UTIL_ToString( GameID ) << " found" << endl;
 
-				bool ignore = false;
-				uint32_t rowids[10];
-				string names[10];
-				string servers[10];
-				bool exists[10];
-				int num_players = 0;
-				float player_ratings[10];
-				int player_teams[10];
-				int num_teams = 2;
-				float team_ratings[2];
-				float team_winners[2];
-				int team_numplayers[2];
+				bool 		ignore = false;
+				string 		gametime;
+				uint32_t 	rowids[10];
+				string 		names[10];
+				int 		num_players = 0;
+				float 		player_ratings[10];
+				int 		player_teams[10];
+				int 		num_teams = 2;
+				float 		team_ratings[2];
+				float 		team_winners[2];
+				int 		team_numplayers[2];
+				int		team_leavers[2];
+				float		team_bonus[2];
+				bool		player_isleaver[10];
+				float		player_left[10];
+
 				team_ratings[0] = 0.0;
 				team_ratings[1] = 0.0;
 				team_numplayers[0] = 0;
 				team_numplayers[1] = 0;
-				string gametime;
-
-				int		team_leavers[2];
-				float 	team_bonus[2];
-				bool	player_isleaver[10];
-				float	player_left[10];
-				float	player_scale[10];
-
 				team_leavers[0] = 0;
 				team_leavers[1] = 0;
-
-
 				team_bonus[0] = 0;
 				team_bonus[1] = 0;
 
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 9 )
+				while( Row.size( ) == 12 )
 				{
 					if( num_players >= 10 )
 					{
@@ -276,15 +257,10 @@ int main( int argc, char **argv )
 						ignore = true;
 						break;
 					}
-					else if( Winner == 1 )
-					{
-						team_winners[0] = 1.0;
-						team_winners[1] = 0.0;
-					}
 					else
 					{
-						team_winners[0] = 0.0;
-						team_winners[1] = 1.0;
+						team_winners[0] = (Winner == 1) ? 1.0 : 0.0;
+						team_winners[1] = (Winner == 2) ? 1.0 : 0.0;
 					}
 
 					if( !Row[0].empty( ) )
@@ -293,19 +269,10 @@ int main( int argc, char **argv )
 						rowids[num_players] = 0;
 
 					names[num_players] = Row[1];
-					servers[num_players] = Row[2];
+					player_ratings[num_players] = 1000.0;
 
 					if( !Row[5].empty( ) )
-					{
-						exists[num_players] = true;
 						player_ratings[num_players] = UTIL_ToFloat( Row[5] );
-					}
-					else
-					{
-						cout << "new player [" << Row[1] << "] found" << endl;
-						exists[num_players] = false;
-						player_ratings[num_players] = 1000.0;
-					}
 
 					uint32_t Colour = UTIL_ToUInt32( Row[3] );
 
@@ -328,17 +295,53 @@ int main( int argc, char **argv )
 						break;
 					}
 
-					float game_duration = UTIL_ToFloat(Row[8]);
+					player_isleaver[num_players] = false;
 
+					float game_duration = UTIL_ToFloat(Row[8]);
 					player_left[num_players] = UTIL_ToUInt32(Row[7]);
 
 					if ((game_duration - (60 * 5)) > player_left[num_players])
 					{
 						player_isleaver[num_players] = true;
 						team_leavers[player_teams[num_players]]++;
+
+                                                bool doban = false;
+                                                string ban = "INSERT INTO bans (botid, server, name, ip, date, gamename, admin, reason, ipban, expires)";
+                                                string warn;
+                                                if (Row[9] == "has left the game voluntarily")
+                                                {
+                                                        doban=true;
+                                                        cout << "Autoban (leaver): " + names[num_players] << endl;
+                                                        ban += " VALUES ('2', 'europe.battle.net', '" + names[num_players] + "', '" + Row[10] + "', CURRENT_TIME, '" + Row[11] + "', 'Autoban', 'Autoban: Leaver', 1, CURRENT_TIME + INTERVAL 3 DAY)";
+                                                        warn = "INSERT INTO warnings (name, weight, warning_id, date, admin, game, note) VALUES ('" + names[num_players] + "', 30, 1, CURRENT_TIME, 'Autoban', '" + Row[11] + "', '" + Row[11] + "')";
+
+                                                }
+                                                else if (Row[9] == "lagged out (dropped by vote)" || Row[9] == "lagged out (dropped by admin)")
+                                                {
+                                                        doban=true;
+                                                        cout << "Warning (disconnect): " << names[num_players] << endl;
+                                                        //ban += " VALUES ('2', 'europe.battle.net', '" + names[num_players] + "', '" + Row[10] + "', NOW(), '" + Row[11] + "', 'Autoban', 'Autoban: Disconnect', '1', CURRENT_TIME + INTERVAL 1 HOUR)";
+                                                        ban = "";
+                                                        warn = "INSERT INTO warnings (name, weight, warning_id, date, admin, game, note) VALUES ('" + names[num_players] + "', 30, 8, CURRENT_TIME, 'Autoban', '" + Row[11] + "', '" + Row[11] + "')";
+							cout << warn << endl;
+                                                }
+
+						if (doban)
+                                                {
+                                                        if (!ban.empty())
+							{
+								cout << ban << endl;
+                                                                if( mysql_real_query( Connection, ban.c_str( ), ban.size( ) ) != 0 )
+                                                                        cout << "error: " << mysql_error( Connection ) << endl;
+							}
+
+							cout << warn << endl;
+                                                        if( mysql_real_query( Connection, warn.c_str( ), warn.size( ) ) != 0 )
+                                                                cout << "error: " << mysql_error( Connection ) << endl;
+                                                }
+
+
 					}
-					else
-						player_isleaver[num_players] = false;
 
 					gametime = Row[6];
 
@@ -348,12 +351,15 @@ int main( int argc, char **argv )
 
 				mysql_free_result( Result );
 
-				cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
+				if (abs(team_leavers[0] - team_leavers[1]) > 0)
+				{
+					cout << "Sentinel leavers: " + UTIL_ToString(team_leavers[0]) + " Scourge Leavers: " + UTIL_ToString(team_leavers[1]) << endl;
 
-				if (team_leavers[0] > team_leavers[1])
-					team_bonus[0] = team_leavers[0] - team_leavers[1];
-				else if (team_leavers[1] > team_leavers[0])
-					team_bonus[1] = team_leavers[1] - team_leavers[0];
+					if (team_leavers[0] > team_leavers[1])
+						team_bonus[0] = team_leavers[0] - team_leavers[1];
+					else if (team_leavers[1] > team_leavers[0])
+						team_bonus[1] = team_leavers[1] - team_leavers[0];
+				}
 
 				if( !ignore )
 				{
@@ -378,169 +384,49 @@ int main( int argc, char **argv )
 							float gain = fabs(player_ratings[i] - old_player_ratings[i]);
 							if (player_isleaver[i])
 							{
-								cout << "Player [" << names[i] << "] is a leaver, removing his score..";
+								cout << "Player [" << names[i] << "] is a leaver, removing his score.." << endl;
 
-								player_ratings[i] = old_player_ratings[i];
-								player_ratings[i] -= gain/2;
+								if (player_ratings[i] > old_player_ratings[i])
+									player_ratings[i] = old_player_ratings[i] - (gain/2);
+								else
+									player_ratings[i] -= (gain/2);
 							}				
 							else if (!player_isleaver[i] && team_bonus[player_teams[i]] > 0)
 							{
 								float bonus = (team_bonus[player_teams[i]] == 1) ? gain/2 : gain;
 								player_ratings[i] += bonus;	
-								cout << " player [" << names[i] << "] is given a leaver-bonus of " << UTIL_ToString(bonus, 2) << endl;
+								cout << " player [" << names[i] << "] is given a bonus of " << UTIL_ToString(bonus, 2) << endl;
 							}
 
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
 
 							string QAddToGaintable = "INSERT INTO dota_elo_gains (gameid, timestamp, name, score, gain) VALUES ( " + UTIL_ToString(GameID) + ", '" + gametime + "', '" + names[i] + "', " +UTIL_ToString(player_ratings[i], 2) + ", " + UTIL_ToString(player_ratings[i] - old_player_ratings[i], 2) + " )";
-
 							if( mysql_real_query( Connection, QAddToGaintable.c_str( ), QAddToGaintable.size( ) ) != 0 )
 								cout << "error: " << mysql_error( Connection ) << endl;
 
-							if( exists[i] )
-							{
-								string QUpdateScore = "UPDATE dota_elo_scores SET score=" + UTIL_ToString( player_ratings[i], 2 ) + " WHERE id=" + UTIL_ToString( rowids[i] );
+							string EscName = MySQLEscapeString( Connection, names[i] );
+							string QInsertScore = "INSERT INTO dota_elo_scores ( name, server, score, season ) VALUES ( '" + EscName + "', 'europe.battle.net', " + UTIL_ToString( player_ratings[i], 2 ) + ", 2 ) ON duplicate KEY UPDATE score = " + UTIL_ToString( player_ratings[i], 2 );
+							if( mysql_real_query( Connection, QInsertScore.c_str( ), QInsertScore.size( ) ) != 0 )
+								cout << "error: " << mysql_error( Connection ) << endl;
 
-								if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
-								{
-									cout << "error: " << mysql_error( Connection ) << endl;
-									return 1;
-								}
-							}
-							else
-							{
-								string EscName = MySQLEscapeString( Connection, names[i] );
-								string EscServer = MySQLEscapeString( Connection, servers[i] );
-								string QInsertScore = "INSERT INTO dota_elo_scores ( name, server, score ) VALUES ( '" + EscName + "', 'europe.battle.net', " + UTIL_ToString( player_ratings[i], 2 ) + " )";
-
-								if( mysql_real_query( Connection, QInsertScore.c_str( ), QInsertScore.size( ) ) != 0 )
-								{
-									cout << "error: " << mysql_error( Connection ) << endl;
-									return 1;
-								}
-							}
+							string QUpdateScore2 = "UPDATE dotastats SET score=" + UTIL_ToString( player_ratings[i], 2 ) + " WHERE player_name LIKE '" + names[i] + "' AND season = 2";
+							if( mysql_real_query( Connection, QUpdateScore2.c_str( ), QUpdateScore2.size( ) ) != 0 )
+								cout << "error: " << mysql_error( Connection ) << endl;
 						}
 					}
 				}				
 			}
 			else
-			{
 				cout << "error: " << mysql_error( Connection ) << endl;
-				return 1;
-			}
 		}
 
-		string QInsertScored = "INSERT INTO dota_elo_games_scored ( gameid ) VALUES ( " + UTIL_ToString( GameID ) + " )";
-
+		string QInsertScored = "UPDATE games SET scored = 1 WHERE id = " + UTIL_ToString( GameID );
 		if( mysql_real_query( Connection, QInsertScored.c_str( ), QInsertScored.size( ) ) != 0 )
-		{
 			cout << "error: " << mysql_error( Connection ) << endl;
-			return 1;
-		}
-	}
 
-	string QLastDecay = "SELECT UNIX_TIMESTAMP() - UNIX_TIMESTAMP(last_update) FROM dota_score_decay";
-
-	if( mysql_real_query( Connection, QLastDecay.c_str( ), QLastDecay.size( ) ) != 0 )
-	{
-		cout << "error: " << mysql_error( Connection ) << endl;
-	}
-	else
-	{
-
-		MYSQL_RES *dResult = mysql_store_result( Connection );
-
-		if ( dResult )
-		{
-
-			vector<string> dRow = MySQLFetchRow( dResult );
-
-			if (!dRow.empty() && UTIL_ToUInt32(dRow[0]) > (60 * 60 * 24))
-			{
-
-				string TruncateDotaEvents = "DELETE FROM `dotaevents` WHERE UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timestamp) > 86400";
-				mysql_real_query( Connection, TruncateDotaEvents.c_str(), TruncateDotaEvents.size() );
-
-				cout << "Executing score decay algorithm..." << endl;
-				string QFindScoreDecays = "select name, score from dota_elo_scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND score > 1010";
-				//string QFindScoreDecays = "select name, score, (score * 0.01) * -1 as gain from scores where name IN (select distinct(name) from dota_elo_gains where name NOT IN (select DISTINCT(name) from dota_elo_gains where UNIX_TIMESTAMP(timestamp) > (UNIX_TIMESTAMP() - 345600)) and name NOT LIKE '') AND category = 'dota_elo'";
-
-				if( mysql_real_query( Connection, QFindScoreDecays.c_str( ), QFindScoreDecays.size( ) ) != 0 )
-				{
-					cout << "error: " << mysql_error( Connection ) << endl;
-				}
-				else
-				{
-					MYSQL_RES *Result = mysql_store_result( Connection );
-
-					if( Result )
-					{
-						vector<string> Row = MySQLFetchRow( Result );
-
-						while( !Row.empty( ) )
-						{
-							float score = UTIL_ToFloat(Row[1]);
-							float gain = (score * 0.01) * -1;
-							string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + UTIL_ToString(score + gain, 2) + ", " + UTIL_ToString(gain, 2) + ")";
-
-							//string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + Row[1] + ", " + Row[2] + ")"; 
-
-							if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
-							{
-								cout << "error: " << mysql_error( Connection ) << endl;
-								return 1;
-							}
-							else
-							{
-								cout << "Score decay for " + Row[0] + " added (" + UTIL_ToString(gain, 2) + ")" << endl;
-							}
-
-							Row = MySQLFetchRow( Result );
-						}
-
-						mysql_free_result( Result );
-
-						string QSetLastUpdate = "UPDATE dota_score_decay SET last_update = NOW()";
-
-						if( mysql_real_query( Connection, QSetLastUpdate.c_str( ), QSetLastUpdate.size( ) ) != 0 )
-						{
-							cout << "error: " << mysql_error( Connection ) << endl;
-							return 1;
-						}
-						else
-							cout << "Updating score decay last_update to current time." << endl;
-
-					}
-					else
-					{
-						cout << "error: " << mysql_error( Connection ) << endl;
-					}
-
-					/*
-					* Update herostats bonus system
-					*/
-
-						string QHeroStatsClean = "DELETE FROM herostats";
-					string QHeroStats = "INSERT INTO herostats (count, name, hero, result) SELECT count(dota_entitys.name) as ncount, dota_entitys.name, hero, SUM(IF(winner > 0, IF((newcolour <= 5 && dotagames.winner = 1) || (newcolour >= 7 && dotagames.winner=2), 1, -1), 0)) as nresult FROM `dotaplayers` LEFT JOIN dotagames on dotagames.gameid = dotaplayers.gameid LEFT JOIN dota_entitys on dota_entitys.entity_id = hero WHERE name NOT LIKE '' group by name";
-
-					if ( mysql_real_query( Connection, QHeroStatsClean.c_str( ), QHeroStatsClean.size( ) ) != 0 )
-					{
-						cout << "error: " << mysql_error( Connection ) << endl;
-					}
-					else
-						cout << "Cleaned herostats, trying to repopulate... ";
-
-					if ( mysql_real_query( Connection, QHeroStats.c_str( ), QHeroStats.size( ) ) != 0 )
-					{
-						cout << "error: " << mysql_error( Connection ) << endl;
-					}
-					else
-						cout << "success!" << endl;
-
-				}
-			}
-
-		}
+		string QInsertScored2 = "INSERT INTO dota_elo_games_scored (gameid) VALUES (" + UTIL_ToString(GameID) + ")";
+		if( mysql_real_query( Connection, QInsertScored2.c_str( ), QInsertScored2.size( ) ) != 0 )
+			cout << "error: " << mysql_error( Connection ) << endl;
 	}
 
 	string QCommit = "COMMIT";
