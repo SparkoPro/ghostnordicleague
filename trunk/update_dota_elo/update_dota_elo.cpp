@@ -312,18 +312,17 @@ int main( int argc, char **argv )
                                                 {
                                                         doban=true;
                                                         cout << "Autoban (leaver): " + names[num_players] << endl;
-                                                        ban += " VALUES ('2', 'europe.battle.net', '" + names[num_players] + "', '" + Row[10] + "', CURRENT_TIME, '" + Row[11] + "', 'Autoban', 'Autoban: Leaver', 1, CURRENT_TIME + INTERVAL 3 DAY)";
-                                                        warn = "INSERT INTO warnings (name, weight, warning_id, date, admin, game, note) VALUES ('" + names[num_players] + "', 30, 1, CURRENT_TIME, 'Autoban', '" + Row[11] + "', '" + Row[11] + "')";
+                                                        ban += " VALUES ('2', 'europe.battle.net', '" + names[num_players] + "', '" + Row[10] + "', NOW(), '" + Row[11] + "', 'Autoban', 'Autoban: Leaver', 1, CURRENT_TIMESTAMP + INTERVAL 3 DAY)";
+                                                        warn = "INSERT INTO warnings (name, weight, warning_id, date, admin, game, note) VALUES ('" + names[num_players] + "', 30, 1, NOW(), 'Autoban', '" + Row[11] + "', '" + Row[11] + "')";
 
                                                 }
                                                 else if (Row[9] == "lagged out (dropped by vote)" || Row[9] == "lagged out (dropped by admin)")
                                                 {
                                                         doban=true;
                                                         cout << "Warning (disconnect): " << names[num_players] << endl;
-                                                        //ban += " VALUES ('2', 'europe.battle.net', '" + names[num_players] + "', '" + Row[10] + "', NOW(), '" + Row[11] + "', 'Autoban', 'Autoban: Disconnect', '1', CURRENT_TIME + INTERVAL 1 HOUR)";
+                                                        //ban += " VALUES ('2', 'europe.battle.net', '" + names[num_players] + "', '" + Row[10] + "', NOW(), '" + Row[11] + "', 'Autoban', 'Autoban: Disconnect', '1', CURRENT_TIMESTAMP + INTERVAL 1 HOUR)";
                                                         ban = "";
-                                                        warn = "INSERT INTO warnings (name, weight, warning_id, date, admin, game, note) VALUES ('" + names[num_players] + "', 30, 8, CURRENT_TIME, 'Autoban', '" + Row[11] + "', '" + Row[11] + "')";
-							cout << warn << endl;
+                                                        warn = "INSERT INTO warnings (name, weight, warning_id, date, admin, game, note) VALUES ('" + names[num_players] + "', 30, 8, NOW(), 'Autoban', '" + Row[11] + "', '" + Row[11] + "')";
                                                 }
 
 						if (doban)
