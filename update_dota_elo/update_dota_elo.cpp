@@ -160,6 +160,8 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
+
+
 	queue<uint32_t> UnscoredGames;
 
 	//string QSelectUnscored = "SELECT id FROM games WHERE id NOT IN ( SELECT gameid FROM dota_elo_games_scored ) ORDER BY id LIMIT 1";
