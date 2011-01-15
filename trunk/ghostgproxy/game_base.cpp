@@ -515,7 +515,6 @@ bool CBaseGame :: Update( void *fd, void *send_fd )
 				}
 			}
 
-			delete GamePlayerSummary;
 			m_GHost->m_DB->RecoverCallable( *i );
 			delete *i;
 			i = m_ScoreChecks.erase( i );
@@ -2901,9 +2900,9 @@ void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CInco
 	}
 
 	string joinName = joinPlayer->GetName();
-	if (Player->HasAlias())
+/*	if (Player->HasAlias())
 		joinName += " (" + Player->GetAlias() + ")";
-
+*/
 	if( score < -99999.0 )
 		SendAllChat( m_GHost->m_Language->PlayerHasScore( joinName, "N/A" ) );
 	else

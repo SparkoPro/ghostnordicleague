@@ -224,33 +224,28 @@ bool CGame :: Update( void *fd, void *send_fd )
 		{
 			CDBGamePlayerSummary *GamePlayerSummary = i->second->GetResult( );
 
-			CGamePlayer *StatPlayer = GetPlayerFromName( i->second->GetName(), true );
-			string name = i->second->GetName();
-			if (StatPlayer)
-				 name = StatPlayer->GetNameWithAlias();
-
 			if( GamePlayerSummary )
 			{
 				if( i->first.empty( ) )
-					SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( name, GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
+					SendAllChat( m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName(), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
 				else
 				{
 					CGamePlayer *Player = GetPlayerFromName( i->first, true );
 
 					if( Player )
-						SendChat( Player, m_GHost->m_Language->HasPlayedGamesWithThisBot( name, GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
+						SendChat( Player, m_GHost->m_Language->HasPlayedGamesWithThisBot( i->second->GetName(), GamePlayerSummary->GetFirstGameDateTime( ), GamePlayerSummary->GetLastGameDateTime( ), UTIL_ToString( GamePlayerSummary->GetTotalGames( ) ), UTIL_ToString( (float)GamePlayerSummary->GetAvgLoadingTime( ) / 1000, 2 ), UTIL_ToString( GamePlayerSummary->GetAvgLeftPercent( ) ) ) );
 				}
 			}
 			else
 			{
 				if( i->first.empty( ) )
-					SendAllChat( m_GHost->m_Language->HasntPlayedGamesWithThisBot( name ) );
+					SendAllChat( m_GHost->m_Language->HasntPlayedGamesWithThisBot( i->second->GetName() ) );
 				else
 				{
 					CGamePlayer *Player = GetPlayerFromName( i->first, true );
 
 					if( Player )
-						SendChat( Player, m_GHost->m_Language->HasntPlayedGamesWithThisBot( name ) );
+						SendChat( Player, m_GHost->m_Language->HasntPlayedGamesWithThisBot( i->second->GetName() ) );
 				}
 			}
 
@@ -267,15 +262,10 @@ bool CGame :: Update( void *fd, void *send_fd )
 		if( i->second->GetReady( ) )
 		{
 			CDBDotAPlayerSummary *DotAPlayerSummary = i->second->GetResult( );
-			CGamePlayer *StatPlayer = GetPlayerFromName( i->second->GetName(), true );
-			string name = i->second->GetName();
-			if (StatPlayer)
-				 name = StatPlayer->GetNameWithAlias();
-
 
 			if( DotAPlayerSummary )
 			{
-				string Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	name,
+				string Summary = m_GHost->m_Language->HasPlayedDotAGamesWithThisBot(	i->second->GetName(),
 																						UTIL_ToString( DotAPlayerSummary->GetTotalGames( ) ),
 																						UTIL_ToString( DotAPlayerSummary->GetTotalWins( ) ),
 																						UTIL_ToString( DotAPlayerSummary->GetTotalLosses( ) ),
@@ -320,13 +310,13 @@ bool CGame :: Update( void *fd, void *send_fd )
 			else
 			{
 				if( i->first.empty( ) )
-					SendAllChat( m_GHost->m_Language->HasntPlayedDotAGamesWithThisBot( name ) );
+					SendAllChat( m_GHost->m_Language->HasntPlayedDotAGamesWithThisBot( i->second->GetName() ) );
 				else
 				{
 					CGamePlayer *Player = GetPlayerFromName( i->first, true );
 
 					if( Player )
-						SendChat( Player, m_GHost->m_Language->HasntPlayedDotAGamesWithThisBot( name ) );
+						SendChat( Player, m_GHost->m_Language->HasntPlayedDotAGamesWithThisBot( i->second->GetName() ) );
 				}
 			}
 

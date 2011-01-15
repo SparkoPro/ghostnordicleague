@@ -250,7 +250,7 @@ public:
         string          GetLinkedTo()                           { return m_LinkedTo; }  
 	bool		HasAlias()				{ return m_HasAlias; }
 	string		GetAlias()				{ return m_Alias; }
-	string		GetNameWithAlias()			{ if (m_HasAlias) return m_Name + " (" + m_Alias + ")"; }
+	string		GetNameWithAlias()			{ return m_Name; }
 
         void            SetAdmin( bool nAdmin )                 { m_Admin = nAdmin; }
         void            SetModerator( bool nModerator )         { m_Moderator = nModerator; }
@@ -264,7 +264,7 @@ public:
         void            SetLinked( bool nLinked )               { m_IsLinked = nLinked; }
         void            SetLinkedTo( string nLinkedTo )         { m_LinkedTo = nLinkedTo; }
         void            RemoveLink()                                    { m_IsLinked = false; m_LinkedTo.clear(); }
-	void		SetAlias( string nAlias )		{ m_HasAlias = true; m_Alias = nAlias; }
+		void		SetAlias( string nAlias )		{ if (!nAlias.empty()) { m_HasAlias = true; m_Alias = nAlias; } else m_HasAlias = false; }
 };
 
 #endif
