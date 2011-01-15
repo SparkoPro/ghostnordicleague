@@ -594,9 +594,9 @@ bool CBNET :: Update( void *fd, void *send_fd )
 		if( m_LastOutPacketSize < 10 )
 			WaitTicks = 1000;
 		else if( m_LastOutPacketSize < 100 )
-			WaitTicks = 3000;
+			WaitTicks = 2500;
 		else
-			WaitTicks = 4000;
+			WaitTicks = 3500;
 
 		if( !m_OutPackets.empty( ) && GetTicks( ) - m_LastOutPacketTicks >= WaitTicks )
 		{
