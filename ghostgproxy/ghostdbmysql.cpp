@@ -1058,9 +1058,9 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	string EscName = MySQLEscapeString( conn, name );
 	CDBGamePlayerSummary *GamePlayerSummary = NULL;
 //	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
-	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on dotastats.player_name=gameplayers.name WHERE dotastats.season = " + UTIL_ToString(season) + " AND gameplayers.name='" + EscName + "'";
+//	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on (dotastats.player_name=gameplayers.name AND season = 2 WHERE gameplayers.season = 2 AND gameplayers.name LIKE '" + EscName + "'";
 //	string Query = "SELECT (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), AVG(loadingtime), AVG(`left`/duration)*100 FROM gameplayers LEFT JOIN games ON games.id=gameid LEFT JOIN dotastats on dotastats.player_name=name WHERE name='" + EscName + "'";
-
+	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on (dotastats.player_name=gameplayers.name) WHERE gameplayers.name LIKE '" + EscName + "' AND dotastats.season = 2";
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
 	else
@@ -1094,12 +1094,12 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 						TotalGames = 0;
 					
 					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration, Vouched, VouchedBy );
-					GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration);
+					GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
 					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string(), string(), TotalGames, 0, AvgLoadingTime, 0, 0, AvgLeftPercent, 0, 0, 0, 0 );
 				}
 				else
 				{
-					GamePlayerSummary = new CDBGamePlayerSummary( string(), name, string(), string(), 0, 0, 0, 0, 100, 100, 100, 0, 0, 0);
+				//	GamePlayerSummary = new CDBGamePlayerSummary( string(), name, string(), string(), 0, 0, 0, 0, 100, 100, 100, 0, 0, 0);
 					*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
 				}
 			}
@@ -1174,7 +1174,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 			}
 		}
 	}
-
+/*
 	if (GamePlayerSummary)
 	{
 		GamePlayerSummary->HasAlias(false);
@@ -1206,7 +1206,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 				mysql_free_result( AliasResult );
 			}	
 		}
-	}
+	} */
 
 	return GamePlayerSummary;
 }
@@ -1272,7 +1272,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 	CDBDotAPlayerSummary *DotAPlayerSummary = NULL;
 	//string Query = "SELECT COUNT(dotaplayers.id), SUM(kills), SUM(deaths), SUM(creepkills), SUM(creepdenies), SUM(assists), SUM(neutralkills), SUM(towerkills), SUM(raxkills), SUM(courierkills) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotaplayers ON dotaplayers.gameid=games.id AND dotaplayers.colour=gameplayers.colour WHERE LOWER(name)='" + EscName + "'";
 
-	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills, streak FROM dotastats WHERE season = " + UTIL_ToString(season) + " AND player_name='" + EscName + "'";
+	string Query = "SELECT total_wins, total_losses, total_draws, total_kills, total_deaths, total_creepkills, total_creepdenies, total_assists, total_neutralkills, total_towerkills, total_raxkills, total_courierkills, streak, score FROM dotastats WHERE season = " + UTIL_ToString(season) + " AND player_name='" + EscName + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1284,7 +1284,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			if( Row.size( ) == 13 )
+			if( Row.size( ) == 14 )
 			{
 				uint32_t TotalGames = UTIL_ToUInt32( Row[0] ) + UTIL_ToUInt32( Row[1] ) + UTIL_ToUInt32( Row[2] );
 
@@ -1307,53 +1307,34 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 					double Score = -100000.0;
 					uint32_t Rank = 0;
 					
-					// calculate score and rank
-					string Query4 = "SELECT score FROM dota_elo_scores WHERE season = " + UTIL_ToString(season) + " AND name='" + EscName + "'";
-					
-					//CONSOLE_Print( "[MYSQL] statsdota: " + Query4 );
-
-					if( mysql_real_query( (MYSQL *)conn, Query4.c_str( ), Query4.size( ) ) != 0 )
-						*error = mysql_error( (MYSQL *)conn );
-					else
-					{
-						MYSQL_RES *Result4 = mysql_store_result( (MYSQL *)conn );
-
-						if( Result4 )
-						{
-							vector<string> Row4 = MySQLFetchRow( Result4 );
-
-							if( Row4.size( ) == 1 )
-								Score = UTIL_ToDouble( Row4[0] );
-							else
-								*error = "error checking dotaplayersummary score [" + name + "] - row doesn't have 1 column";
-
-							mysql_free_result( Result4 );
-						}
-						else
-							*error = mysql_error( (MYSQL *)conn );
-					}
+					if (UTIL_ToDouble(Row[13]) > Score)
+						Score = UTIL_ToDouble(Row[13]);
 
 					// calculate rank
 
-					string Query5 = "select COUNT(score) from dota_elo_scores where season = " + UTIL_ToString(season) + " AND score >= " + UTIL_ToString(Score, 2);
-
-					if( mysql_real_query( (MYSQL *)conn, Query5.c_str( ), Query5.size( ) ) != 0 )
-						*error = mysql_error( (MYSQL *)conn );
-					else
+					if (Score > -100000.0)
 					{
-						MYSQL_RES *Result5 = mysql_store_result( (MYSQL *)conn );
-						if( Result5 )
-						{
-							vector<string> Row5 = MySQLFetchRow( Result5 );
-							if( Row5.size( ) == 1 )
-								Rank = UTIL_ToUInt32( Row5[0] );
-							else
-								*error = "error checking dotaplayersummary rank [" + name + "] - row doesn't have 1 column";
+						string Query5 = "select COUNT(*) from dotastats where season = 2 AND score >= " + UTIL_ToString(Score, 2);
 
-							mysql_free_result( Result5 );
-						}
-						else
+						if( mysql_real_query( (MYSQL *)conn, Query5.c_str( ), Query5.size( ) ) != 0 )
 							*error = mysql_error( (MYSQL *)conn );
+						else
+						{
+							MYSQL_RES *Result5 = mysql_store_result( (MYSQL *)conn );
+							if( Result5 )
+							{
+								if (mysql_num_rows(Result5) == 1)
+								{
+									vector<string> Row5 = MySQLFetchRow( Result5 );
+									if( Row5.size( ) == 1 )
+										Rank = UTIL_ToUInt32( Row5[0] );
+								}
+
+								mysql_free_result( Result5 );
+							}
+							else
+								*error = mysql_error( (MYSQL *)conn );
+						}
 					}
 					
 					// done
@@ -1361,7 +1342,7 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 				}
 			}
 			else
-				*error = "error checking dotaplayersummary [" + name + "] - row doesn't have 10 columns";
+				*error = "error checking dotaplayersummary [" + name + "] - row doesn't have 14 columns";
 
 			mysql_free_result( Result );
 		}
@@ -1398,7 +1379,7 @@ double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string catego
 	string EscServer = MySQLEscapeString( conn, server );
 	double Score = -100000.0;
 	//string Query = "SELECT score FROM scores WHERE category='" + EscCategory + "' AND name='" + EscName + "' AND server='" + EscServer + "'";
-	string Query = "SELECT score FROM dota_elo_scores WHERE season = " + UTIL_ToString(season) + " AND name='" + EscName + "'";
+	string Query = "SELECT score FROM dotastats WHERE name='" + EscName + "' AND season = 2";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
