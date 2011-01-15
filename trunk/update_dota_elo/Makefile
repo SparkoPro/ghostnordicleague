@@ -24,12 +24,19 @@ CFLAGS += $(OFLAGS) $(DFLAGS) -I. -I../ghost/
 
 GHOSTOBJS = config.o
 OBJS = elo.o update_dota_elo.o
+DOBJS = update_dota_decay.o
 PROGS = ./update_dota_elo
+DPROGS = ./update_dota_decay
 
-all: $(GHOSTOBJS) $(OBJS) $(PROGS)
+all: $(GHOSTOBJS) $(OBJS) $(DOBJS) $(PROGS) $(DPROGS)
 
 ./update_dota_elo: $(GHOSTOBJS) $(OBJS) $(COBJS)
 	$(C++) -o ./update_dota_elo $(GHOSTOBJS) $(OBJS) $(LFLAGS)
+
+all: $(GHOSTOBJS) $(DOBJS) $(DPROGS)
+
+./update_dota_decay: $(GHOSTOBJS) $(DOBJS) $(COBJS)
+	$(C++) -o ./update_dota_decay $(GHOSTOBJS) $(DOBJS) $(LFLAGS)
 
 clean:
 	rm -f $(GHOSTOBJS) $(OBJS) $(PROGS)
@@ -40,10 +47,16 @@ $(GHOSTOBJS): %.o: ../ghost/%.cpp
 $(OBJS): %.o: %.cpp
 	$(C++) -o $@ $(CFLAGS) -c $<
 
+$(DOBJS): %.o: %.cpp
+	$(C++) -o $@ $(CFLAGS) -c $<
+
 ./update_dota_elo: $(GHOSTOBJS) $(OBJS)
 
-all: $(PROGS)
+./update_dota_decay: $(GHOSTOBJS) $(DOBJS)
 
+all: $(PROGS) $(DPROGS)
 config.o: ../ghost/ghost.h ../ghost/config.h
 elo.o: elo.h
 update_dota_elo.o: ../ghost/config.h elo.h
+config.o: ../ghost/ghost.h ../ghost/config.h
+update_dota_decay.o: ../ghost/config.h
