@@ -769,9 +769,9 @@ CDBBan *MySQLBanCheck( void *conn, string *error, uint32_t botid, string server,
 	string Query;
 
 	if( ip.empty( ) )
-		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, FROM_UNIXTIME(expires) FROM bans WHERE name LIKE '" + EscUser + "'";
+		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, expires FROM bans WHERE name LIKE '" + EscUser + "'";
 	else
-		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, FROM_UNIXTIME(expires) FROM bans WHERE name LIKE '" + EscUser + "' OR ip='" + EscIP + "'";
+		Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, expires FROM bans WHERE name LIKE '" + EscUser + "' OR ip='" + EscIP + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -862,7 +862,7 @@ bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, stri
 	
 	
 	if (bantime > 0)
-		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, expires, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', NOW() + " + UTIL_ToString(bantime) + ", " + UTIL_ToString(ipban) + " )";
+		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, expires, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', FROM_UNIXTIME(UNIX_TIMESTAMP() + " + UTIL_ToString(bantime) + ")," + UTIL_ToString(ipban) + " )";
 	else
 		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', " + UTIL_ToString(ipban) + " )";
 		
