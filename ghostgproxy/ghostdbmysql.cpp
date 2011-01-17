@@ -862,7 +862,7 @@ bool MySQLBanAdd( void *conn, string *error, uint32_t botid, string server, stri
 	
 	
 	if (bantime > 0)
-		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, expires, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', UNIX_TIMESTAMP() + " + UTIL_ToString(bantime) + ", " + UTIL_ToString(ipban) + " )";
+		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, expires, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', NOW() + " + UTIL_ToString(bantime) + ", " + UTIL_ToString(ipban) + " )";
 	else
 		Query = "INSERT INTO bans ( botid, server, name, ip, date, gamename, admin, reason, ipban ) VALUES ( " + UTIL_ToString( botid ) + ", '" + EscServer + "', '" + EscUser + "', '" + EscIP + "', NOW( ), '" + EscGameName + "', '" + EscAdmin + "', '" + EscReason + "', " + UTIL_ToString(ipban) + " )";
 		
@@ -1093,13 +1093,11 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 					if (TotalGames > 50000)
 						TotalGames = 0;
 					
-					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration, Vouched, VouchedBy );
-					GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
-					//GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string(), string(), TotalGames, 0, AvgLoadingTime, 0, 0, AvgLeftPercent, 0, 0, 0, 0 );
+					if (TotalGames > 0)
+						GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, FirstGameDateTime, LastGameDateTime, TotalGames, MinLoadingTime, AvgLoadingTime, MaxLoadingTime, MinLeftPercent, AvgLeftPercent, MaxLeftPercent, MinDuration, AvgDuration, MaxDuration );
 				}
 				else
 				{
-				//	GamePlayerSummary = new CDBGamePlayerSummary( string(), name, string(), string(), 0, 0, 0, 0, 100, 100, 100, 0, 0, 0);
 					*error = "error checking gameplayersummary [" + name + "] - row doesn't have 12 columns";
 				}
 			}
