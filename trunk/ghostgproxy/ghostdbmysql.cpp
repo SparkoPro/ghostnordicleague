@@ -1062,7 +1062,10 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 //	string Query = "SELECT (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), AVG(loadingtime), AVG(`left`/duration)*100 FROM gameplayers LEFT JOIN games ON games.id=gameid LEFT JOIN dotastats on dotastats.player_name=name WHERE name='" + EscName + "'";
 	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on (dotastats.player_name=gameplayers.name) WHERE gameplayers.name LIKE '" + EscName + "' AND dotastats.season = 2";
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+	{
+		CONSOLE_Print("GamePlayerSummaryCheck error");
 		*error = mysql_error( (MYSQL *)conn );
+	}
 	else
 	{
 		MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
@@ -1377,7 +1380,7 @@ double MySQLScoreCheck( void *conn, string *error, uint32_t botid, string catego
 	string EscServer = MySQLEscapeString( conn, server );
 	double Score = -100000.0;
 	//string Query = "SELECT score FROM scores WHERE category='" + EscCategory + "' AND name='" + EscName + "' AND server='" + EscServer + "'";
-	string Query = "SELECT score FROM dotastats WHERE name='" + EscName + "' AND season = 2";
+	string Query = "SELECT score FROM dotastats WHERE player_name LIKE '" + EscName + "' AND season = 2";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
