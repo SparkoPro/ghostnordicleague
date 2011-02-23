@@ -39,4 +39,4 @@
  */
 void elo_recalculate_ratings(int num_players, float *player_ratings,
 			     int *player_teams, int num_teams,
-			     float *team_ratings, float *team_winners);
+			     float *team_ratings, float *team_winners, int botid);

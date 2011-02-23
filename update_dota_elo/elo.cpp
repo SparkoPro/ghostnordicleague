@@ -414,7 +414,7 @@ static void elo_compute_expectations(int num, float *ratings, float *probs)
 
 void elo_recalculate_ratings(int num_players, float *player_ratings,
 			     int *player_teams, int num_teams,
-			     float *team_ratings, float *team_winners)
+			     float *team_ratings, float *team_winners, int botid)
 {
 	float *team_probs = new float[num_teams];
 	int i;
@@ -437,12 +437,17 @@ void elo_recalculate_ratings(int num_players, float *player_ratings,
 
 		/* FIXME: this is the chess distribution; games should be
 		   able to set their own. */
+
 		if (player_ratings[i] < 2000)
 			K = 30.0;
 		else if (player_ratings[i] > 2400)
 			K = 10.0;
 		else
 			K = 130.0 - player_ratings[i] / 20.0;
+
+		// If we got a Q game, reduce the stakes
+		if (botid == 3)
+			K = K / 3;
 			
 		diff = K * (team_winners[team] - team_probs[team]);
 		player_ratings[i] += diff;
