@@ -930,7 +930,7 @@ vector<CDBBan *> MySQLBanList( void *conn, string *error, uint32_t botid, string
 {
 	string EscServer = MySQLEscapeString( conn, server );
 	vector<CDBBan *> BanList;
-	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, FROM_UNIXTIME(expires) FROM bans WHERE server='" + EscServer + "'";
+	string Query = "SELECT name, ip, DATE(date), gamename, admin, reason, ipban, IF(expires IS NULL, 0, 1) as temp, expires FROM bans WHERE server='" + EscServer + "'";
 
 	if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
 		*error = mysql_error( (MYSQL *)conn );
@@ -1057,6 +1057,8 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 	transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
 	string EscName = MySQLEscapeString( conn, name );
 	CDBGamePlayerSummary *GamePlayerSummary = NULL;
+
+	uint32_t TotGames = 0;
 //	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), COUNT(*), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameid WHERE name LIKE '" + EscName + "'";
 //	string Query = "SELECT MIN(DATE(datetime)), MAX(DATE(datetime)), (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), MIN(loadingtime), AVG(loadingtime), MAX(loadingtime), MIN(`left`/duration)*100, AVG(`left`/duration)*100, MAX(`left`/duration)*100, MIN(duration), AVG(duration), MAX(duration) FROM gameplayers LEFT JOIN games ON games.id=gameplayers.gameid LEFT JOIN dotastats on (dotastats.player_name=gameplayers.name AND season = 2 WHERE gameplayers.season = 2 AND gameplayers.name LIKE '" + EscName + "'";
 //	string Query = "SELECT (dotastats.total_wins + dotastats.total_losses + dotastats.total_draws), AVG(loadingtime), AVG(`left`/duration)*100 FROM gameplayers LEFT JOIN games ON games.id=gameid LEFT JOIN dotastats on dotastats.player_name=name WHERE name='" + EscName + "'";
@@ -1111,75 +1113,80 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 			*error = mysql_error( (MYSQL *)conn );
 	}
 	
-	if (GamePlayerSummary && GamePlayerSummary->GetTotalGames() < 30 && botid == 1)
+	if (botid == 1)
 	{
-		GamePlayerSummary->SetVouched(false);
-		//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
-		string VouchCheck = "SELECT name, voucher FROM vouches WHERE name LIKE '" + name + "'";
-		
-		if( mysql_real_query( (MYSQL *)conn, VouchCheck.c_str( ), VouchCheck.size( ) ) != 0 )
-			*error = mysql_error( (MYSQL *)conn );
-		else
-		{
-			MYSQL_RES *VouchResult = mysql_store_result( (MYSQL *)conn );
+		if (!GamePlayerSummary)
+			GamePlayerSummary = new CDBGamePlayerSummary( string( ), name, string(),string(), 0, 0, 5, 10, 100, 100, 100, 0, 0, 0 );
 
-			if( VouchResult )
-			{
-				if (mysql_num_rows(VouchResult) == 1)
-				{
-					vector<string> VRow = MySQLFetchRow( VouchResult );
-
-					if( VRow.size( ) == 2 )
-					{
-						GamePlayerSummary->SetVouched(true);
-						GamePlayerSummary->SetVouchedBy(VRow[1]);
-						CONSOLE_Print( "[VOUCH] Found vouch for player [" + VRow[0] + "] vouched by [" + VRow[1] + "]");
-					}
-				}
-				mysql_free_result( VouchResult );
-			}	
-		}
-		
-		if (!GamePlayerSummary->IsVouched())
+		if (GamePlayerSummary && GamePlayerSummary->GetTotalGames() < 30)
 		{
-			string QTotal = "SELECT SUM(dotastats.total_wins + dotastats.total_losses + dotastats.total_draws) FROM dotastats WHERE player_name LIKE '" + EscName + "'";
-			
-			if( mysql_real_query( (MYSQL *)conn, QTotal.c_str( ), QTotal.size( ) ) != 0 )
+			GamePlayerSummary->SetVouched(false);
+			//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
+			string VouchCheck = "SELECT name, voucher FROM vouches WHERE name LIKE '" + name + "'";
+
+			if( mysql_real_query( (MYSQL *)conn, VouchCheck.c_str( ), VouchCheck.size( ) ) != 0 )
 				*error = mysql_error( (MYSQL *)conn );
 			else
 			{
-				MYSQL_RES *TResult = mysql_store_result( (MYSQL *)conn );
+				MYSQL_RES *VouchResult = mysql_store_result( (MYSQL *)conn );
 
-				if( TResult )
+				if( VouchResult )
 				{
-					if (mysql_num_rows(TResult) == 1)
+					if (mysql_num_rows(VouchResult) == 1)
 					{
-						vector<string> VRow = MySQLFetchRow( TResult );
+						vector<string> VRow = MySQLFetchRow( VouchResult );
 
-						if( VRow.size( ) == 1 )
+						if( VRow.size( ) == 2 )
 						{
-							uint32_t games = UTIL_ToUInt32(VRow[0]);
-							if (games > 50000)
-								games = 0;
-								
-							if (games >= 30)
-							{
-								GamePlayerSummary->SetVouched(true);
-								GamePlayerSummary->SetVouchedBy( "Autovvouch" );
-								CONSOLE_Print( "[VOUCH] Found vouch for player [" + EscName + "] vouched by [Autovouch (" + VRow[0] + " games)]");
-							}
+							GamePlayerSummary->SetVouched(true);
+							GamePlayerSummary->SetVouchedBy(VRow[1]);
+							CONSOLE_Print( "[VOUCH] Found vouch for player [" + VRow[0] + "] vouched by [" + VRow[1] + "]");
 						}
 					}
-					mysql_free_result( TResult );
+					mysql_free_result( VouchResult );
 				}	
+			}
+
+			if (!GamePlayerSummary->IsVouched())
+			{
+				string QTotal = "SELECT SUM(dotastats.total_wins + dotastats.total_losses + dotastats.total_draws) FROM dotastats WHERE player_name LIKE '" + EscName + "'";
+
+				if( mysql_real_query( (MYSQL *)conn, QTotal.c_str( ), QTotal.size( ) ) != 0 )
+					*error = mysql_error( (MYSQL *)conn );
+				else
+				{
+					MYSQL_RES *TResult = mysql_store_result( (MYSQL *)conn );
+
+					if( TResult )
+					{
+						if (mysql_num_rows(TResult) == 1)
+						{
+							vector<string> VRow = MySQLFetchRow( TResult );
+
+							if( VRow.size( ) == 1 )
+							{
+								uint32_t games = UTIL_ToUInt32(VRow[0]);
+								if (games > 50000)
+									games = 0;
+
+								if (games >= 30)
+								{
+									GamePlayerSummary->SetVouched(true);
+									GamePlayerSummary->SetVouchedBy( "Autovvouch" );
+									CONSOLE_Print( "[VOUCH] Autovouch for player [" + EscName + "] vouched by [" + VRow[0] + "] games" );
+								}
+							}
+						}
+						mysql_free_result( TResult );
+					}	
+				}
 			}
 		}
 	}
-/*
+
 	if (GamePlayerSummary)
 	{
 		GamePlayerSummary->HasAlias(false);
-
 		//CONSOLE_Print("[MYSQL] Player not allowed on safe bots, looking for vouch.");
 		string AliasCheck = "SELECT oldname FROM namechanges WHERE name LIKE '" + name + "'";
 		//CONSOLE_Print(AliasCheck);
@@ -1207,7 +1214,7 @@ CDBGamePlayerSummary *MySQLGamePlayerSummaryCheck( void *conn, string *error, ui
 				mysql_free_result( AliasResult );
 			}	
 		}
-	} */
+	}
 
 	return GamePlayerSummary;
 }

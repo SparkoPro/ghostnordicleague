@@ -320,15 +320,15 @@ CBaseGame :: ~CBaseGame( )
 	// save replay
 	// todotodo: put this in a thread
 
-	if( m_Replay && ( m_GameLoading || m_GameLoaded ) )
+	/*if( m_Replay && ( m_GameLoading || m_GameLoaded ) )
 	{
 		
 		//ThreadedSaveReplay( string name, string statstring, uint32_t version, uint32_t build, bool tft, string path, CReplay *replay )
 		//m_GHost->m_Callables.push_back( m_GHost->m_DB->ThreadedSaveReplay( m_Replay ) );
 		
-		m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
-		m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
-	}
+		//m_Replay->BuildReplay( m_GameName, m_StatString, m_GHost->m_ReplayWar3Version, m_GHost->m_ReplayBuildNumber );
+		//m_Replay->Save( m_GHost->m_TFT, m_GHost->m_ReplayPath + UTIL_FileSafeName( m_GameName + ".w3g" ) );
+	} */
 
 	delete m_Socket;
 	delete m_Protocol;
