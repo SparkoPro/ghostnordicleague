@@ -200,7 +200,7 @@ int main( int argc, char **argv )
 		uint32_t GameID = UnscoredGames.front( );
 		UnscoredGames.pop( );
 
-		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime, gameplayers.left, games.duration, gameplayers.leftreason, gameplayers.ip, games.gamename FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON (dota_elo_scores.name=gameplayers.name AND dota_elo_scores.season = 2) LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT dota_elo_scores.id, gameplayers.name, spoofedrealm, newcolour, winner, score, games.datetime, gameplayers.left, games.duration, gameplayers.leftreason, gameplayers.ip, games.gamename, games.botid FROM dotaplayers LEFT JOIN dotagames ON dotagames.gameid=dotaplayers.gameid LEFT JOIN gameplayers ON gameplayers.gameid=dotaplayers.gameid AND gameplayers.colour=dotaplayers.colour LEFT JOIN dota_elo_scores ON (dota_elo_scores.name=gameplayers.name AND dota_elo_scores.season = 2) LEFT JOIN games ON games.id=dotaplayers.gameid WHERE dotaplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
@@ -230,6 +230,7 @@ int main( int argc, char **argv )
 				float		team_bonus[2];
 				bool		player_isleaver[10];
 				float		player_left[10];
+				uint32_t	botid;
 
 				team_ratings[0] = 0.0;
 				team_ratings[1] = 0.0;
@@ -242,8 +243,9 @@ int main( int argc, char **argv )
 
 				vector<string> Row = MySQLFetchRow( Result );
 
-				while( Row.size( ) == 12 )
+				while( Row.size( ) == 13 )
 				{
+					botid = UTIL_ToUInt32(Row[12]);
 					if( num_players >= 10 )
 					{
 						cout << "gameid " << UTIL_ToString( GameID ) << " has more than 10 players, ignoring" << endl;
@@ -378,7 +380,7 @@ int main( int argc, char **argv )
 						memcpy( old_player_ratings, player_ratings, sizeof( float ) * 10 );
 						team_ratings[0] /= team_numplayers[0];
 						team_ratings[1] /= team_numplayers[1];
-						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners );
+						elo_recalculate_ratings( num_players, player_ratings, player_teams, num_teams, team_ratings, team_winners, botid );
 
 						for( int i = 0; i < num_players; i++ )
 						{
@@ -396,7 +398,7 @@ int main( int argc, char **argv )
 							{
 								float bonus = (team_bonus[player_teams[i]] == 1) ? gain/2 : gain;
 								player_ratings[i] += bonus;	
-								cout << " player [" << names[i] << "] is given a bonus of " << UTIL_ToString(bonus, 2) << endl;
+								cout << "player [" << names[i] << "] is given a bonus of " << UTIL_ToString(bonus, 2) << endl;
 							}
 
 							cout << "player [" << names[i] << "] rating " << UTIL_ToString( (uint32_t)old_player_ratings[i] ) << " -> " << UTIL_ToString( (uint32_t)player_ratings[i] ) << endl;
@@ -430,12 +432,15 @@ int main( int argc, char **argv )
 			cout << "error: " << mysql_error( Connection ) << endl;
 	}
 
+	string QTempBan = "delete from bans where expires IS NOT NULL AND expires < CURRENT_TIMESTAMP";
+
+	if( mysql_real_query( Connection, QTempBan.c_str( ), QTempBan.size( ) ) != 0 )
+		cout << "error: " << mysql_error( Connection ) << endl;
+
 	string QCommit = "COMMIT";
 
 	if( mysql_real_query( Connection, QCommit.c_str( ), QCommit.size( ) ) != 0 )
-	{
 		cout << "error: " << mysql_error( Connection ) << endl;
-	}
 
 	return 0;
 }

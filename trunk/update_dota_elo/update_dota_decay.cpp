@@ -117,7 +117,6 @@ float UTIL_ToFloat( string &s )
 
 int main( int argc, char **argv )
 {
-	cout << "Starting decay" << endl;
 	string CFGFile = "update_dota_elo.cfg";
 
 	if( argc > 1 && argv[1] )
@@ -168,7 +167,8 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	string QSelectDecayed = "SELECT player_name, score FROM dotastats WHERE last_activity < CURRENT_TIMESTAMP - INTERVAL 7 DAY AND season = 2 AND score > 800";
+	string QSelectDecayed = "SELECT player_name, score FROM dotastats WHERE last_activity < CURRENT_TIMESTAMP - INTERVAL 7 DAY AND season = 2 AND score > 1000";
+	//cout << QSelectDecayed << endl;
 
 	if( mysql_real_query( Connection, QSelectDecayed.c_str( ), QSelectDecayed.size( ) ) != 0 )
 	{
@@ -183,12 +183,12 @@ int main( int argc, char **argv )
 		{
 			vector<string> Row = MySQLFetchRow( Result );
 
-			while( Row.size( ) == 3 )
+			while( Row.size( ) == 2 )
 			{
 				float score = UTIL_ToFloat(Row[1]);
 				float gain = (score * 0.01) * -1;
 
-				string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + UTIL_ToString(score + gain, 2) + ", " + UTIL_ToString(gain, 2) + ", " + Season + ")";
+				string QUpdateScore = "CALL AddScoreDecayELO('" + Row[0] + "', " + UTIL_ToString(score + gain, 2) + ", " + UTIL_ToString(gain, 2) + ")";
 
 				if( mysql_real_query( Connection, QUpdateScore.c_str( ), QUpdateScore.size( ) ) != 0 )
 				{
