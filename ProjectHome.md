@@ -1,0 +1,1 @@
+Custom build of ghost++ adapted for nordic league hosting solution
